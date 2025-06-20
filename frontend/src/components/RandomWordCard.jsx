@@ -1,10 +1,10 @@
-// src/components/RandomWordCard.jsx
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
+// eslint-disable-next-line no-unused-vars
 import { useSpring, animated } from 'react-spring';
 import { ScaleLoader } from 'react-spinners';
 
-const baseURL = "http://127.0.0.1:8000/api";
+const baseURL = import.meta.env.VITE_BACKEND_URL_API;
 const MINIMUM_LOADING_TIME = 2000;
 
 function RandomWordCard() {
@@ -145,7 +145,12 @@ function RandomWordCard() {
                     <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900">
                         {displayedWord.text}
                     </h5>
-                    <span className='font-normal text-gray-700 text-sm py-1 px-3 rounded-full bg-[var(--color-teal-200)]'>
+                    <span className={`font-normal text-gray-700 text-sm py-1 px-3 rounded-full transition-colors
+                                ${displayedWord.word_type === "PHRASAL_VERB"
+                            ? "bg-red-200 text-pink-700"
+                            : "bg-teal-100 text-teal-700"
+                        }`}
+                    >
                         {getSpanishWordType(displayedWord.word_type)}
                     </span>
                 </div>

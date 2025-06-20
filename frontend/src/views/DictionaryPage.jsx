@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'; // Impo
 import axios from 'axios';
 import { Search, Github, Heart, Volume2, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const baseURL = "http://127.0.0.1:8000/api";
+const baseURL = import.meta.env.VITE_BACKEND_URL_API;
 
 function DictionaryPage() {
     // Estados para los datos y la paginación
@@ -173,7 +173,7 @@ function DictionaryPage() {
                     <div className="lg:col-span-2">
                         <div className="bg-teal-400 rounded-3xl p-6 relative">
                             {loading && (
-                                <div className="absolute inset-0 bg-teal-400 bg-opacity-75 flex items-center justify-center rounded-3xl z-10">
+                                <div className="absolute inset-0 bg-teal-400 bg-opacity-75 min-h-max flex items-center justify-center rounded-3xl z-10">
                                     <p className="text-white text-lg font-bold">Cargando palabras...</p>
                                 </div>
                             )}
@@ -193,7 +193,7 @@ function DictionaryPage() {
                                             <div className="flex items-start justify-between">
                                                 <h3 className="text-xl font-bold text-gray-800 mb-1">{word.text}</h3>
                                                 <span
-                                                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${word.word_type === "PHRASAL_VERB"
+                                                    className={`inline-block px-3 py-1  whitespace-pre rounded-full text-xs font-medium ${word.word_type === "PHRASAL_VERB"
                                                         ? "bg-red-200 text-pink-700"
                                                         : "bg-teal-100 text-teal-700"
                                                         }`}
@@ -236,7 +236,7 @@ function DictionaryPage() {
                                         onClick={() => setCurrentPage(pageNumber)}
                                         className={`px-4 py-2 rounded-full font-medium transition-colors ${currentPage === pageNumber
                                             ? "bg-gray-800 text-white"
-                                            : "bg-white text-gray-600 hover:bg-gray-50"
+                                            : "bg-white text-gray-600 hover:bg-gray-100"
                                             }`}
                                     >
                                         {pageNumber}
@@ -259,7 +259,12 @@ function DictionaryPage() {
                             <div className="bg-gray-200 rounded-3xl p-6 sticky top-4">
                                 <div className="flex items-center justify-between mb-6">
                                     <h2 className="text-2xl font-bold text-gray-800">{selectedWord.text}</h2>
-                                    <span className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
+                                    <span
+                                        className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${selectedWord.word_type === "PHRASAL_VERB"
+                                            ? "bg-red-200 text-pink-700"
+                                            : "bg-teal-100 text-teal-700"
+                                            }`}
+                                    >
                                         {getSpanishWordType(selectedWord.word_type)}
                                     </span>
                                 </div>

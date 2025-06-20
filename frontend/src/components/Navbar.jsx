@@ -12,6 +12,10 @@ function Navbar() {
     const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
     const [selectedLanguage, setSelectedLanguage] = useState({ name: 'Español', flag: veFlagSrc });
     const languageDropdownRef = useRef(null);
+    const mobileMenuRef = useRef(null);
+    const mobileMenuButtonRef = useRef(null);
+
+
     const isActive = (path) => {
         if (path === "/") {
             return location.pathname === "/";
@@ -39,6 +43,10 @@ function Navbar() {
             if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target)) {
                 setIsLanguageDropdownOpen(false);
             }
+            if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target) &&
+                mobileMenuButtonRef.current && !mobileMenuButtonRef.current.contains(event.target)) {
+                setIsMobileMenuOpen(false);
+            }
         };
 
         document.addEventListener("mousedown", handleClickOutside);
@@ -46,6 +54,10 @@ function Navbar() {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
+
+    useEffect(() => {
+        setIsMobileMenuOpen(false);
+    }, [location.pathname]);
 
     return (
         <nav className="bg-[var(--color-teal-400)] p-3 sm:p-5 shadow-md z-50 sticky top-0">
@@ -58,6 +70,7 @@ function Navbar() {
                             className={`
                                 text-[var(--color-white)]
                                 text-lg
+                                whitespace-pre
                                 font-medium
                                 pb-0.5
                                 transition-colors duration-150 ease-in-out
@@ -75,6 +88,7 @@ function Navbar() {
                             className={`
                                 text-[var(--color-white)]
                                 pb-0.5
+                                whitespace-pre
                                 transition-colors duration-150 ease-in-out
                                 ${isActive("/play")
                                     ? "border-b-2 border-[var(--color-pink-500)]"
@@ -86,6 +100,7 @@ function Navbar() {
                             className={`
                                 text-[var(--color-white)]
                                 pb-0.5
+                                whitespace-pre
                                 transition-colors duration-150 ease-in-out
                                 ${isActive("/dictionary")
                                     ? "border-b-2 border-[var(--color-pink-500)]"
@@ -97,6 +112,7 @@ function Navbar() {
                             className={`
                                 text-[var(--color-white)]
                                 pb-0.5
+                                whitespace-pre
                                 transition-colors duration-150 ease-in-out
                                 ${isActive("/ia")
                                     ? "border-b-2 border-[var(--color-pink-500)]"
@@ -108,6 +124,7 @@ function Navbar() {
                             className={`
                                 text-[var(--color-white)]
                                 pb-0.5
+                                whitespace-pre
                                 transition-colors duration-150 ease-in-out
                                 ${isActive("/badges")
                                     ? "border-b-2 border-[var(--color-pink-500)]"
@@ -120,6 +137,7 @@ function Navbar() {
                                 className={`
                                 text-[var(--color-white)]
                                 pb-0.5
+                                whitespace-pre
                                 transition-colors duration-150 ease-in-out
                                 ${isActive("/admin-dashboard")
                                         ? "border-b-2 border-[var(--color-pink-500)]"
@@ -171,10 +189,10 @@ function Navbar() {
                     </div>
 
                     {user ? (
-                        <div className="flex items-center gap-3 md:gap-4">
+                        <div className="hidden md:flex items-center gap-3 md:gap-4">
                             <Link
                                 to={"/profile"}
-                                className="text-[var(--color-white)] font-medium text-sm whitespace-nowrap hidden sm:block"
+                                className="text-[var(--color-white)] font-medium text-sm whitespace-nowrap"
                             >
                                 {user.username}
                             </Link>
@@ -186,7 +204,7 @@ function Navbar() {
                             </button>
                         </div>
                     ) : (
-                        <div className="hidden sm:flex items-center gap-3 md:gap-4">
+                        <div className="hidden md:flex items-center gap-3 md:gap-4">
                             <Link
                                 to="/login"
                                 className="bg-[var(--color-pink-500)] text-[var(--color-white)] px-4 py-2 rounded-full hover:bg-[var(--color-pink-600)] transition-colors duration-150 text-sm whitespace-nowrap"
@@ -206,6 +224,7 @@ function Navbar() {
                         className="md:hidden flex text-[var(--color-white)] focus:outline-none"
                         onClick={toggleMobileMenu}
                         aria-label="Abrir menú"
+                        ref={mobileMenuButtonRef}
                     >
                         {isMobileMenuOpen ? (
                             <svg
@@ -242,12 +261,14 @@ function Navbar() {
                 </div>
             </div>
 
+            {/* Menú móvil desplegable */}
             <div
+                ref={mobileMenuRef}
                 className={`
                     md:hidden
                     absolute top-[64px] left-0 w-full bg-[var(--color-teal-400)] shadow-lg pb-4 z-40
                     overflow-hidden transition-all duration-300 ease-in-out
-                    ${isMobileMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}
+                    ${isMobileMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}
                 `}
             >
                 <div className="flex flex-col items-center gap-4 py-2 ">

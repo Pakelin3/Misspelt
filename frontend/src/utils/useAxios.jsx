@@ -5,7 +5,7 @@ import { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
 // ! cookie-parser no se usa en este proyecto, se utiliza localStorage para almacenar los tokens de autenticación
 
-const baseURL = "http://127.0.0.1:8000/api";
+const baseURL = import.meta.env.VITE_BACKEND_URL_API;
 
 const useAxios = () => {
     const { authTokens, setUser, setAuthTokens, logoutUser } = useContext(AuthContext);
