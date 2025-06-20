@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verifica tu correo electrónico</title>
+</head>
+<body>
+    <p>Hola {{ user.username }},</p>
+    <p>Gracias por registrarte. Por favor, haz clic en el siguiente enlace para verificar tu dirección de correo electrónico:</p>
+    <p><a href="{{ verify_url }}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verificar Correo Electrónico</a></p>
+    <p>Este enlace expirará en 24 horas.</p>
+    <p>Si no te registraste en nuestra plataforma, por favor, ignora este correo.</p>
+    <p>Saludos cordiales,</p>
+    <p>El equipo de [Nombre de tu Aplicación]</p>
+</body>
+</html>
