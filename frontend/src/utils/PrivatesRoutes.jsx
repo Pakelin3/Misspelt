@@ -1,7 +1,7 @@
 // src/utils/PrivatesRoutes.jsx (Updated)
 import { Outlet, Navigate } from 'react-router-dom';
 import { useContext } from 'react';
-import AuthContext from '../context/AuthContext';
+import AuthContext from '@/context/AuthContext';
 
 const PrivateRoute = ({ requiredVerified = false, requiredStaff = false }) => {
     let { user, loading } = useContext(AuthContext);

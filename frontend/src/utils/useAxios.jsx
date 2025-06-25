@@ -2,7 +2,7 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import dayjs from 'dayjs';
 import { useContext } from 'react';
-import AuthContext from '../context/AuthContext';
+import AuthContext from '@/context/AuthContext';
 // ! cookie-parser no se usa en este proyecto, se utiliza localStorage para almacenar los tokens de autenticación
 
 const baseURL = import.meta.env.VITE_BACKEND_URL_API;

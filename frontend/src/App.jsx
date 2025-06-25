@@ -1,7 +1,9 @@
-import React from 'react';
+// App.jsx
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PrivateRoute from './utils/PrivatesRoutes';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import HomePage from './views/HomePage';
 import DictionaryPage from './views/DictionaryPage';
 import RegisterPage from './views/RegisterPage';
@@ -11,39 +13,62 @@ import Navbar from './components/Navbar';
 import AdminDashboard from './views/AdminDashboard';
 import EmailVerificationLandingPage from './views/EmailVerificationLandingPage';
 import CheckEmailPage from './views/CheckEmailPage';
+import SidebarIA from './components/SidebarIA';
+import MainContent from './components/MainContent';
 import "./styles/Globals.css";
 
+
 function App() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   return (
     <Router>
-      <AuthProvider>
-        <Navbar />
-        <Routes>
-          {/* Rutas publicas */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/check-email" element={<CheckEmailPage />} />
-          <Route path="/verify-email/:token" element={<EmailVerificationLandingPage />} />
+      <ThemeProvider>
+        <AuthProvider>
+          <Navbar />
 
-          {/* Rutas privadas */}
-          <Route element={<PrivateRoute requiredVerified={true} requiredStaff={false} />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dictionary" element={<DictionaryPage />} />
-            <Route path="/play" element={<div>Jugar Page</div>} />
-            <Route path="/ia" element={<div>IA Page</div>} />
-            <Route path="/badges" element={<div>Insignias Page</div>} />
-            <Route path="/profile" element={<div>perfil</div>} />
-          </Route>
+          <Routes>
+            {/* 
+            // ! Rutas públicas 
+            */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/check-email" element={<CheckEmailPage />} />
+            <Route path="/verify-email/:token" element={<EmailVerificationLandingPage />} />
 
-          {/* Rutas admin/staff */}
-          <Route element={<PrivateRoute requiredVerified={true} requiredStaff={true} />}>
-            <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          </Route>
-        </Routes>
-      </AuthProvider>
+            {/* 
+            // ! Rutas privadas 
+            */}
+            <Route element={<PrivateRoute requiredVerified={true} requiredStaff={false} />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dictionary" element={<DictionaryPage />} />
+              <Route path="/ia" element={
+                <div className="flex h-[calc(100vh-76px)] relative bg-[#1e1e1e] text-gray-100">
+                  <SidebarIA isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+                  <MainContent isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+                </div>
+              } />
+              <Route path="/play" element={<div>Jugar Page</div>} />
+              <Route path="/badges" element={<div>Insignias Page</div>} />
+              <Route path="/profile" element={<div>perfil</div>} />
+            </Route>
+
+            {/* 
+            // ! Rutas admin/staff 
+            */}
+            <Route element={<PrivateRoute requiredVerified={true} requiredStaff={true} />}>
+              <Route path="/admin-dashboard" element={<AdminDashboard />} />
+            </Route>
+          </Routes>
+        </AuthProvider>
+      </ThemeProvider>
     </Router>
   );
 }
 
-export default App; 
+export default App;

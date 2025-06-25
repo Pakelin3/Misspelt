@@ -1,11 +1,14 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import AuthContext from '../context/AuthContext';
-import veFlagSrc from '../assets/ve.svg';
-import usaFlagSrc from '../assets/us.svg';
+import AuthContext from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext'; 
+import veFlagSrc from '@/assets/ve.svg';
+import usaFlagSrc from '@/assets/us.svg';
+import { Sun, Moon } from 'lucide-react'; 
 
 function Navbar() {
     const { user, logoutUser } = useContext(AuthContext);
+    const { theme, toggleTheme } = useTheme(); 
     const location = useLocation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -60,11 +63,11 @@ function Navbar() {
     }, [location.pathname]);
 
     return (
-        <nav className="bg-[var(--color-teal-400)] p-3 sm:p-5 shadow-md z-50 sticky top-0">
+        <nav className="bg-[var(--color-bg-secondary)] p-3 shadow-md z-50 sticky top-0"> 
             <div className="flex w-full items-center justify-between">
                 <div className="flex items-center gap-6 md:gap-8">
                     <div className="flex items-center gap-2 md:gap-3">
-                        <div className="w-8 h-8 bg-[var(--color-white)] rounded-full"></div>
+                        <div className="w-10 h-10 bg-[var(--color-white)] rounded-full"></div> 
                         <Link
                             to="/"
                             className={`
@@ -75,8 +78,8 @@ function Navbar() {
                                 pb-0.5
                                 transition-colors duration-150 ease-in-out
                                 ${isActive("/")
-                                    ? "border-b-2 border-[var(--color-pink-500)]"
-                                    : "border-b-2 border-transparent hover:border-[var(--color-pink-500)]"
+                                    ? "border-b-2 border-[var(--color-bg-tertiary)]"
+                                    : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
                                 }
                             `}
                         >Inicio</Link>
@@ -91,8 +94,8 @@ function Navbar() {
                                 whitespace-pre
                                 transition-colors duration-150 ease-in-out
                                 ${isActive("/play")
-                                    ? "border-b-2 border-[var(--color-pink-500)]"
-                                    : "border-b-2 border-transparent hover:border-[var(--color-pink-500)]"
+                                    ? "border-b-2 border-[var(--color-bg-tertiary)]"
+                                    : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
                                 }
                             `}>🎮 Jugar</Link>
                         <Link
@@ -103,8 +106,8 @@ function Navbar() {
                                 whitespace-pre
                                 transition-colors duration-150 ease-in-out
                                 ${isActive("/dictionary")
-                                    ? "border-b-2 border-[var(--color-pink-500)]"
-                                    : "border-b-2 border-transparent hover:border-[var(--color-pink-500)]"
+                                    ? "border-b-2 border-[var(--color-bg-tertiary)]"
+                                    : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
                                 }
                             `}>📚 Diccionario</Link>
                         <Link
@@ -115,8 +118,8 @@ function Navbar() {
                                 whitespace-pre
                                 transition-colors duration-150 ease-in-out
                                 ${isActive("/ia")
-                                    ? "border-b-2 border-[var(--color-pink-500)]"
-                                    : "border-b-2 border-transparent hover:border-[var(--color-pink-500)]"
+                                    ? "border-b-2 border-[var(--color-bg-tertiary)]"
+                                    : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
                                 }
                             `}>🤖 IA</Link>
                         <Link
@@ -127,8 +130,8 @@ function Navbar() {
                                 whitespace-pre
                                 transition-colors duration-150 ease-in-out
                                 ${isActive("/badges")
-                                    ? "border-b-2 border-[var(--color-pink-500)]"
-                                    : "border-b-2 border-transparent hover:border-[var(--color-pink-500)]"
+                                    ? "border-b-2 border-[var(--color-bg-tertiary)]"
+                                    : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
                                 }
                             `}>🏆 Insignias</Link>
                         {user && user.is_staff && (
@@ -140,8 +143,8 @@ function Navbar() {
                                 whitespace-pre
                                 transition-colors duration-150 ease-in-out
                                 ${isActive("/admin-dashboard")
-                                        ? "border-b-2 border-[var(--color-pink-500)]"
-                                        : "border-b-2 border-transparent hover:border-[var(--color-pink-500)]"
+                                        ? "border-b-2 border-[var(--color-bg-tertiary)]"
+                                        : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
                                     }
                             `}>⚙️ Admin Panel</Link>
                         )}
@@ -149,10 +152,22 @@ function Navbar() {
                 </div>
 
                 <div className="flex items-center gap-3 md:gap-4 ml-auto">
+                    <button
+                        onClick={toggleTheme}
+                        className="px-3 py-1 rounded-md hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-[var(--color-bg-tertiary)] flex items-center gap-1"
+                        aria-label="Cambiar tema"
+                    >
+                        {theme === 'light' ? (
+                            <Moon className="w-5 h-5 text-gray-800 dark:text-gray-200" />
+                        ) : (
+                            <Sun className="w-5 h-5 text-gray-800 dark:text-gray-200" />
+                        )}
+                    </button>
+
                     <div className="relative inline-block" ref={languageDropdownRef}>
                         <button
                             onClick={toggleLanguageDropdown}
-                            className="text-[var(--color-white)] px-3 py-1 rounded-md hover:bg-[var(--color-white-10)] focus:outline-none focus:ring-2 focus:ring-[var(--color-pink-500)] flex items-center gap-1"
+                            className="text-[var(--color-white)] px-3 py-1 rounded-md hover:bg-[var(--color-white-10)] focus:outline-none focus:ring-2 focus:ring-[var(--color-bg-tertiary)] flex items-center gap-1"
                         >
                             {selectedLanguage.name} <img src={selectedLanguage.flag} alt={`Bandera de ${selectedLanguage.name}`} className="w-6 h-auto" />
                             <svg
@@ -197,7 +212,7 @@ function Navbar() {
                                 {user.username}
                             </Link>
                             <button
-                                className="bg-[var(--color-pink-500)] text-[var(--color-white)] px-4 py-2 rounded-full hover:bg-[var(--color-pink-600)] transition-colors duration-150 text-sm whitespace-nowrap"
+                                className="bg-[var(--color-bg-tertiary)] text-[var(--color-white)] px-4 py-2 rounded-full hover:bg-[var(--color-bg-tertiary-hover)] transition-colors duration-150 text-sm whitespace-nowrap"
                                 onClick={logoutUser}
                             >
                                 Cerrar sesión
@@ -207,7 +222,7 @@ function Navbar() {
                         <div className="hidden md:flex items-center gap-3 md:gap-4">
                             <Link
                                 to="/login"
-                                className="bg-[var(--color-pink-500)] text-[var(--color-white)] px-4 py-2 rounded-full hover:bg-[var(--color-pink-600)] transition-colors duration-150 text-sm whitespace-nowrap"
+                                className="bg-[var(--color-bg-tertiary)] text-[var(--color-white)] px-4 py-2 rounded-full hover:bg-[var(--color-bg-tertiary-hover)] transition-colors duration-150 text-sm whitespace-nowrap"
                             >
                                 Iniciar sesión
                             </Link>
@@ -275,32 +290,40 @@ function Navbar() {
                     <Link
                         to="/play"
                         onClick={toggleMobileMenu}
-                        className={`text-[var(--color-white)] py-2 ${isActive("/play") ? "font-bold" : ""
-                            }`}
+                        className={`text-[var(--color-white)] py-2 ${isActive("/play")
+                                    ? "border-b-2 border-[var(--color-bg-tertiary)]"
+                                    : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
+                                }`}
                     >
                         🎮 Jugar
                     </Link>
                     <Link
                         to="/dictionary"
                         onClick={toggleMobileMenu}
-                        className={`text-[var(--color-white)] py-2 ${isActive("/dictionary") ? "font-bold" : ""
-                            }`}
+                        className={`text-[var(--color-white)] py-2 ${isActive("/dictionary")
+                                    ? "border-b-2 border-[var(--color-bg-tertiary)]"
+                                    : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
+                                }`}
                     >
                         📚 Diccionario
                     </Link>
                     <Link
                         to="/ia"
                         onClick={toggleMobileMenu}
-                        className={`text-[var(--color-white)] py-2 ${isActive("/ia") ? "font-bold" : ""
-                            }`}
+                        className={`text-[var(--color-white)] py-2 ${isActive("/ia")
+                                    ? "border-b-2 border-[var(--color-bg-tertiary)]"
+                                    : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
+                                }`}
                     >
                         🤖 IA
                     </Link>
                     <Link
                         to="/badges"
                         onClick={toggleMobileMenu}
-                        className={`text-[var(--color-white)] py-2 ${isActive("/badges") ? "font-bold" : ""
-                            }`}
+                        className={`text-[var(--color-white)] py-2 ${isActive("/badges")
+                                    ? "border-b-2 border-[var(--color-bg-tertiary)]"
+                                    : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
+                                }`}
                     >
                         🏆 Insignias
                     </Link>
@@ -308,8 +331,10 @@ function Navbar() {
                         <Link
                             to="/admin-dashboard"
                             onClick={toggleMobileMenu}
-                            className={`text-[var(--color-white)] py-2 ${isActive("/admin-dashboard") ? "font-bold" : ""
-                                }`}
+                            className={`text-[var(--color-white)] py-2 ${isActive("/admin-dashboard")
+                                        ? "border-b-2 border-[var(--color-bg-tertiary)]"
+                                        : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
+                                    }`}
                         >
                             ⚙️ Admin Panel
                         </Link>
@@ -325,7 +350,7 @@ function Navbar() {
                                 {user.username}
                             </Link>
                             <button
-                                className="bg-[var(--color-pink-500)] text-[var(--color-white)] px-6 py-2 rounded-full hover:bg-[var(--color-pink-600)] transition-colors duration-150 text-base"
+                                className="bg-[var(--color-bg-tertiary)] text-[var(--color-white)] px-6 py-2 rounded-full hover:bg-[var(--color-bg-tertiary-hover)] transition-colors duration-150 text-base"
                                 onClick={() => {
                                     logoutUser();
                                     toggleMobileMenu();
@@ -339,13 +364,12 @@ function Navbar() {
                             <Link
                                 to="/login"
                                 onClick={toggleMobileMenu}
-                                className="bg-[var(--color-pink-500)] text-[var(--color-white)] px-6 py-2 rounded-full hover:bg-[var(--color-pink-600)] transition-colors duration-150 text-base"
+                                className="bg-[var(--color-bg-tertiary)] text-[var(--color-white)] px-6 py-2 rounded-full hover:bg-[var(--color-bg-tertiary-hover)] transition-colors duration-150 text-base"
                             >
                                 Iniciar sesión
                             </Link>
                             <Link
                                 to="/register"
-                                onClick={toggleMobileMenu}
                                 className="border border-[var(--color-white)] text-[var(--color-white)] px-6 py-2 rounded-full hover:bg-[var(--color-white)] hover:text-[var(--color-teal-400)] transition-colors duration-150 text-base"
                             >
                                 Registrarse

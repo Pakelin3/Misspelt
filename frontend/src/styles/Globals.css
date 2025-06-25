@@ -1,39 +1,107 @@
 @import "tailwindcss";
 
+
 :root {
-    --color-teal-400: #4ECDC4;
-    --color-pink-500: #EE4266;
-    --color-pink-600: #b92c4b;
-    --color-white: #F7FFF7;
-    --color-white-10: rgba(255, 255, 255, 0.1);
-    --color-black-alpha-10: rgba(0, 0, 0, 0.1);
+   /* --color-bg-main: #4ECDC4; */
+    --color-bg-main: #edf4ed;
+    --color-bg-main-darker: #c9f6ec;
+    --color-bg-secondary: #00d5be;
+    --color-bg-secondary-hover: #009689;
+    --color-bg-tertiary: #EE4266;
+    --color-bg-tertiary-hover: #bc2b4b;
+    --color-text: #333333; 
+    --color-text-secondary: #9f9f9f; 
+
+    --color-white-10: rgba(255, 255, 255, 0.1); 
+    --color-black-alpha-10: rgba(0, 0, 0, 0.1); 
+
+    --color-dark-bg-main: #1a1a1a; 
+    --color-dark-bg-secondary: #282828;     
+    --color-dark-bg-tertiary: #3b3b3b; 
+    --color-dark-text: #e0e0e0; 
+    --color-dark-text-secondary: #a0a0a0; 
+    --color-dark-border: #4a4a4a; 
+
+    --color-accent-pink: #EE4266; 
+    --color-accent-blue: #4285f4; 
+    --color-accent-green: #34a853; 
+}
+
+html.light {
+    --color-body-bg: var(--color-bg-main); 
+    --color-navbar-bg: var(--color-bg-main); 
+    --color-navbar-text: var(--color-bg-main); 
+    --color-text-main: var(--color-text); 
+    --color-bg-card: var(--color-bg-main); 
+    --color-border-card: var(--color-bg-main); 
+    --color-link-hover: var(--color-bg-secondary); 
+    --color-icon-light: var(--color-text); 
+    --color-icon-dark: var(--color-text); 
+}
+
+html.dark {
+    --color-body-bg: var(--color-dark-bg-main);
+    --color-navbar-bg: var(--color-dark-bg-secondary);
+    --color-navbar-text: var(--color-dark-text);
+    --color-text-main: var(--color-dark-text);
+    --color-bg-card: var(--color-dark-bg-secondary);
+    --color-border-card: var(--color-dark-border);
+    --color-link-hover: var(--color-accent-pink);
+    --color-icon-light: var(--color-dark-text);
+    --color-icon-dark: var(--color-dark-text);
 }
 
 body {
-    background-color: var(--color-white);
+    background-color: var(--color-body-bg);
+    color: var(--color-text-main); 
+    transition: background-color 0.3s ease, color 0.3s ease; 
 }
 
+.navbar {
+    background-color: var(--color-navbar-bg);
+    color: var(--color-navbar-text);
+}
+
+.navbar a {
+    color: var(--color-navbar-text);
+}
+
+.navbar a.active {
+    border-bottom-color: var(--color-link-hover);
+}
+
+.navbar a:hover:not(.active) {
+    border-bottom-color: var(--color-link-hover);
+}
+
+.navbar button[aria-label="Cambiar tema"] .lucide {
+    color: var(--color-icon-light); 
+}
+.homepage-card, .dictionary-card {
+    background-color: var(--color-bg-card);
+    border-color: var(--color-border-card);
+}
 
 .custom-scrollbar::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 8px; 
+    height: 8px; 
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: var(--color-dark-bg-secondary); 
     border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #888;
+    background: #555; 
     border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: #777; 
 }
 
 .custom-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: #888 #f1f1f1;
+    scrollbar-width: thin; 
+    scrollbar-color: #555 var(--color-dark-bg-secondary); 
 }

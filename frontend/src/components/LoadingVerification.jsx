@@ -1,4 +1,3 @@
-// src/components/LoadingVerification.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ScaleLoader from "react-spinners/ScaleLoader";

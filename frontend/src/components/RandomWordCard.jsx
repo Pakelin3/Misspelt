@@ -3,17 +3,18 @@ import axios from 'axios';
 // eslint-disable-next-line no-unused-vars
 import { useSpring, animated } from 'react-spring';
 import { ScaleLoader } from 'react-spinners';
+import { useTheme } from '@/context/ThemeContext'; 
 
 const baseURL = import.meta.env.VITE_BACKEND_URL_API;
 const MINIMUM_LOADING_TIME = 2000;
 
 function RandomWordCard() {
+    const { theme } = useTheme(); 
     const [loading, setLoading] = useState(true);
     const [initialLoad, setInitialLoad] = useState(true);
     const [error, setError] = useState(null);
     const [displayedWord, setDisplayedWord] = useState(null);
     const [randomExample, setRandomExample] = useState(null);
-
 
     const displayedWordRef = useRef(displayedWord);
     useEffect(() => {
@@ -44,11 +45,11 @@ function RandomWordCard() {
                     fetchedRandomExample = fetchedWordData.examples[Math.floor(Math.random() * fetchedWordData.examples.length)];
                 }
             } else {
-                specificFetchError = "No hay palabras disponibles para mostrar.";
+                specificFetchError = "No hay palabras disponibles para mostrar";
             }
         } catch (err) {
             console.error("Error fetching random word:", err);
-            specificFetchError = "No se pudo cargar la palabra. Inténtalo de nuevo más tarde.";
+            specificFetchError = "No se pudo cargar la palabra. Inténtalo de nuevo más tarde";
         }
 
         const elapsedTime = Date.now() - startTime;
@@ -98,19 +99,18 @@ function RandomWordCard() {
         return () => clearInterval(intervalId);
     }, [fetchRandomWord]);
 
-
     if (initialLoad && loading) {
         return (
-            <div className="flex justify-center items-center min-h-[180px] bg-white">
+            <div className="flex justify-center items-center min-h-[180px] bg-[var(--color-bg-card)]">
                 <div className="flex flex-col items-center justify-center">
                     <ScaleLoader
-                        className="min-w-[398px] justify-center"
-                        color={"#4ecdc4"}
+                        className="min-w-[398px] justify-center "
+                        color={theme === 'light' ? 'var(--color-bg-tertiary' : 'var(--color-bg-secondary)'} 
                         loading={true}
                         size={50}
                         aria-label="Cargando palabra"
                     />
-                    <p className="text-gray-600 mt-3 text-lg">Cargando palabra...</p>
+                    <p className="text-[var(--color-text-secondary)] mt-3 text-lg">Cargando palabra...</p> 
                 </div>
             </div>
         );
@@ -118,7 +118,7 @@ function RandomWordCard() {
 
     if (error) {
         return (
-            <div className="text-red-500 text-center min-h-[180px] flex items-center justify-center bg-white">
+            <div className="text-red-500 text-center min-h-[180px] flex items-center justify-center bg-[var(--color-bg-card)]">
                 <p>{error}</p>
             </div>
         );
@@ -139,25 +139,29 @@ function RandomWordCard() {
         return (
             <animated.div
                 style={props}
-                className="block max-w-md bg-white rounded-lg min-h-[180px]"
+                
+                className="block max-w-md bg-[var(--color-bg-card)] rounded-lg min-h-[180px]"
             >
                 <div className='flex justify-between items-start min-w-full mb-4'>
-                    <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900">
+                    <h5 className="mb-2 text-2xl font-bold tracking-tight text-[var(--color-text-main)]">
                         {displayedWord.text}
                     </h5>
-                    <span className={`font-normal text-gray-700 text-sm py-1 px-3 rounded-full transition-colors
+                    <span className={`font-normal text-nowrap text-sm py-1 px-3 rounded-full transition-colors
                                 ${displayedWord.word_type === "PHRASAL_VERB"
-                            ? "bg-red-200 text-pink-700"
-                            : "bg-teal-100 text-teal-700"
+                            ? "bg-[var(--color-accent-pink)] text-[var(--color-bg-body)]"
+                            : "bg-[var(--color-bg-secondary)] text-[var(--color-bg-body)]"
+                        } dark:${displayedWord.word_type === "PHRASAL_VERB"
+                            ? "bg-[var(--color-accent-pink)] text-white"
+                            : "bg-[var(--color-accent-green)] text-white"
                         }`}
                     >
                         {getSpanishWordType(displayedWord.word_type)}
                     </span>
                 </div>
-                <p className="font-normal text-gray-700">
+                <p className="font-normal text-[var(--color-text-main)]">
                     {displayedWord.description}
                     {randomExample && (
-                        <span className="block mt-2 italic text-gray-600">
+                        <span className="block mt-10 italic text-[var(--color-text-secondary)]">
                             Ejemplo: "{randomExample}"
                         </span>
                     )}
@@ -167,7 +171,7 @@ function RandomWordCard() {
     }
 
     return (
-        <div className="text-gray-500 text-center min-h-[180px] flex items-center justify-center bg-white">
+        <div className="text-[var(--color-text-secondary)] text-center min-h-[180px] flex items-center justify-center bg-[var(--color-bg-card)]">
             <p>No hay palabras disponibles para mostrar.</p>
         </div>
     );
