@@ -6,8 +6,8 @@ function MessageBubble({ message }) {
     const { theme } = useTheme();
     const isUser = message.sender === 'user';
     const bubbleClasses = isUser
-        ? `${theme === 'light' ? 'bg-neutral-300 text-[var(--color-text)]' : 'bg-[var(--color-dark-bg-tertiary)] text-[var(--color-dark-text)]'} self-end rounded-br-none`
-        : `${theme === 'light' ? 'text-[var(--color-text-main)]' : 'bg-[var(--color-dark-bg-secondary)] text-[var(--color-dark-text)]'} self-start rounded-bl-none`;
+        ? `${theme === 'light' ? 'bg-black/15 text-[var(--color-text)]' : 'bg-[var(--color-dark-bg-tertiary)] text-[var(--color-dark-text)]'} self-end rounded-br-none`
+        : `${theme === 'light' ? 'bg-black/5 text-[var(--color-text-main)]' : 'bg-[var(--color-dark-bg-secondary)] text-[var(--color-dark-text)]'} self-start rounded-bl-none`;
 
     return (
         <div className={`flex mb-4 ${isUser ? 'justify-end' : 'justify-start'}`}>

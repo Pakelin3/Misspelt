@@ -1,11 +1,11 @@
-from rest_framework import generics, status, viewsets #
+from rest_framework import generics, status, viewsets
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.pagination import PageNumberPagination 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
-from rest_framework.views import APIView 
+from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from api.models import User, Profile, Word, Badge, UserStats, EmailVerificationToken
 from django.http import HttpResponse
@@ -13,14 +13,15 @@ from django.shortcuts import redirect
 from django.conf import settings
 import random
 from api.serializer import (
-    UserSerializer, 
-    myTokenObtainPairSerializer, 
+    UserSerializer,
+    myTokenObtainPairSerializer,
     RegisterSerializer,
-    WordSerializer, 
-    BadgeSerializer, 
-    UserStatsSerializer, 
-    AdminUserSerializer, 
+    WordSerializer,
+    BadgeSerializer,
+    UserStatsSerializer,
+    AdminUserSerializer,
 )
+
 
 
 class MyTokenObtainPairView(TokenObtainPairView):
@@ -98,19 +99,41 @@ class UserIsStaffAPIView(APIView):
         is_staff_user = request.user.is_staff or request.user.is_superuser
         return Response({'is_staff': is_staff_user}, status=status.HTTP_200_OK)
 
-# ViewSet para la gestión completa de Palabras (CRUD)
 class WordPagination(PageNumberPagination):
-    page_size = 6 # Coincide con tu deseo de 6 palabras por página
-    page_size_query_param = 'limit' # Permite que el frontend pida un 'limit' diferente
-    max_page_size = 100 # Límite máximo para el parámetro 'limit'
-
+    page_size = 6
+    page_size_query_param = 'limit'
+    max_page_size = 100
+# ViewSet para la gestión completa de Palabras (CRUD)
 class WordViewSet(viewsets.ModelViewSet):
     queryset = Word.objects.all().order_by('-created_at')
     serializer_class = WordSerializer
-    pagination_class = WordPagination # Asignar la clase de paginación
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    pagination_class = WordPagination
+
+    # Temporalmente REMOVEMOS filters.SearchFilter de filter_backends
+    # Y lo haremos manualmente en get_queryset
+    filter_backends = [DjangoFilterBackend] 
     filterset_fields = ['word_type']
-    search_fields = ['text', 'description']
+    # search_fields = ['text', 'description'] # Esto ya no es necesario si lo haces manualmente
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search_param = self.request.query_params.get('search')
+        if search_param:
+            from django.db.models import Q
+            queryset = queryset.filter(
+                Q(text__icontains=search_param) | Q(description__icontains=search_param)
+            )
+        return queryset
+
+
+    @action(detail=False, methods=['get'])
+    def random(self, request):
+        word = Word.objects.order_by('?').first()
+        if word:
+            serializer = self.get_serializer(word)
+            return Response(serializer.data)
+        return Response({'detail': 'No words found'}, status=404)
+
 
 # ViewSet para la gestión completa de Insignias (CRUD)
 class BadgeViewSet(viewsets.ModelViewSet):
@@ -129,19 +152,6 @@ class AdminUserViewSet(viewsets.ReadOnlyModelViewSet): # Usamos ReadOnly para ev
     queryset = User.objects.all().order_by('username')
     serializer_class = AdminUserSerializer 
     permission_classes = [IsAuthenticated, IsAdminUser]
-
-class WordViewSet(viewsets.ModelViewSet):
-    queryset = Word.objects.all()
-    serializer_class = WordSerializer
-    permission_classes = [AllowAny] # This is good for public access
-
-    @action(detail=False, methods=['get']) # detail=False means it's a list action
-    def random(self, request):
-        word = Word.objects.order_by('?').first()
-        if word:
-            serializer = self.get_serializer(word)
-            return Response(serializer.data)
-        return Response({'detail': 'No words found'}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])

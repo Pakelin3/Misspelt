@@ -167,7 +167,7 @@ function Navbar() {
                     <div className="relative inline-block" ref={languageDropdownRef}>
                         <button
                             onClick={toggleLanguageDropdown}
-                            className="text-[var(--color-white)] px-3 py-1 rounded-md hover:bg-[var(--color-white-10)] focus:outline-none focus:ring-2 focus:ring-[var(--color-bg-tertiary)] flex items-center gap-1"
+                            className="text-[var(--color-white)] px-3 py-1 rounded-md hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-[var(--color-bg-tertiary)] flex items-center gap-1"
                         >
                             {selectedLanguage.name} <img src={selectedLanguage.flag} alt={`Bandera de ${selectedLanguage.name}`} className="w-6 h-auto" />
                             <svg

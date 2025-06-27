@@ -1,7 +1,10 @@
-import React from 'react'
+import React from 'react';
 import { BookA, Gem, ChartColumnBig } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext'; // Importa el hook useTheme
 
 function Sidebar() {
+    const { theme } = useTheme(); // Obtiene el tema actual
+
     return (
         <>
             <button
@@ -9,11 +12,15 @@ function Sidebar() {
                 data-drawer-toggle="separator-sidebar"
                 aria-controls="separator-sidebar"
                 type="button"
-                className="inline-flex items-center bg-[var(--color-pink-500)] p-2 mt-2 ms-3 text-sm text-gray-100 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-[var(--color-pink-600)] dark:focus:ring-gray-200"
+                className={`inline-flex items-center p-2 mt-2 ms-3 text-sm rounded-lg sm:hidden focus:outline-none focus:ring-2
+                    ${theme === 'light'
+                        ? 'bg-[var(--color-bg-secondary)] text-white hover:bg-[var(--color-bg-main)] focus:ring-[var(--color-text-secondary)]'
+                        : 'bg-[var(--color-dark-bg-secondary)] text-[var(--color-dark-text)] hover:bg-[var(--color-dark-bg-tertiary)] focus:ring-[var(--color-dark-text-secondary)]'
+                    }`}
             >
                 <span className="sr-only">Open sidebar</span>
                 <svg
-                    className="w-6 h-6  dark:text-white"
+                    className={`w-6 h-6 ${theme === 'light' ? 'text-white' : 'text-white'}`} // El icono de SVG debe adaptarse
                     aria-hidden="true"
                     fill="currentColor"
                     viewBox="0 0 20 20"
@@ -28,37 +35,57 @@ function Sidebar() {
             </button>
             <aside
                 id="separator-sidebar"
-                className="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full bg-[var(--color-teal-400)] border-r border-gray-200 sm:translate-x-0"
+                className={`fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full sm:translate-x-0
+                    ${theme === 'light'
+                        ? 'bg-[var(--color-navbar-bg)] border-r border-[var(--color-text-secondary)]'
+                        : 'bg-[var(--color-dark-bg-secondary)] border-r border-[var(--color-dark-border)]'}`}
                 aria-label="Sidebar"
             >
-                <div className="h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-[var(--color-teal-400)]">
+                <div className={`h-full px-3 py-4 overflow-y-auto 
+                    ${theme === 'light' ? 'bg-[var(--color-bg-card)]' : 'bg-[var(--color-dark-bg-secondary)]'}`}>
                     <ul className="space-y-2 font-medium">
                         <li>
                             <a
                                 href="#"
-                                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-[var(--color-pink-500)] group"
-                            >
-                                <ChartColumnBig className="w-5 h-5 text-gray-500 transition duration-75 dark:text-[var(--color-pink-500)] group-hover:text-gray-900 dark:group-hover:text-white" />
+                                className={`flex items-center p-2 rounded-lg group
+                                    ${theme === 'light'
+                                        ? 'text-[var(--color-text)] hover:bg-[var(--color-bg-main)]'
+                                        : 'text-[var(--color-dark-text)] hover:bg-[var(--color-dark-bg-tertiary)]'}`}>
+                                <ChartColumnBig className={`w-5 h-5 transition duration-75 
+                                    ${theme === 'light'
+                                        ? 'text-[var(--color-text-secondary)] group-hover:text-[var(--color-text)]'
+                                        : 'text-[var(--color-dark-text-secondary)] group-hover:text-[var(--color-dark-text)]'}`} />
                                 <span className="ms-3">Dashboard</span>
                             </a>
                         </li>
                     </ul>
-                    <ul className="pt-4 mt-4 space-y-2 font-medium border-t border-gray-200 dark:border-[var(--color-pink-500)]">
+                    <ul className={`pt-4 mt-4 space-y-2 font-medium border-t 
+                        ${theme === 'light' ? 'border-[var(--color-text-secondary)]' : 'border-[var(--color-dark-border)]'}`}>
                         <li>
                             <a
                                 href="#"
-                                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-[var(--color-pink-500)] group"
-                            >
-                                <BookA className="w-5 h-5 text-gray-500 transition duration-75 dark:text-[var(--color-pink-500)] group-hover:text-gray-900 dark:group-hover:text-white" />
+                                className={`flex items-center p-2 rounded-lg group
+                                    ${theme === 'light'
+                                        ? 'text-[var(--color-text)] hover:bg-[var(--color-bg-main)]'
+                                        : 'text-[var(--color-dark-text)] hover:bg-[var(--color-dark-bg-tertiary)]'}`}>
+                                <BookA className={`w-5 h-5 transition duration-75 
+                                    ${theme === 'light'
+                                        ? 'text-[var(--color-text-secondary)] group-hover:text-[var(--color-text)]'
+                                        : 'text-[var(--color-dark-text-secondary)] group-hover:text-[var(--color-dark-text)]'}`} />
                                 <span className="ms-3">Diccionario</span>
                             </a>
                         </li>
                         <li>
                             <a
                                 href="#"
-                                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-[var(--color-pink-500)] group"
-                            >
-                                <Gem className="w-5 h-5 text-gray-500 transition duration-75 dark:text-[var(--color-pink-500)] group-hover:text-gray-900 dark:group-hover:text-white" />
+                                className={`flex items-center p-2 rounded-lg group
+                                    ${theme === 'light'
+                                        ? 'text-[var(--color-text)] hover:bg-[var(--color-bg-main)]'
+                                        : 'text-[var(--color-dark-text)] hover:bg-[var(--color-dark-bg-tertiary)]'}`}>
+                                <Gem className={`w-5 h-5 transition duration-75 
+                                    ${theme === 'light'
+                                        ? 'text-[var(--color-text-secondary)] group-hover:text-[var(--color-text)]'
+                                        : 'text-[var(--color-dark-text-secondary)] group-hover:text-[var(--color-dark-text)]'}`} />
                                 <span className="ms-3">Insignias</span>
                             </a>
                         </li>
@@ -66,8 +93,7 @@ function Sidebar() {
                 </div>
             </aside >
         </>
-
     )
 }
 
-export default Sidebar
+export default Sidebar;

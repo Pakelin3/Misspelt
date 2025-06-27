@@ -23,7 +23,7 @@ function DictionaryPage() {
         selectedWordRef.current = selectedWord;
     }, [selectedWord]);
 
-    const fetchWords = useCallback(async (page, currentSearchTerm, currentSelectedFilter) => {
+    const fetchWords = useCallback(async (page, currentSearchTerm, currentSelectedFilter, shouldResetSelectedWord = false) => {
         setLoading(true);
         setError(null);
         try {
@@ -35,19 +35,8 @@ function DictionaryPage() {
             setWords(fetchedWords);
             setTotalWordsCount(response.data.count || 0);
 
-            const currentSelectedWordAtCallTime = selectedWordRef.current;
-
-            if (page === 1 && fetchedWords.length > 0) {
-                setSelectedWord(fetchedWords[0]);
-            } else if (currentSelectedWordAtCallTime) {
-                const currentWordStillExists = fetchedWords.some(word => word.id === currentSelectedWordAtCallTime.id);
-                if (!currentWordStillExists) {
-                    setSelectedWord(fetchedWords.length > 0 ? fetchedWords[0] : null);
-                }
-            } else if (fetchedWords.length > 0) {
-                setSelectedWord(fetchedWords[0]);
-            } else {
-                setSelectedWord(null);
+            if (shouldResetSelectedWord || !selectedWordRef.current || !fetchedWords.some(word => word.id === selectedWordRef.current.id)) {
+                setSelectedWord(fetchedWords.length > 0 ? fetchedWords[0] : null);
             }
 
         } catch (err) {
@@ -59,16 +48,16 @@ function DictionaryPage() {
         } finally {
             setLoading(false);
         }
-    }, [wordsPerPage, setSelectedWord]);
+    }, [wordsPerPage, setSelectedWord, baseURL]);
 
     useEffect(() => {
         setCurrentPage(1);
-        fetchWords(1, searchTerm, selectedFilter);
+        fetchWords(1, searchTerm, selectedFilter, true);
     }, [searchTerm, selectedFilter, fetchWords]);
 
     useEffect(() => {
         if (currentPage > 0) {
-            fetchWords(currentPage, searchTerm, selectedFilter);
+            fetchWords(currentPage, searchTerm, selectedFilter, false);
         }
     }, [currentPage, searchTerm, selectedFilter, fetchWords]);
 
@@ -100,8 +89,8 @@ function DictionaryPage() {
                             placeholder="Buscar jerga, verbo frasal o descripción..."
                             className={`w-full pl-10 pr-4 py-2 rounded-full border focus:outline-none focus:ring-2 focus:border-transparent
                                 ${theme === 'light'
-                                    ? 'border-[var(--color-text-secondary)] text-[var(--color-text)] focus:ring-[var(--color-secondary)]'
-                                    : 'border-[var(--color-dark-border)] text-[var(--color-dark-text)] focus:ring-[var(--color-secondary)]'
+                                    ? 'border-[var(--color-text-secondary)] text-[var(--color-text)] focus:ring-[var(--color-bg-secondary)]'
+                                    : 'border-[var(--color-dark-border)] text-[var(--color-dark-text)] focus:ring-[var(--color-accent-blue)]'
                                 }`}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -112,54 +101,62 @@ function DictionaryPage() {
                         <span className="text-[var(--color-text-secondary)] font-medium">Filtros:</span>
                         <button
                             onClick={() => setSelectedFilter("SLANG")}
-                            className={`px-4 py-2 rounded-full font-medium transition-colors ${selectedFilter === "SLANG"
-                                ? "bg-teal-400 text-teal-800"
-                                : " text-[var(--color-text-main)] hover:bg-teal-200 hover:text-teal-500"
-                                } dark:${selectedFilter === "SLANG"
-                                    ? " text-[var(--color-dark-text)]"
-                                    : "bg-[var(--color-dark-bg-secondary)] text-[var(--color-dark-text-secondary)] hover:bg-[var(--color-dark-bg-tertiary)]"
+                            className={`px-4 py-2 rounded-full font-medium cursor-pointer transition-colors 
+                                ${selectedFilter === "SLANG"
+                                    ? (theme === 'light'
+                                        ? "bg-[var(--color-bg-secondary)]"
+                                        : "bg-[var(--color-bg-secondary)] text-black hover:bg-teal-200")
+                                    : (theme === 'light'
+                                        ? "text-[var(--color-text-main)] hover:text-[var(--color-text)] hover:bg-teal-200"
+                                        : "text-[var(--color-dark-text-secondary)] hover:bg-teal-200 hover:text-black")
                                 }`}
                         >
                             Jergas
                         </button>
                         <button
                             onClick={() => setSelectedFilter("PHRASAL_VERB")}
-                            className={`px-4 py-2 rounded-full font-medium transition-colors ${selectedFilter === "PHRASAL_VERB"
-                                ? "bg-[var(--color-accent-pink)] text-[var(--color-bg-body)]"
-                                : "text-[var(--color-text-main)] hover:bg-[var(--color-accent-pink)] hover:text-white"
-                                } dark:${selectedFilter === "PHRASAL_VERB"
-                                    ? "bg-[var(--color-accent-pink)] text-white"
-                                    : "bg-[var(--color-dark-bg-secondary)] text-[var(--color-dark-text-secondary)] hover:bg-[var(--color-accent-pink)]"
+                            className={`px-4 py-2 rounded-full font-medium cursor-pointer transition-colors 
+                                ${selectedFilter === "PHRASAL_VERB"
+                                    ? (theme === 'light'
+                                        ? "bg-[var(--color-bg-tertiary)] text-white"
+                                        : "bg-[var(--color-bg-tertiary)] text-white")
+                                    : (theme === 'light'
+                                        ? "text-[var(--color-text-main)] hover:bg-[var(--color-bg-tertiary-hover)] hover:text-white"
+                                        : "text-[var(--color-dark-text-secondary)] hover:bg-[var(--color-bg-tertiary-hover)] hover:text-white")
                                 }`}
                         >
                             Verbos frasales
                         </button>
                         <button
                             onClick={() => setSelectedFilter("all")}
-                            className={`px-4 py-2 rounded-full font-medium transition-colors ${selectedFilter === "all"
-                                ? "bg-[var(--color-text)] text-[var(--color-bg-body)]"
-                                : " text-[var(--color-text-main)] hover:bg-[var(--color-text-secondary)] hover:text-white"
-                                } dark:${selectedFilter === "all"
-                                    ? "bg-neutral-800 text-white"
-                                    : "bg-[var(--color-dark-bg-secondary)] text-[var(--color-dark-text-secondary)] hover:bg-neutral-700"
+                            className={`px-4 py-2 rounded-full font-medium cursor-pointer transition-colors 
+                                ${selectedFilter === "all"
+                                    ? (theme === 'light'
+                                        ? "bg-neutral-400 text-[var(--color-bg-body)]"
+                                        : "bg-neutral-500 text-white")
+                                    : (theme === 'light'
+                                        ? "text-[var(--color-text-main)] hover:bg-neutral-200 hover:text-[var(--color-text)]"
+                                        : "text-[var(--color-dark-text-secondary)] hover:bg-neutral-700")
                                 }`}
                         >
                             Todos
                         </button>
                     </div>
 
-                    <button className="flex items-center gap-2 justify-items-end bg-[var(--color-text)] text-[var(--color-bg-body)] px-4 py-2 
-                    rounded-full hover:bg-[var(--color-text-secondary)] transition-colors dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700">
+                    <button className="flex items-center gap-2 justify-items-end bg-[var(--color-text)] cursor-pointer text-[var(--color-bg-body)] px-4 py-2 
+                        rounded-full hover:bg-[var(--color-text-secondary)] transition-colors dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700">
                         <Github className="w-4 h-4" />
                         GitHub
                     </button>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2 bg-[var(--color-bg-card)] shadow-2xl rounded-4xl p-6">
-                        <div className="bg-neutral-400  rounded-3xl p-6 relative ">
+                    <div className="lg:col-span-2 shadow-2xl rounded-3xl p-6 bg-[var(--color-bg-card)]">
+                        <div className={`rounded-3xl p-6 relative 
+                            ${theme === 'light' ? 'bg-[var(--color-bg-main-darker)]' : 'bg-[var(--color-dark-bg-main)]'}`}>
                             {loading && (
-                                <div className="absolute inset-0 bg-[var(--color-bg-main)] bg-opacity-75 min-h-max flex items-center justify-center rounded-3xl z-10">
+                                <div className={`absolute inset-0 bg-opacity-75 min-h-max flex items-center justify-center rounded-3xl z-10
+                                    ${theme === 'light' ? 'bg-[var(--color-bg-main)]' : 'bg-[var(--color-dark-bg-main)]'}`}>
                                     <p className="text-[var(--color-text)] text-lg font-bold">Cargando palabras...</p>
                                 </div>
                             )}
@@ -167,19 +164,19 @@ function DictionaryPage() {
                             {error ? (
                                 <p className="text-center text-red-700 text-lg">{error}</p>
                             ) : words.length === 0 && !loading ? (
-                                <p className="text-center text-[var(--color-text)] text-lg">No se encontraron palabras con los filtros aplicados.</p>
+                                <p className="text-center text-[var(--color-text-secondary)] text-lg">No se encontraron palabras con los filtros aplicados.</p>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {words.map((word) => (
                                         <div
                                             key={word.id}
-                                            className="bg-[var(--color-bg-card)] rounded-2xl gap-4 p-4 cursor-pointer hover:shadow-lg transition-shadow justify-between flex flex-col"
+                                            className={`${theme === 'light' ? 'bg-[var(--color-bg-main)]' : 'bg-[var(--color-dark-bg-secondary)]'} rounded-2xl gap-4 p-4 cursor-pointer hover:shadow-lg transition-shadow justify-between flex flex-col`}
                                             onClick={() => handleCardClick(word)}
                                         >
                                             <div className="flex items-start justify-between">
                                                 <h3 className="text-xl font-bold text-[var(--color-text-main)] mb-1">{word.text}</h3>
                                                 <span
-                                                    className={`inline-block px-3 py-1  whitespace-pre rounded-full text-xs font-medium ${word.word_type === "PHRASAL_VERB"
+                                                    className={`inline-block px-3 py-1 whitespace-pre rounded-full text-xs font-medium ${word.word_type === "PHRASAL_VERB"
                                                         ? "bg-[var(--color-accent-pink)] text-[var(--color-bg-body)]"
                                                         : "bg-[var(--color-bg-secondary)] text-[var(--color-bg-body)]"
                                                         } dark:${word.word_type === "PHRASAL_VERB"
@@ -192,7 +189,7 @@ function DictionaryPage() {
                                             </div>
                                             <p className="text-[var(--color-text-secondary)] text-sm mb-4 italic">"{word.description}"</p>
                                             <div className="flex items-center justify-between">
-                                                <button className="p-2 hover:bg-[var(--color-bg-main)] rounded-full transition-colors dark:hover:bg-[var(--color-dark-bg-tertiary)]">
+                                                <button className={`p-2 rounded-full transition-colors ${theme === 'light' ? 'hover:bg-[var(--color-bg-main)]' : 'hover:bg-[var(--color-dark-bg-tertiary)]'}`}>
                                                     <Heart className="w-5 h-5 text-[var(--color-text-secondary)] dark:text-gray-400" />
                                                 </button>
                                             </div>
@@ -207,8 +204,8 @@ function DictionaryPage() {
                                 <button
                                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                                     disabled={currentPage === 1}
-                                    className="p-2 rounded-full bg-neutral-300 text-[var(--color-text-main)] hover:bg-neutral-500 
-                                    disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[var(--color-dark-bg-tertiary)] dark:text-[var(--color-dark-text)] dark:hover:bg-neutral-500"
+                                    className="p-2 rounded-full bg-[var(--color-bg-main)] text-[var(--color-text-main)] hover:bg-[var(--color-bg-secondary)] 
+                                        disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[var(--color-dark-bg-tertiary)] dark:text-[var(--color-dark-text)] dark:hover:bg-[var(--color-dark-border)]"
                                 >
                                     <ChevronLeft className="w-5 h-5" />
                                 </button>
@@ -216,12 +213,14 @@ function DictionaryPage() {
                                     <button
                                         key={pageNumber}
                                         onClick={() => setCurrentPage(pageNumber)}
-                                        className={`px-4 py-2 rounded-full font-medium transition-colors ${currentPage === pageNumber
-                                            ? "bg-[var(--color-bg-secondary)] text-[var(--color-text-main)] hover:text-white"
-                                            : "bg-teal-100 text-[var(--color-text-main)] hover:bg-teal-500"
-                                            } dark:${currentPage === pageNumber
-                                                ? "bg-[var(--color-bg-secondary)] text-white"
-                                                : "bg-[var(--color-dark-bg-secondary)] text-neutral-800 hover:bg-[var(--color-dark-bg-tertiary)]"
+                                        className={`px-4 py-2 rounded-full font-medium transition-colors 
+                                            ${currentPage === pageNumber
+                                                ? (theme === 'light'
+                                                    ? "bg-[var(--color-bg-secondary)] text-[var(--color-text)]"
+                                                    : "bg-[var(--color-bg-secondary)] text-white")
+                                                : (theme === 'light'
+                                                    ? "bg-[var(--color-bg-main)] text-[var(--color-text-main)] hover:bg-[var(--color-bg-secondary)] hover:text-[var(--color-body-bg)]"
+                                                    : "bg-[var(--color-dark-bg-secondary)] text-[var(--color-dark-text-secondary)] hover:bg-[var(--color-dark-bg-tertiary)]")
                                             }`}
                                     >
                                         {pageNumber}
@@ -230,8 +229,8 @@ function DictionaryPage() {
                                 <button
                                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                                     disabled={currentPage === totalPages}
-                                    className="p-2 rounded-full bg-neutral-300 text-[var(--color-text-main)] hover:bg-neutral-500 
-                                    disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[var(--color-dark-bg-tertiary)] dark:text-[var(--color-dark-text)] dark:hover:bg-neutral-500"
+                                    className="p-2 rounded-full bg-[var(--color-bg-main)] text-[var(--color-text-main)] hover:bg-[var(--color-bg-secondary)] 
+                                        disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[var(--color-dark-bg-tertiary)] dark:text-[var(--color-dark-text)] dark:hover:bg-[var(--color-dark-border)]"
                                 >
                                     <ChevronRight className="w-5 h-5" />
                                 </button>
@@ -239,8 +238,7 @@ function DictionaryPage() {
                         )}
                     </div>
 
-
-                    <div className="lg:col-span-">
+                    <div className="lg:col-span-1">
                         {selectedWord ? (
                             <div className="bg-[var(--color-bg-card)] flex flex-col justify-between shadow-2xl rounded-3xl p-6 sticky top-4 h-full">
                                 <div>
@@ -259,7 +257,7 @@ function DictionaryPage() {
                                         </span>
                                     </div>
 
-                                    <div className="space-y-6 ">
+                                    <div className="space-y-6">
                                         <div>
                                             <h3 className="text-lg font-semibold text-[var(--color-text-main)] mb-2">Definición:</h3>
                                             <p className="text-[var(--color-text-secondary)] text-sm leading-relaxed">
@@ -300,7 +298,7 @@ function DictionaryPage() {
 
                                 <div className="flex gap-3 mt-8">
                                     <button className="flex flex-1 justify-center items-center gap-3 cursor-not-allowed bg-[var(--color-bg-secondary)] text-white py-3 rounded-full
-                                    font-semibold hover:bg-teal-600 transition-colors text-center">
+                                        font-semibold hover:bg-[var(--color-bg-tertiary)] transition-colors text-center">
                                         <Volume2 className="w-4 h-4" />
                                         <span>Escuchar</span>
                                     </button>
@@ -308,9 +306,9 @@ function DictionaryPage() {
                                         to="/IA"
                                         className={`
                                             flex-1 cursor-pointer bg-[var(--color-bg-secondary)] text-white py-3 rounded-full
-                                            font-semibold hover:bg-teal-600 transition-colors text-center
+                                            font-semibold hover:bg-[var(--color-bg-tertiary)] transition-colors text-center flex justify-center items-center gap-2
                                         `}
-                                    >I.A</Link>
+                                    >Consultar I.A</Link>
                                 </div>
                             </div>
                         ) : (
