@@ -25,6 +25,9 @@
     --color-accent-pink: #EE4266; 
     --color-accent-blue: #4285f4; 
     --color-accent-green: #34a853; 
+    
+    --color-accent-slangs: #752092;
+    --color-accent-phrasalverbs: #FFC872;
 }
 
 html.light {
