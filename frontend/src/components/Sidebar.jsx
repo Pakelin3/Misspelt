@@ -1,10 +1,9 @@
 import React from 'react';
 import { BookA, Gem, ChartColumnBig } from 'lucide-react';
-import { useTheme } from '@/context/ThemeContext'; // Importa el hook useTheme
+import { useTheme } from '@/context/ThemeContext';
 
 function Sidebar() {
-    const { theme } = useTheme(); // Obtiene el tema actual
-
+    const { theme } = useTheme();
     return (
         <>
             <button
@@ -20,7 +19,7 @@ function Sidebar() {
             >
                 <span className="sr-only">Open sidebar</span>
                 <svg
-                    className={`w-6 h-6 ${theme === 'light' ? 'text-white' : 'text-white'}`} // El icono de SVG debe adaptarse
+                    className={`w-6 h-6 ${theme === 'light' ? 'text-white' : 'text-white'}`}
                     aria-hidden="true"
                     fill="currentColor"
                     viewBox="0 0 20 20"
