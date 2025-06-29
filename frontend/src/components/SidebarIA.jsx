@@ -4,8 +4,8 @@ import { useTheme } from '@/context/ThemeContext';
 
 function SidebarIA({ isOpen, toggleSidebar }) {
     const { theme } = useTheme();
-    const NAVBAR_HEIGHT_DESKTOP = '76px';
-    const NAVBAR_HEIGHT_MOBILE = '66px';
+    const NAVBAR_HEIGHT_DESKTOP = '64px';
+    const NAVBAR_HEIGHT_MOBILE = '64px';
 
     const [currentNavbarHeight, setCurrentNavbarHeight] = useState(NAVBAR_HEIGHT_DESKTOP);
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
-import { Search, Github, Heart, Volume2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Github, Heart, Volume2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { Link } from 'react-router-dom';
 
@@ -18,6 +18,21 @@ function DictionaryPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedWord, setSelectedWord] = useState(null);
     const selectedWordRef = useRef(selectedWord);
+    const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+    const filterDropdownRef = useRef(null); 
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target)) {
+                setIsFilterDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     useEffect(() => {
         selectedWordRef.current = selectedWord;
@@ -69,9 +84,16 @@ function DictionaryPage() {
                 return 'Verbo frasal';
             case 'SLANG':
                 return 'Jerga';
+            case 'all':
+                return 'Todos';
             default:
                 return 'Desconocido';
         }
+    };
+
+    const handleFilterSelect = (filterType) => {
+        setSelectedFilter(filterType);
+        setIsFilterDropdownOpen(false);
     };
 
     const handleCardClick = (word) => {
@@ -97,53 +119,68 @@ function DictionaryPage() {
                         />
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <span className="text-[var(--color-text-secondary)] font-medium">Filtros:</span>
+                    <div className="relative" ref={filterDropdownRef}>
                         <button
-                            onClick={() => setSelectedFilter("SLANG")}
-                            className={`px-4 py-2 rounded-full font-medium cursor-pointer transition-colors 
-                                ${selectedFilter === "SLANG"
-                                    ? (theme === 'light'
-                                        ? "bg-[var(--color-bg-secondary)]"
-                                        : "bg-[var(--color-bg-secondary)] text-black hover:bg-teal-200")
-                                    : (theme === 'light'
-                                        ? "text-[var(--color-text-main)] hover:text-[var(--color-text)] hover:bg-teal-200"
-                                        : "text-[var(--color-dark-text-secondary)] hover:bg-teal-200 hover:text-black")
+                            onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-colors cursor-pointer
+                                ${theme === 'light'
+                                    ? 'bg-neutral-200 text-[var(--color-text-main)] hover:bg-neutral-300'
+                                    : 'bg-[var(--color-dark-bg-secondary)] text-[var(--color-dark-text-secondary)] hover:bg-[var(--color-dark-bg-tertiary)]'
                                 }`}
                         >
-                            Jergas
-                        </button>
-                        <button
-                            onClick={() => setSelectedFilter("PHRASAL_VERB")}
-                            className={`px-4 py-2 rounded-full font-medium cursor-pointer transition-colors 
-                                ${selectedFilter === "PHRASAL_VERB"
-                                    ? (theme === 'light'
-                                        ? "bg-[var(--color-bg-tertiary)] text-white"
-                                        : "bg-[var(--color-bg-tertiary)] text-white")
-                                    : (theme === 'light'
-                                        ? "text-[var(--color-text-main)] hover:bg-[var(--color-bg-tertiary-hover)] hover:text-white"
-                                        : "text-[var(--color-dark-text-secondary)] hover:bg-[var(--color-bg-tertiary-hover)] hover:text-white")
-                                }`}
+                            <span>Filtros: {getSpanishWordType(selectedFilter)}</span>
+                            <svg
+                            className={`w-5 h-5 transition-transform duration-300 ${isFilterDropdownOpen ? 'rotate-180' : 'rotate-0'}
+                                ${theme === 'light' ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-dark-text-secondary)]'}`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
                         >
-                            Verbos frasales
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M19 9l-7 7-7-7"
+                            ></path>
+                        </svg>
                         </button>
-                        <button
-                            onClick={() => setSelectedFilter("all")}
-                            className={`px-4 py-2 rounded-full font-medium cursor-pointer transition-colors 
-                                ${selectedFilter === "all"
-                                    ? (theme === 'light'
-                                        ? "bg-neutral-400 text-[var(--color-bg-body)]"
-                                        : "bg-neutral-500 text-white")
-                                    : (theme === 'light'
-                                        ? "text-[var(--color-text-main)] hover:bg-neutral-200 hover:text-[var(--color-text)]"
-                                        : "text-[var(--color-dark-text-secondary)] hover:bg-neutral-700")
-                                }`}
-                        >
-                            Todos
-                        </button>
+
+                        {isFilterDropdownOpen && (
+                            <div className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg z-10 p-1
+                                ${theme === 'light' ? 'bg-[var(--color-bg-card)]' : 'bg-[var(--color-dark-bg-secondary)]'}`}>
+                                <div
+                                    onClick={() => handleFilterSelect("SLANG")}
+                                    className={`block px-4 py-2 text-sm cursor-pointer transition-colors rounded-t-lg
+                                        ${selectedFilter === "SLANG"
+                                            ? (theme === 'light' ? 'bg-[var(--color-accent-slangs)] text-white' : 'bg-[var(--color-accent-slangs)] text-white')
+                                            : (theme === 'light' ? ' text-[var(--color-text-main)] hover:bg-[var(--color-accent-slangs)]/80 hover:text-white' :  'text-[var(--color-dark-text)]  hover:bg-[var(--color-accent-slangs)]/80')
+                                        }`}>
+                                    Jergas
+                                </div>
+                                <div
+                                    onClick={() => handleFilterSelect("PHRASAL_VERB")}
+                                    className={`block px-4 py-2 text-sm cursor-pointer transition-colors
+                                        ${selectedFilter === "PHRASAL_VERB"
+                                            ? (theme === 'light' ? 'bg-[var(--color-accent-phrasalverbs)] text-[var(--color-bg-body)]' : 'bg-[var(--color-accent-phrasalverbs)] text-black')
+                                            : (theme === 'light' ? 'text-[var(--color-text-main)] hover:bg-[var(--color-accent-phrasalverbs)]' : 'text-[var(--color-dark-text)] hover:bg-[var(--color-accent-phrasalverbs)] hover:text-black')
+                                        }`}>
+                                    Verbos frasales
+                                </div>
+                                <div
+                                    onClick={() => handleFilterSelect("all")}
+                                    className={`block px-4 py-2 text-sm cursor-pointer transition-colors rounded-b-lg
+                                        ${selectedFilter === "all"
+                                            ? (theme === 'light' ? 'bg-neutral-300 text-[var(--color-bg-body)' : 'bg-neutral-700 text-white')
+                                            : (theme === 'light' ? 'text-[var(--color-text-main)] hover:bg-neutral-200' : 'text-[var(--color-dark-text)] hover:bg-neutral-700')
+                                        }`}>
+                                    Todos
+                                </div>
+                            </div>
+                        )}
                     </div>
 
-                    <button className="flex items-center gap-2 justify-items-end bg-[var(--color-text)] cursor-pointer text-[var(--color-bg-body)] px-4 py-2 
+                    <button className="flex items-center gap-2 justify-items-end bg-[var(--color-text)] text-[var(--color-bg-body)] px-4 py-2
                         rounded-full hover:bg-[var(--color-text-secondary)] transition-colors dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700">
                         <Github className="w-4 h-4" />
                         GitHub
@@ -152,8 +189,8 @@ function DictionaryPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 shadow-2xl rounded-3xl p-6 bg-[var(--color-bg-card)]">
-                        <div className={`rounded-3xl p-6 relative 
-                            ${theme === 'light' ? 'bg-[var(--color-bg-main-darker)]' : 'bg-[var(--color-dark-bg-main)]'}`}>
+                        <div className={`rounded-3xl p-6 relative
+                            ${theme === 'light' ? 'bg-teal-200' : 'bg-[var(--color-dark-bg-main)]'}`}>
                             {loading && (
                                 <div className={`absolute inset-0 bg-opacity-75 min-h-max flex items-center justify-center rounded-3xl z-10
                                     ${theme === 'light' ? 'bg-[var(--color-bg-main)]' : 'bg-[var(--color-dark-bg-main)]'}`}>
@@ -177,11 +214,11 @@ function DictionaryPage() {
                                                 <h3 className="text-xl font-bold text-[var(--color-text-main)] mb-1">{word.text}</h3>
                                                 <span
                                                     className={`inline-block px-3 py-1 whitespace-pre rounded-full text-xs font-medium ${word.word_type === "PHRASAL_VERB"
-                                                        ? "bg-[var(--color-accent-pink)] text-[var(--color-bg-body)]"
-                                                        : "bg-[var(--color-bg-secondary)] text-[var(--color-bg-body)]"
+                                                        ? "bg-[var(--color-accent-phrasalverbs)] text-[var(--color-bg-body)]"
+                                                        : "bg-[var(--color-accent-slangs)] text-[var(--color-bg-body)]"
                                                         } dark:${word.word_type === "PHRASAL_VERB"
-                                                            ? "bg-[var(--color-accent-pink)] text-white"
-                                                            : "bg-[var(--color-accent-green)] text-white"
+                                                            ? "bg-[var(--color-accent-phrasalverbs)] text-black"
+                                                            : "bg-[var(--color-accent-slangs)] text-white"
                                                         }`}
                                                 >
                                                     {getSpanishWordType(word.word_type)}
@@ -204,7 +241,7 @@ function DictionaryPage() {
                                 <button
                                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                                     disabled={currentPage === 1}
-                                    className="p-2 rounded-full bg-[var(--color-bg-main)] text-[var(--color-text-main)] hover:bg-[var(--color-bg-secondary)] 
+                                    className="p-2 rounded-full bg-[var(--color-bg-main)] text-[var(--color-text-main)] hover:bg-[var(--color-bg-secondary)]
                                         disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[var(--color-dark-bg-tertiary)] dark:text-[var(--color-dark-text)] dark:hover:bg-[var(--color-dark-border)]"
                                 >
                                     <ChevronLeft className="w-5 h-5" />
@@ -213,7 +250,7 @@ function DictionaryPage() {
                                     <button
                                         key={pageNumber}
                                         onClick={() => setCurrentPage(pageNumber)}
-                                        className={`px-4 py-2 rounded-full font-medium transition-colors 
+                                        className={`px-4 py-2 rounded-full font-medium transition-colors
                                             ${currentPage === pageNumber
                                                 ? (theme === 'light'
                                                     ? "bg-[var(--color-bg-secondary)] text-[var(--color-text)]"
@@ -229,7 +266,7 @@ function DictionaryPage() {
                                 <button
                                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                                     disabled={currentPage === totalPages}
-                                    className="p-2 rounded-full bg-[var(--color-bg-main)] text-[var(--color-text-main)] hover:bg-[var(--color-bg-secondary)] 
+                                    className="p-2 rounded-full bg-[var(--color-bg-main)] text-[var(--color-text-main)] hover:bg-[var(--color-bg-secondary)]
                                         disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[var(--color-dark-bg-tertiary)] dark:text-[var(--color-dark-text)] dark:hover:bg-[var(--color-dark-border)]"
                                 >
                                     <ChevronRight className="w-5 h-5" />
@@ -246,11 +283,11 @@ function DictionaryPage() {
                                         <h2 className="text-2xl font-bold text-[var(--color-text-main)]">{selectedWord.text}</h2>
                                         <span
                                             className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${selectedWord.word_type === "PHRASAL_VERB"
-                                                ? "bg-[var(--color-accent-pink)] text-[var(--color-bg-body)]"
-                                                : "bg-[var(--color-bg-secondary)] text-[var(--color-bg-body)]"
+                                                ? "bg-[var(--color-accent-phrasalverbs)] text-[var(--color-bg-body)]"
+                                                : "bg-[var(--color-accent-slangs)] text-[var(--color-bg-body)]"
                                                 } dark:${selectedWord.word_type === "PHRASAL_VERB"
-                                                    ? "bg-[var(--color-accent-pink)] text-white"
-                                                    : "bg-[var(--color-accent-green)] text-white"
+                                                    ? "bg-[var(--color-accent-phrasalverbs)] text-black"
+                                                    : "bg-[var(--color-accent-slangs)] text-white"
                                                 }`}
                                         >
                                             {getSpanishWordType(selectedWord.word_type)}
@@ -297,16 +334,16 @@ function DictionaryPage() {
                                 </div>
 
                                 <div className="flex gap-3 mt-8">
-                                    <button className="flex flex-1 justify-center items-center gap-3 cursor-not-allowed bg-[var(--color-bg-secondary)] text-white py-3 rounded-full
-                                        font-semibold hover:bg-[var(--color-bg-tertiary)] transition-colors text-center">
+                                    <button className="flex flex-1 justify-center items-center gap-3 cursor-not-allowed bg-[var(--color-bg-tertiary)] text-white py-3 rounded-full
+                                        font-semibold hover:bg-[var(--color-bg-tertiary)]/60 transition-colors text-center">
                                         <Volume2 className="w-4 h-4" />
                                         <span>Escuchar</span>
                                     </button>
                                     <Link
                                         to="/IA"
                                         className={`
-                                            flex-1 cursor-pointer bg-[var(--color-bg-secondary)] text-white py-3 rounded-full
-                                            font-semibold hover:bg-[var(--color-bg-tertiary)] transition-colors text-center flex justify-center items-center gap-2
+                                            flex-1 cursor-pointer bg-[var(--color-bg-tertiary)] text-white py-3 rounded-full
+                                            font-semibold hover:bg-[var(--color-bg-tertiary)]/60 transition-colors text-center flex justify-center items-center gap-2
                                         `}
                                     >Consultar I.A</Link>
                                 </div>

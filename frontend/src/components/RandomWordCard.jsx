@@ -148,11 +148,11 @@ function RandomWordCard() {
                     </h5>
                     <span className={`font-normal text-nowrap text-sm py-1 px-3 rounded-full transition-colors
                                 ${displayedWord.word_type === "PHRASAL_VERB"
-                            ? "bg-[var(--color-accent-pink)] text-[var(--color-bg-body)]"
-                            : "bg-[var(--color-bg-secondary)] text-[var(--color-bg-body)]"
+                            ? "bg-[var(--color-accent-phrasalverbs)] text-[var(--color-bg-body)]"
+                            : "bg-[var(--color-accent-slangs)] text-[var(--color-bg-body)]"
                         } dark:${displayedWord.word_type === "PHRASAL_VERB"
-                            ? "bg-[var(--color-accent-pink)] text-white"
-                            : "bg-[var(--color-accent-green)] text-white"
+                            ? "bg-[var(--color-accent-phrasalverbs)] text-black"
+                            : "bg-[var(--color-accent-slangs)] text-white"
                         }`}
                     >
                         {getSpanishWordType(displayedWord.word_type)}

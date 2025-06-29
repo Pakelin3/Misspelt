@@ -3,10 +3,10 @@ import Sidebar from '@/components/Sidebar'
 
 function AdminDashboard() {
     return (
-        <>
+        <div className=''>
             <Sidebar />
-            <div>AdminPanel</div>
-        </>
+            <div className=''>AdminPanel  asdasdadsadasd asd asd asda</div>
+        </div>
     )
 }
 
