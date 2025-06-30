@@ -351,8 +351,9 @@ function DictionaryAdminPanel() {
                     <XCircle className="w-6 h-6" />
                 </button>
             </div>
-
+            
             <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Campos de la palabra */}
                 <div>
                     <label htmlFor="text" className="block text-sm font-medium text-[var(--color-text-main)] mb-1">Texto:</label>
                     <input
@@ -368,7 +369,7 @@ function DictionaryAdminPanel() {
                         required
                     />
                 </div>
-
+                {/* Campos de la descripción */}
                 <div>
                     <label htmlFor="description" className="block text-sm font-medium text-[var(--color-text-main)] mb-1">Descripción:</label>
                     <textarea
@@ -383,7 +384,7 @@ function DictionaryAdminPanel() {
                         required
                     ></textarea>
                 </div>
-
+                {/* Campos de la categoría */}
                 <div>
                     <label htmlFor="wordType" className="block text-sm font-medium text-[var(--color-text-main)] mb-1">Tipo de Palabra:</label>
                     <select
@@ -402,7 +403,7 @@ function DictionaryAdminPanel() {
                         <option value="NONE">Ninguno</option>
                     </select>
                 </div>
-
+                {/* Campos de la dificultad */}
                 <div>
                     <label htmlFor="difficultyLevel" className="block text-sm font-medium text-[var(--color-text-main)] mb-1">Nivel de Dificultad (1-5):</label>
                     <input
@@ -421,6 +422,7 @@ function DictionaryAdminPanel() {
                     />
                 </div>
 
+                {/* Campos de los ejemplos */}
                 <div>
                     <label htmlFor="examples" className="block text-sm font-medium text-[var(--color-text-main)] mb-1">Ejemplos (JSON Array):</label>
                     <textarea
@@ -436,6 +438,7 @@ function DictionaryAdminPanel() {
                     ></textarea>
                 </div>
 
+                {/* Campos de los tags */}
                 <div>
                     <label htmlFor="tags" className="block text-sm font-medium text-[var(--color-text-main)] mb-1">Tags (JSON Array):</label>
                     <textarea

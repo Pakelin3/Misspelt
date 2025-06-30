@@ -13,7 +13,6 @@ function BadgeAdminPanel() {
     const [error, setError] = useState(null);
     const [editingBadge, setEditingBadge] = useState(null); // Insignia que se está editando (o null para crear)
     const [isFormOpen, setIsFormOpen] = useState(false); // Controla la visibilidad del formulario en móvil
-
     // Estados del formulario
     const [formTitle, setFormTitle] = useState('');
     const [formDescription, setFormDescription] = useState('');
@@ -63,7 +62,7 @@ function BadgeAdminPanel() {
         setEditingBadge(badge);
         setFormTitle(badge.title);
         setFormDescription(badge.description);
-        setFormImage(badge.image || ''); // Asegura que sea un string vacío si es null
+        setFormImage(badge.image || ''); 
         setFormCategory(badge.category);
         setFormConditionDescription(badge.condition_description);
         setFormRewardDescription(badge.reward_description);
@@ -124,7 +123,7 @@ function BadgeAdminPanel() {
                 category: formCategory,
                 condition_description: formConditionDescription,
                 reward_description: formRewardDescription,
-                reward_data: JSON.parse(formRewardData || '{}'), // Parsear JSON, usar objeto vacío si está vacío
+                reward_data: JSON.parse(formRewardData || '{}'), 
             };
 
             if (editingBadge) {
@@ -151,7 +150,7 @@ function BadgeAdminPanel() {
                 });
             }
             setIsFormOpen(false);
-            setCurrentPage(1); // Volver a la primera página para ver la nueva insignia
+            setCurrentPage(1); 
             fetchBadges(1, perPage);
         } catch (err) {
             console.error("Error saving badge:", err.response?.data || err.message);
@@ -166,7 +165,6 @@ function BadgeAdminPanel() {
         }
     };
 
-    // Columnas para DataTable
     const columns = [
         {
             name: 'Título',
@@ -180,7 +178,7 @@ function BadgeAdminPanel() {
         },
         {
             name: 'Categoría',
-            selector: row => row.category, // Muestra el valor en inglés del modelo
+            selector: row => row.category,
             sortable: true,
             grow: 1,
             minWidth: '120px',
@@ -224,7 +222,6 @@ function BadgeAdminPanel() {
         },
     ];
 
-    // Estilos personalizados para DataTable (los mismos que en DictionaryAdminPanel)
     const customStyles = {
         header: {
             style: {
