@@ -2,18 +2,14 @@ from rest_framework import generics, status, viewsets
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.pagination import PageNumberPagination 
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
-from api.models import User, Profile, Word, Badge, UserStats, EmailVerificationToken
-from django.http import HttpResponse
+from api.models import User, Word, Badge, UserStats, EmailVerificationToken
 from django.shortcuts import redirect
 from django.conf import settings
-import random
 from api.serializer import (
-    UserSerializer,
     myTokenObtainPairSerializer,
     RegisterSerializer,
     WordSerializer,
@@ -21,8 +17,6 @@ from api.serializer import (
     UserStatsSerializer,
     AdminUserSerializer,
 )
-
-
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = myTokenObtainPairSerializer
@@ -103,17 +97,16 @@ class WordPagination(PageNumberPagination):
     page_size = 6
     page_size_query_param = 'limit'
     max_page_size = 100
+
 # ViewSet para la gestión completa de Palabras (CRUD)
 class WordViewSet(viewsets.ModelViewSet):
     queryset = Word.objects.all().order_by('-created_at')
     serializer_class = WordSerializer
     pagination_class = WordPagination
-
     # Temporalmente REMOVEMOS filters.SearchFilter de filter_backends
     # Y lo haremos manualmente en get_queryset
     filter_backends = [DjangoFilterBackend] 
     filterset_fields = ['word_type']
-    # search_fields = ['text', 'description'] # Esto ya no es necesario si lo haces manualmente
 
     def get_queryset(self):
         queryset = super().get_queryset()
