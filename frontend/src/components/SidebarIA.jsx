@@ -29,13 +29,12 @@ function SidebarIA({ isOpen, toggleSidebar }) {
         <div
             className={`
                 p-4 transition-all duration-300 ease-in-out h- z-30 flex flex-col
-                fixed inset-y-0 left-0
+                fixed inset-y-0 left-0 border-r 
                 ${isOpen ? 'w-64' : 'w-0 overflow-hidden'}
                 md:w-64 md:sticky md:h-full md:flex-shrink-0 md:p-4
-                
                 ${theme === 'light'
-                    ? 'bg-[var(--color-bg-main-darker)] text-[var(--color-text-main)]'
-                    : 'bg-[var(--color-dark-bg-secondary)] text-[var(--color-dark-text)]'
+                    ? 'bg-[var(--color-bg-main-darker)] text-[var(--color-text-main)] border-[var(--color-text-secondary)]' 
+                    : 'bg-[var(--color-dark-bg-secondary)] text-[var(--color-dark-text)] border-[var(--color-dark-border)]'
                 }
             `}
             style={{
@@ -55,7 +54,7 @@ function SidebarIA({ isOpen, toggleSidebar }) {
                 <span className="text-xl font-bold">Gemini-Clone</span>
             </div>
 
-                <div className={`${isOpen ? '' : 'hidden md:flex flex-col flex-1'}`}>
+                <div className={`${isOpen ? '' : 'hidden md:flex flex-col flex-1 '}`}>
                     <button className={`flex items-center w-full px-2 py-2 mb-4 rounded-full transition-colors gap-2
                     ${theme === 'light'
                             ? 'text-neutral-700 hover:bg-teal-200'
@@ -65,7 +64,7 @@ function SidebarIA({ isOpen, toggleSidebar }) {
                         <span>Nueva conversación</span>
                     </button>
 
-                    <nav className="space-y-2 mb-6 flex-1 overflow-y-auto custom-scrollbar">
+                    <nav className="space-y-2 mb-6 pt-5 flex-1 overflow-y-auto custom-scrollbar border-t border-[var(--color-dark-border)]">
                         <h3 className={`text-sm font-semibold uppercase mb-2 pl-4 ${theme === 'light' ? 'text-[var(--color-text)]' : 'text-[var(--color-dark-text-secondary)]'}`}>Recientes</h3>
                         <a href="#" className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors
                         ${theme === 'light'
