@@ -307,7 +307,7 @@ function DictionaryAdminPanel() {
                 <h2 className="text-xl font-bold text-[var(--color-text-main)]">Gestión de Palabras</h2>
                 <button
                     onClick={handleNewWord}
-                    className={`px-4 py-2 rounded-full flex items-center gap-2 font-semibold transition-colors whitespace-nowrap
+                    className={`px-4 py-2 cursor-pointer rounded-full flex items-center gap-2 font-semibold transition-colors whitespace-nowrap
                         ${theme === 'light'
                             ? 'bg-[var(--color-bg-secondary)] text-[var(--color-body-bg)] hover:bg-[var(--color-bg-tertiary)]'
                             : 'bg-[var(--color-accent-blue)] text-white hover:bg-[var(--color-bg-tertiary)]'

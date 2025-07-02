@@ -5,6 +5,9 @@ import axios from "axios";
 import Swal from 'sweetalert2';
 import ScaleLoader from "react-spinners/ScaleLoader";
 
+
+const baseURL = import.meta.env.VITE_BACKEND_URL_API;
+
 const AuthContext = createContext();
 
 export default AuthContext;
@@ -77,7 +80,7 @@ export const AuthProvider = ({ children }) => {
 
     const loginUser = async (email, password) => {
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/token/', {
+            const response = await axios.post(`${baseURL}/token/`, {
                 email,
                 password,
             });
@@ -120,7 +123,7 @@ export const AuthProvider = ({ children }) => {
     const registerUser = async (email, username, password, confirmPassword) => {
 
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/register/', {
+            const response = await axios.post(`${baseURL}/register/`, {
                 email,
                 username,
                 password,
@@ -163,13 +166,24 @@ export const AuthProvider = ({ children }) => {
         return { general_error: 'Hubo un error inesperado.' };
     };
 
-    const logoutUser = useCallback(() => {
-        setAuthTokens(null);
-        setUser(null);
-        localStorage.removeItem("authTokens");
-        navigate("/login");
-        showToast("Has sido desconectado", "success");
-    }, [navigate, showToast]);
+    const logoutUser = useCallback(async () => { 
+        try {
+            await axios.post(`${baseURL}/token/logout/`, {}, {
+                headers: {
+                    Authorization: `Bearer ${authTokens?.access}`
+                }
+            });
+            console.log("User marked offline in backend.");
+        } catch (error) {
+            console.error("Error marking user offline on logout:", error.response?.data || error.message);
+        } finally {
+            setAuthTokens(null);
+            setUser(null);
+            localStorage.removeItem("authTokens");
+            navigate("/login");
+            showToast("Has sido desconectado", "success");
+        }
+    }, [navigate, showToast, authTokens, setAuthTokens, setUser]);
 
     const updateToken = useCallback(async () => {
         if (!authTokens || !authTokens.refresh) {
@@ -179,7 +193,7 @@ export const AuthProvider = ({ children }) => {
         }
 
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/token/refresh/', {
+            const response = await axios.post(`${baseURL}/token/refresh/`, {
                 refresh: authTokens.refresh,
             });
 

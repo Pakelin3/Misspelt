@@ -180,11 +180,12 @@ function DictionaryPage() {
                         )}
                     </div>
 
-                    <button className="flex items-center gap-2 justify-items-end bg-[var(--color-text)] text-[var(--color-bg-body)] px-4 py-2
+                    <a href="https://github.com/pakelin3" target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-2 justify-items-end bg-[var(--color-text)] text-[var(--color-bg-body)] px-4 py-2
                         rounded-full hover:bg-[var(--color-text-secondary)] transition-colors dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700">
                         <Github className="w-4 h-4" />
                         GitHub
-                    </button>
+                    </a>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

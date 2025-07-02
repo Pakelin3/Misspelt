@@ -49,7 +49,7 @@ function DashboardStatsCards() {
         datasets: [
             {
                 label: 'Cantidad',
-                data: [stats.active_users],
+                data: [stats.active_users, stats.total_users],
                 backgroundColor: theme === 'light' ? '#ff7795' : '#00d5be',
                 borderColor: theme === 'light' ? '#ff7795' : '#00d5be',
                 borderWidth: 1,
