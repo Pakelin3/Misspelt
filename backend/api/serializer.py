@@ -34,6 +34,7 @@ class myTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['username'] = user.username
         token['email'] = user.email
         token['bio'] = user.profile.bio if hasattr(user, 'profile') else None
+        #token['online'] = user.is_online if hasattr(user, 'profile') else None
         token['image'] = str(user.profile.image) if hasattr(user, 'profile') and user.profile.image else None 
         token['verified'] = user.profile.verified if hasattr(user, 'profile') else False 
         token['is_staff'] = user.is_staff
@@ -134,7 +135,7 @@ class AdminUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'is_staff', 'is_superuser', 'date_joined', 'last_login']
+        fields = ['id', 'username', 'email', 'is_staff', 'is_superuser', 'date_joined', 'last_login', 'is_online']
         # 'is_staff' y 'is_superuser' deben poder ser editables si un admin va a cambiar roles.
         # Otros campos como 'date_joined' y 'last_login' son generalmente de solo lectura.
         read_only_fields = ['date_joined', 'last_login'] 

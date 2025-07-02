@@ -22,19 +22,33 @@ class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = myTokenObtainPairSerializer
 
     def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs) 
-        if response.status_code == 200:
-            access_token = response.data.get('access')
-            refresh_token = response.data.get('refresh')
-            print("\n--- TOKEN JWT GENERADO ---")
-            print(f"Access Token: {access_token}")
-            print(f"Refresh Token: {refresh_token}")
-            print("--------------------------\n")
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        response = Response(serializer.validated_data, status=status.HTTP_200_OK)
+        user = serializer.user 
 
-        return response 
+        if user:
+            user.is_online = True
+            user.save() 
+
+            print("\n--- TOKEN JWT GENERADO ---")
+            print(f"Access Token: {response.data.get('access')}")
+            print(f"Refresh Token: {response.data.get('refresh')}")
+            print("--------------------------\n")
+        
+        return response
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        user.is_online = False 
+        user.save() 
+        return Response({"detail": "Sesión cerrada exitosamente."}, status=status.HTTP_200_OK)
     
 class VerifyEmailView(APIView):
-    permission_classes = [AllowAny] # No requiere autenticación para verificar
+    permission_classes = [AllowAny]
 
     def get(self, request, token, *args, **kwargs):
         try:
@@ -42,27 +56,21 @@ class VerifyEmailView(APIView):
             user = verification_token.user
 
             if user.profile.verified:
-                # El usuario ya está verificado, redirige a una página de éxito
                 return redirect(f"{settings.FRONTEND_URL}/verify-email?status=already_verified")
 
             if verification_token.is_valid():
-                # Marca el perfil del usuario como verificado
                 user.profile.verified = True
                 user.profile.save()
-                verification_token.delete() # Elimina el token después de usarlo
+                verification_token.delete()
 
-                # Redirige al frontend a una página de éxito
                 return redirect(f"{settings.FRONTEND_URL}/verify-email?status=success")
             else:
-                # Token inválido (expirado o ya usado)
-                verification_token.delete() # Elimina tokens expirados/inválidos para limpieza
+                verification_token.delete() 
                 return redirect(f"{settings.FRONTEND_URL}/verify-email?status=expired_or_invalid")
 
         except EmailVerificationToken.DoesNotExist:
-            # Token no encontrado en la base de datos
             return redirect(f"{settings.FRONTEND_URL}/verify-email?status=token_not_found")
         except Exception as e:
-            # Cualquier otro error
             print(f"Error durante la verificación del email: {e}")
             return redirect(f"{settings.FRONTEND_URL}/login?verified=true")
         
@@ -80,7 +88,7 @@ class AdminDashboardDataAPIView(APIView):
         dashboard_stats = {
             'message': f'¡Bienvenido {request.user.username} al Panel de Administración!',
             'total_users': User.objects.count(),
-            'active_users': User.objects.filter(is_active=True).count(),
+            'active_users': User.objects.filter(is_online=True).count(),
             'total_words': Word.objects.count(),
             'total_badges': Badge.objects.count(),
         }
@@ -103,8 +111,6 @@ class WordViewSet(viewsets.ModelViewSet):
     queryset = Word.objects.all().order_by('-created_at')
     serializer_class = WordSerializer
     pagination_class = WordPagination
-    # Temporalmente REMOVEMOS filters.SearchFilter de filter_backends
-    # Y lo haremos manualmente en get_queryset
     filter_backends = [DjangoFilterBackend] 
     filterset_fields = ['word_type']
 

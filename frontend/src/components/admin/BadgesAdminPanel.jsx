@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import useAxios from '@/utils/useAxios';
 import { useTheme } from '@/context/ThemeContext';
-import { Plus, Edit, Trash2, Save, XCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, XCircle, UploadCloud } from 'lucide-react';
 import Swal from 'sweetalert2';
 import DataTable from 'react-data-table-component';
 
@@ -11,18 +11,19 @@ function BadgeAdminPanel() {
     const [badges, setBadges] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [editingBadge, setEditingBadge] = useState(null); // Insignia que se está editando (o null para crear)
-    const [isFormOpen, setIsFormOpen] = useState(false); // Controla la visibilidad del formulario en móvil
-    // Estados del formulario
+    const [editingBadge, setEditingBadge] = useState(null);
+    const [isFormOpen, setIsFormOpen] = useState(false);
+
     const [formTitle, setFormTitle] = useState('');
     const [formDescription, setFormDescription] = useState('');
-    const [formImage, setFormImage] = useState(''); // URL o path de la imagen
+    const [formImage, setFormImage] = useState(null); // Ahora guarda el objeto File (o null)
+    const [imagePreview, setImagePreview] = useState(''); // Guarda la URL para previsualización
+    const [imageError, setImageError] = useState(''); // Mensajes de error de validación de imagen
     const [formCategory, setFormCategory] = useState('BASIC');
     const [formConditionDescription, setFormConditionDescription] = useState('');
     const [formRewardDescription, setFormRewardDescription] = useState('');
-    const [formRewardData, setFormRewardData] = useState(''); // Se maneja como string JSON
+    const [formRewardData, setFormRewardData] = useState('');
 
-    // Paginación
     const [totalRows, setTotalRows] = useState(0);
     const [perPage, setPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
@@ -46,15 +47,21 @@ function BadgeAdminPanel() {
         fetchBadges(currentPage, perPage);
     }, [fetchBadges, currentPage, perPage]);
 
-    const handleNewBadge = () => {
-        setEditingBadge(null);
+    const resetForm = () => {
         setFormTitle('');
         setFormDescription('');
-        setFormImage('');
+        setFormImage(null);
+        setImagePreview('');
+        setImageError('');
         setFormCategory('BASIC');
         setFormConditionDescription('');
         setFormRewardDescription('');
         setFormRewardData('');
+    };
+
+    const handleNewBadge = () => {
+        setEditingBadge(null);
+        resetForm();
         setIsFormOpen(true);
     };
 
@@ -62,12 +69,47 @@ function BadgeAdminPanel() {
         setEditingBadge(badge);
         setFormTitle(badge.title);
         setFormDescription(badge.description);
-        setFormImage(badge.image || ''); 
+        setFormImage(badge.image);
+        setImagePreview(badge.image || '');
+        setImageError('');
         setFormCategory(badge.category);
         setFormConditionDescription(badge.condition_description);
         setFormRewardDescription(badge.reward_description);
         setFormRewardData(JSON.stringify(badge.reward_data, null, 2));
         setIsFormOpen(true);
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) {
+            setFormImage(null);
+            setImagePreview('');
+            setImageError('');
+            return;
+        }
+
+        // Validación de tipo de archivo
+        const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            setImageError('Solo se permiten archivos PNG, JPG, JPEG o WEBP.');
+            setFormImage(null);
+            setImagePreview('');
+            return;
+        }
+
+        // Validación de tamaño (300KB = 300 * 1024 bytes)
+        const maxSize = 1024 * 1024;
+        if (file.size > maxSize) {
+            setImageError('El archivo debe ser menor a 1MB.');
+            setFormImage(null);
+            setImagePreview('');
+            return;
+        }
+
+        // Si pasa las validaciones
+        setFormImage(file);
+        setImageError('');
+        setImagePreview(URL.createObjectURL(file)); // Crea una URL para previsualizar la imagen seleccionada
     };
 
     const handleDeleteBadge = async (badgeId) => {
@@ -115,19 +157,49 @@ function BadgeAdminPanel() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (imageError) {
+            Swal.fire({
+                title: 'Error de Imagen',
+                text: imageError,
+                icon: 'error',
+                background: theme === 'light' ? 'var(--color-bg-card)' : 'var(--color-dark-bg-secondary)',
+                color: theme === 'light' ? 'var(--color-text-main)' : 'var(--color-dark-text)',
+            });
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('title', formTitle);
+        formData.append('description', formDescription);
+        formData.append('category', formCategory);
+        formData.append('condition_description', formConditionDescription);
+        formData.append('reward_description', formRewardDescription);
+
+        if (formImage instanceof File) {
+            formData.append('image', formImage);
+        } else if (editingBadge && formImage === '') {
+            formData.append('image', '');
+        }
         try {
-            const badgeData = {
-                title: formTitle,
-                description: formDescription,
-                image: formImage,
-                category: formCategory,
-                condition_description: formConditionDescription,
-                reward_description: formRewardDescription,
-                reward_data: JSON.parse(formRewardData || '{}'), 
-            };
+            let parsedRewardData = {};
+            try {
+                parsedRewardData = JSON.parse(formRewardData || '{}');
+            } catch (jsonErr) {
+                Swal.fire({
+                    title: 'Error de JSON',
+                    text: 'El formato de Datos Recompensa no es JSON válido.',
+                    icon: 'error',
+                    background: theme === 'light' ? 'var(--color-bg-card)' : 'var(--color-dark-bg-secondary)',
+                    color: theme === 'light' ? 'var(--color-text-main)' : 'var(--color-dark-text)',
+                });
+                return;
+            }
+            formData.append('reward_data', JSON.stringify(parsedRewardData));
+
 
             if (editingBadge) {
-                await api.put(`/badges/${editingBadge.id}/`, badgeData);
+                await api.put(`/badges/${editingBadge.id}/`, formData);
                 Swal.fire({
                     title: '¡Actualizada!',
                     text: 'La insignia ha sido modificada.',
@@ -138,7 +210,7 @@ function BadgeAdminPanel() {
                     color: theme === 'light' ? 'var(--color-text-main)' : 'var(--color-dark-text)',
                 });
             } else {
-                await api.post('/badges/', badgeData);
+                await api.post('/badges/', formData); // Usar formData
                 Swal.fire({
                     title: '¡Creada!',
                     text: 'Nueva insignia añadida.',
@@ -150,14 +222,32 @@ function BadgeAdminPanel() {
                 });
             }
             setIsFormOpen(false);
-            setCurrentPage(1); 
+            resetForm();
+            setCurrentPage(1);
             fetchBadges(1, perPage);
         } catch (err) {
             console.error("Error saving badge:", err.response?.data || err.message);
-            const errorMessage = err.response?.data ? JSON.stringify(err.response.data) : err.message;
+            let errorMessage = "Hubo un problema al guardar la insignia.";
+            if (err.response?.data) {
+                try {
+                    const errorDetails = err.response.data;
+                    if (errorDetails.image && Array.isArray(errorDetails.image)) {
+                        errorMessage += " Error de imagen: " + errorDetails.image.join(", ");
+                    } else if (errorDetails.title && Array.isArray(errorDetails.title)) {
+                        errorMessage += " Error de título: " + errorDetails.title.join(", ");
+                    } else {
+                        errorMessage += " Detalles: " + JSON.stringify(errorDetails);
+                    }
+                } catch (parseErr) {
+                    errorMessage += " Detalles: " + err.response.data;
+                }
+            } else {
+                errorMessage += " Detalles: " + err.message;
+            }
+
             Swal.fire({
                 title: 'Error al guardar',
-                text: `Hubo un problema: ${errorMessage}`,
+                text: errorMessage,
                 icon: 'error',
                 background: theme === 'light' ? 'var(--color-bg-card)' : 'var(--color-dark-bg-secondary)',
                 color: theme === 'light' ? 'var(--color-text-main)' : 'var(--color-dark-text)',
@@ -166,6 +256,24 @@ function BadgeAdminPanel() {
     };
 
     const columns = [
+        {
+            name: 'Imagen',
+            
+            cell: row => {
+                //console.log("URL de la imagen en DataTable:", row.image);
+                return (
+                    row.image ? (
+                        <img src={row.image} alt={row.title} className="h-8 w-8 object-contain" />
+                    ) : (
+                        <UploadCloud className={`h-8 w-8 text-[var(--color-text-secondary)]`} />
+                    )
+                );
+            }, // Cierra el bloque de la función
+            width: '80px',
+            ignoreRowClick: true,
+            allowOverflow: true,
+            button: true,
+        },
         {
             name: 'Título',
             selector: row => row.title,
@@ -373,21 +481,39 @@ function BadgeAdminPanel() {
                     ></textarea>
                 </div>
 
-                {/* Campo Imagen (URL) */}
+                {/* Campo Imagen (File Upload) */}
                 <div>
-                    <label htmlFor="image" className="block text-sm font-medium text-[var(--color-text-main)] mb-1">URL de la Imagen:</label>
-                    <input
-                        type="text"
-                        id="image"
-                        value={formImage}
-                        onChange={(e) => setFormImage(e.target.value)}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2
+                    <label htmlFor="image" className="block text-sm font-medium text-[var(--color-text-main)] mb-1">Imagen (PNG o WEBP, &lt; 1MB):</label>
+                    <div>
+                        <input
+                            type="file"
+                            id="image"
+                            onChange={handleImageChange}
+                            accept=".png,.webp,.jpg,.jpeg"
+                            className={`w-full text-sm text-[var(--color-text-main)] file:mr-4 file:py-2 file:px-4
+                            file:rounded-full file:border-0 file:text-sm file:font-semibold
                             ${theme === 'light'
-                                ? 'border-[var(--color-text-secondary)] text-[var(--color-text)] focus:ring-[var(--color-bg-secondary)]'
-                                : 'border-[var(--color-dark-border)] text-[var(--color-dark-text)] focus:ring-[var(--color-accent-blue)]'
-                            }`}
-                        placeholder="Ej: /media/badges/my_badge.png"
-                    />
+                                    ? 'file:bg-[var(--color-bg-secondary)] file:text-[var(--color-text)] hover:file:bg-[var(--color-bg-secondary-hover)]'
+                                    : 'file:bg-[var(--color-dark-bg-tertiary)] file:text-[var(--color-dark-text)] hover:file:bg-[var(--color-dark-border)]'
+                                }
+                            `}
+                        />
+                    </div>
+                    {imageError && (
+                        <p className="text-red-500 text-xs mt-1">{imageError}</p>
+                    )}
+                    {imagePreview && (
+                        <div className="mt-2 flex items-center gap-2">
+                            <img src={imagePreview} alt="Previsualización" className="h-16 w-16 object-contain border rounded" />
+                            <span className="text-sm text-[var(--color-text-secondary)]">{formImage ? formImage.name : ''}</span> {/* Muestra el nombre del archivo */}
+                        </div>
+                    )}
+                    {editingBadge && !imagePreview && formImage && typeof formImage === 'string' && (
+                        <div className="mt-2 flex items-center gap-2">
+                            <img src={formImage} alt="Imagen actual" className="h-16 w-16 object-contain border rounded" />
+                            <span className="text-sm text-[var(--color-text-secondary)]">Imagen actual</span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Campo Categoría */}
@@ -404,6 +530,7 @@ function BadgeAdminPanel() {
                             }`}
                         required
                     >
+                        {/* Las opciones de categoría deberían obtenerse del backend si son dinámicas */}
                         <option value="BASIC">Básica</option>
                         <option value="RARE">Rara</option>
                         <option value="EPIC">Épica</option>
@@ -447,7 +574,7 @@ function BadgeAdminPanel() {
 
                 {/* Campo Datos de Recompensa (JSON) */}
                 <div>
-                    <label htmlFor="rewardData" className="block text-sm font-medium text-[var(--color-text-main)] mb-1">Datos Recompensa (JSON Array):</label>
+                    <label htmlFor="rewardData" className="block text-sm font-medium text-[var(--color-text-main)] mb-1">Datos Recompensa (JSON):</label>
                     <textarea
                         id="rewardData"
                         value={formRewardData}
@@ -457,7 +584,7 @@ function BadgeAdminPanel() {
                                 ? 'border-[var(--color-text-secondary)] text-[var(--color-text)] focus:ring-[var(--color-bg-secondary)]'
                                 : 'border-[var(--color-dark-border)] text-[var(--color-dark-text)] focus:ring-[var(--color-accent-blue)]'
                             }`}
-                        placeholder={`Ej: ${JSON.stringify({exp: 30, avatar_id: 5})}`}
+                        placeholder={`Ej: ${JSON.stringify({ exp: 30, avatar_id: 5 })}`}
                     ></textarea>
                 </div>
 
@@ -475,7 +602,7 @@ function BadgeAdminPanel() {
                     </button>
                     <button
                         type="button"
-                        onClick={() => setIsFormOpen(false)}
+                        onClick={() => { setIsFormOpen(false); resetForm(); }}
                         className={`flex-1 px-4 py-2 rounded-full flex items-center justify-center gap-2 font-semibold transition-colors
                             ${theme === 'light'
                                 ? 'bg-gray-300 text-[var(--color-text-main)] hover:bg-gray-400'

@@ -43,6 +43,7 @@ class User(AbstractUser):
         error_messages={
             'unique': "Correo electrónico ya existe",
         })
+    is_online = models.BooleanField(default=False)
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
@@ -57,7 +58,6 @@ class User(AbstractUser):
 class Profile(models.Model):
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    
     full_name = models.CharField(max_length=255, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
     image = models.ImageField(default='default.jpg',upload_to='user_images', blank=True, null=True)
