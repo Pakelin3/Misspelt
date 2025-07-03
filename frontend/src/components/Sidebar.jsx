@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BookA, Gem, ChartColumnBig, X } from 'lucide-react';
+import { BookA, Gem, ChartColumnBig, X, CircleUser } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -20,6 +20,7 @@ function Sidebar() {
 
         if (isSidebarOpen) {
             document.addEventListener("mousedown", handleClickOutside);
+            
         }
 
         return () => {
@@ -151,6 +152,30 @@ function Sidebar() {
                                             : 'text-[var(--color-dark-text-secondary)] group-hover:text-[var(--color-dark-text)]')
                                     }`} />
                                 <span className="ms-3">Insignias</span>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
+                                to="/admin-dashboard/avatars"
+                                className={`flex items-center p-2 rounded-lg group
+                                    ${isActive("/admin-dashboard/avatars")
+                                        ? (theme === 'light'
+                                            ? 'bg-[var(--color-bg-secondary)] text-[var(--color-body-bg)]'
+                                            : 'bg-[var(--color-dark-bg-tertiary)] text-[var(--color-dark-text)]')
+                                        : (theme === 'light'
+                                            ? 'text-[var(--color-text)] hover:bg-[var(--color-bg-main)]'
+                                            : 'text-[var(--color-dark-text)] hover:bg-[var(--color-dark-bg-tertiary)]')
+                                    }`}>
+                                <CircleUser  className={`w-5 h-5 transition duration-75 
+                                    ${isActive("/admin-dashboard/avatars")
+                                        ? (theme === 'light'
+                                            ? 'text-[var(--color-body-bg)] group-hover:text-[var(--color-text)]'
+                                            : 'text-[var(--color-dark-text)] group-hover:text-[var(--color-dark-text)]')
+                                        : (theme === 'light'
+                                            ? 'text-[var(--color-text-secondary)] group-hover:text-[var(--color-text)]'
+                                            : 'text-[var(--color-dark-text-secondary)] group-hover:text-[var(--color-dark-text)]')
+                                    }`} />
+                                <span className="ms-3">Avatares</span>
                             </Link>
                         </li>
                     </ul>

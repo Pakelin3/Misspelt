@@ -228,5 +228,8 @@ FRONTEND_URL = 'https://localhost:5173'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+STATIC_URL = 'static/' #
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') 
+
 SSL_CERTIFICATE = os.path.join(BASE_DIR, 'localhost+1.pem')
 SSL_KEY = os.path.join(BASE_DIR, 'localhost+1-key.pem')

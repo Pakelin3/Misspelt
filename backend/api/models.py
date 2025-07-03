@@ -27,7 +27,7 @@ class EmailVerificationToken(models.Model):
         return f"Token for {self.user.username}"
 
 # * --------------------------------------------------------------------------------------------------
-# ! --- MODELO DE USUARIO PERSONALIZADO ---
+# ! --- MODELO DE USUARIO ---
 # * --------------------------------------------------------------------------------------------------
 class User(AbstractUser):
 
@@ -61,6 +61,13 @@ class Profile(models.Model):
     full_name = models.CharField(max_length=255, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
     image = models.ImageField(default='default.jpg',upload_to='user_images', blank=True, null=True)
+    current_avatar = models.ForeignKey(
+        'Avatar',
+        on_delete=models.SET_NULL, # Si se borra un avatar, el campo se pone a NULL
+        null=True, blank=True,
+        related_name='current_users_profile',
+        help_text="El avatar que el usuario está usando actualmente."
+    )
     verified = models.BooleanField(default=True)
 
     def __str__(self):
@@ -70,8 +77,15 @@ class Profile(models.Model):
 # ! --- FUNCIONES DE SEÑAL (SIGNALS) ---
 # * --------------------------------------------------------------------------------------------------
 def create_user_profile(sender, instance, created, **kwargs):
-    if created: 
-        Profile.objects.create(user=instance)
+    if created:
+        profile = Profile.objects.create(user=instance) 
+        user_stats = UserStats.objects.create(user=instance) 
+        default_avatars = Avatar.objects.filter(is_default=True)
+        user_stats.unlocked_avatars.set(default_avatars)
+
+        if default_avatars.exists():
+            profile.current_avatar = default_avatars.first()
+            profile.save()
 
 def save_user_profile(sender, instance, **kwargs):
     if hasattr(instance, 'profile'):
@@ -120,6 +134,12 @@ class UserStats(models.Model):
     current_streak = models.IntegerField(default=0)
     longest_streak = models.IntegerField(default=0)
     badges = models.ManyToManyField('Badge', blank=True, related_name='unlocked_by_users')
+    unlocked_avatars = models.ManyToManyField(
+        'Avatar',
+        blank=True,
+        related_name='unlocked_by_users',
+        help_text="Avatares que el usuario ha desbloqueado."
+    )
 
     def get_accuracy_percentage(self):
         if self.total_questions_answered == 0:
@@ -138,6 +158,60 @@ class UserStats(models.Model):
 
     def __str__(self):
         return f"Estadísticas de {self.user.username}"
+    
+    def get_level(self):
+        xp = self.experience
+        level = 1
+        xp_needed_for_next_level = self._calculate_xp_for_level(level + 1)
+        
+        while xp >= xp_needed_for_next_level:
+            level += 1
+            xp_needed_for_next_level = self._calculate_xp_for_level(level + 1)
+        return level
+
+    def get_xp_for_current_level_start(self):
+        current_level = self.get_level()
+        if current_level == 1:
+            return 0
+        return self._calculate_xp_for_level(current_level)
+
+    def get_xp_for_next_level(self):
+        current_level = self.get_level()
+        return self._calculate_xp_for_level(current_level + 1)
+
+    def get_xp_progress_in_current_level(self):
+        xp_total = self.experience
+        xp_current_level_start = self.get_xp_for_current_level_start()
+        xp_next_level = self.get_xp_for_next_level()
+        
+        if xp_next_level == xp_current_level_start: # Evita división por cero si es el último nivel o formula plana
+            return 0
+        
+        xp_in_level = xp_total - xp_current_level_start
+        xp_needed_in_level = xp_next_level - xp_current_level_start
+        
+        if xp_needed_in_level <= 0: # Si ya alcanzó el nivel maximo o hay un bug en la formula
+            return 100 # O un valor que indique que ya está al 100%
+
+        return (xp_in_level / xp_needed_in_level) * 100
+
+    # Método privado para calcular la XP necesaria para un nivel específico
+    def _calculate_xp_for_level(self, level):
+        # ? Ejemplo de fórmula: Nivel 1 = 0 XP, Nivel 2 = 100 XP, Nivel 3 = 300 XP, Nivel 4 = 600 XP
+        if level <= 0:
+            return 0
+        return 50 * level * (level - 1) # Nivel 1 necesita 0, Nivel 2 necesita 50, Nivel 3 necesita 200, Nivel 4 necesita 450
+
+    # ? Formulas:
+    # * Ejemplo 1 (lineal): return level * 100
+    # * Ejemplo 2 (exponencial simple): return 100 * (2 ** (level - 1)) - 100
+    # * Ejemplo 3 (más complejo, común en juegos):
+    #   xp_per_level = 100 # XP base para cada nivel
+    #   xp_growth_factor = 1.1 # Cada nivel requiere 10% mas XP que el anterior
+    #   total_xp = 0
+    #   for i in range(1, level):
+    #       total_xp += xp_per_level * (xp_growth_factor ** (i - 1))
+    #   return int(total_xp)
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- MODELO GAMEHISTORY ---
@@ -177,12 +251,24 @@ class Badge(models.Model):
     ]
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='BASIC')
     condition_description = models.TextField(help_text="Descripción legible de la condición (e.g., 'Acertar 10 slangs')")
-    
+    unlock_condition_data = models.JSONField(default=dict, blank=True, help_text="Datos programáticos para las condiciones de desbloqueo (e.g., {'type': 'correct_slangs', 'value': 10})")
     reward_description = models.TextField(help_text="Descripción de la recompensa (e.g., '+30 EXP, Nuevo Avatar')")
     reward_data = models.JSONField(default=dict, blank=True, help_text="Datos programáticos para las recompensas (e.g., {'exp': 30, 'avatar_id': 5})")
 
     def __str__(self):
         return f"{self.title} ({self.get_category_display()})"
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- MODELO AVATAR ---
+# * --------------------------------------------------------------------------------------------------
+class Avatar(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    image = models.ImageField(upload_to='avatars/', help_text="Imagen del avatar")
+    is_default = models.BooleanField(default=False, help_text="Si es un avatar disponible para todos al inicio")
+    unlock_condition_description = models.TextField(blank=True, null=True, help_text="Descripción de cómo desbloquearlo si no es default")
+
+    def __str__(self):
+        return self.name
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- CONEXIÓN DE SEÑALES ---

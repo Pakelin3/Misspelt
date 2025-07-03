@@ -13,6 +13,7 @@ import Navbar from './components/Navbar';
 import AdminDashboard from './views/AdminDashboard';
 import EmailVerificationLandingPage from './views/EmailVerificationLandingPage';
 import CheckEmailPage from './views/CheckEmailPage';
+import BadgesPage from './views/BadgesPage';
 import SidebarIA from './components/SidebarIA';
 import MainContent from './components/MainContent';
 import { StyleSheetManager } from 'styled-components';
@@ -57,7 +58,7 @@ function App() {
                   </div>
                 } />
                 <Route path="/play" element={<div>Jugar Page</div>} />
-                <Route path="/badges" element={<div>Insignias Page</div>} />
+                <Route path="/badges" element={<BadgesPage />} />
                 <Route path="/profile" element={<div>perfil</div>} />
               </Route>
 

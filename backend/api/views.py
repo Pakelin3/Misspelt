@@ -6,7 +6,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
-from api.models import User, Word, Badge, UserStats, EmailVerificationToken
+from api.models import User, Word, Badge, UserStats, EmailVerificationToken, Avatar
+from api.services import award_badge_rewards
+from api.badge_unlock_logic import check_and_unlock_badges
 from django.shortcuts import redirect
 from django.conf import settings
 from api.serializer import (
@@ -16,8 +18,13 @@ from api.serializer import (
     BadgeSerializer,
     UserStatsSerializer,
     AdminUserSerializer,
+    AvatarSerializer
 )
 
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA AUTENTICACION ---
+# * --------------------------------------------------------------------------------------------------
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = myTokenObtainPairSerializer
 
@@ -38,6 +45,9 @@ class MyTokenObtainPairView(TokenObtainPairView):
         
         return response
 
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA CIERRE DE SESION ---
+# * --------------------------------------------------------------------------------------------------
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -47,6 +57,10 @@ class LogoutView(APIView):
         user.save() 
         return Response({"detail": "Sesión cerrada exitosamente."}, status=status.HTTP_200_OK)
     
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA VERIFICACION DE EMAIL ---
+# * --------------------------------------------------------------------------------------------------
 class VerifyEmailView(APIView):
     permission_classes = [AllowAny]
 
@@ -73,7 +87,10 @@ class VerifyEmailView(APIView):
         except Exception as e:
             print(f"Error durante la verificación del email: {e}")
             return redirect(f"{settings.FRONTEND_URL}/login?verified=true")
-        
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA REGISTRO DE USUARIO ---
+# * --------------------------------------------------------------------------------------------------
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [AllowAny]
@@ -81,6 +98,9 @@ class RegisterView(generics.CreateAPIView):
     def perform_create(self, serializer):
         user = serializer.save()
 
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA DASHBOARD ADMIN ---
+# * --------------------------------------------------------------------------------------------------
 class AdminDashboardDataAPIView(APIView):
     permission_classes = [IsAuthenticated, IsAdminUser] 
 
@@ -94,6 +114,9 @@ class AdminDashboardDataAPIView(APIView):
         }
         return Response(dashboard_stats, status=status.HTTP_200_OK)
 
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA DASHBOARD USUARIO ---
+# * --------------------------------------------------------------------------------------------------
 class UserIsStaffAPIView(APIView):
     permission_classes = [IsAuthenticated] 
 
@@ -101,12 +124,17 @@ class UserIsStaffAPIView(APIView):
         is_staff_user = request.user.is_staff or request.user.is_superuser
         return Response({'is_staff': is_staff_user}, status=status.HTTP_200_OK)
 
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA PAGINACION ---
+# * --------------------------------------------------------------------------------------------------
 class WordPagination(PageNumberPagination):
     page_size = 6
     page_size_query_param = 'limit'
     max_page_size = 100
 
-# ViewSet para la gestión completa de Palabras (CRUD)
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA PALABRAS (CRUD) ---
+# * --------------------------------------------------------------------------------------------------
 class WordViewSet(viewsets.ModelViewSet):
     queryset = Word.objects.all().order_by('-created_at')
     serializer_class = WordSerializer
@@ -134,25 +162,80 @@ class WordViewSet(viewsets.ModelViewSet):
         return Response({'detail': 'No words found'}, status=404)
 
 
-# ViewSet para la gestión completa de Insignias (CRUD)
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA INSIGNIAS (CRUD) ---
+# * --------------------------------------------------------------------------------------------------
 class BadgeViewSet(viewsets.ModelViewSet):
     queryset = Badge.objects.all().order_by('title')
     serializer_class = BadgeSerializer
     permission_classes = [IsAuthenticated, IsAdminUser]
 
-# ViewSet para ver estadísticas individuales de usuarios (solo lectura para el admin)
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA ESTADISTICAS DE USUARIOS (CRUD) ---
+# * --------------------------------------------------------------------------------------------------
 class UserStatsViewSet(viewsets.ReadOnlyModelViewSet): 
     queryset = UserStats.objects.all().order_by('user__username') # Ordena por nombre de usuario
     serializer_class = UserStatsSerializer
     permission_classes = [IsAuthenticated, IsAdminUser]
 
-# ViewSet para listar y ver detalles de usuarios para el administrador (solo lectura)
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA AVATARES (CRUD) ---
+# * --------------------------------------------------------------------------------------------------
+class AvatarViewSet(viewsets.ModelViewSet):
+    queryset = Avatar.objects.all().order_by('name') # Consulta todos los avatares, ordenados por nombre
+    serializer_class = AvatarSerializer # Usa el serializador que acabas de crear
+    # Restringir permisos solo a administradores, ya que el CRUD es para gestión
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    # No necesitas paginación si la lista de avatares no es muy grande,
+    # pero puedes añadirla si es necesario (como en WordPagination)
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA ESTADISTICAS DE USUARIOS (CRUD) ---
+# * --------------------------------------------------------------------------------------------------
+class UserStatsViewSet(viewsets.ReadOnlyModelViewSet): 
+    serializer_class = UserStatsSerializer #
+
+    def get_queryset(self):
+        """
+        Permite a los administradores ver todas las estadísticas,
+        y a los usuarios normales ver solo las suyas.
+        """
+        if self.request.user.is_staff: #
+            return UserStats.objects.all().order_by('user__username') #
+        return UserStats.objects.filter(user=self.request.user) #
+
+    def get_permissions(self):
+        """
+        Ajusta los permisos para la acción 'me' y otras.
+        """
+        if self.action == 'me':
+            self.permission_classes = [IsAuthenticated] # Cualquier usuario autenticado puede ver sus propias stats
+        else:
+            self.permission_classes = [IsAuthenticated, IsAdminUser] # Para listado y detalle (por ID), solo admin
+        return super().get_permissions()
+
+    # ACERCIÓN 'me' - MOVIDA DENTRO DE LA CLASE
+    @action(detail=False, methods=['get'])
+    def me(self, request):
+        """
+        Obtiene las estadísticas del usuario actualmente autenticado.
+        Si no existen, las crea.
+        """
+        user_stats, created = UserStats.objects.get_or_create(user=request.user) #
+        serializer = self.get_serializer(user_stats)
+        return Response(serializer.data)
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA USUARIOS (CRUD) ---
+# * --------------------------------------------------------------------------------------------------
 class AdminUserViewSet(viewsets.ReadOnlyModelViewSet): # Usamos ReadOnly para evitar que el admin de frontend modifique usuarios directamente aquí
     queryset = User.objects.all().order_by('username')
     serializer_class = AdminUserSerializer 
     permission_classes = [IsAuthenticated, IsAdminUser]
 
-
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA RUTAS ---
+# * --------------------------------------------------------------------------------------------------
 @api_view(['GET'])
 def getRoutes(request):
     routes = [
@@ -181,6 +264,9 @@ def getRoutes(request):
     return Response(routes)
 
 
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA TEST ENDPOINT ---
+# * --------------------------------------------------------------------------------------------------
 @api_view(['GET' , 'POST'])
 @permission_classes([IsAuthenticated])
 def testEndPoint(request):
@@ -192,4 +278,20 @@ def testEndPoint(request):
         message = f'epale {request.user.username} has enviado el texto: {text} [POST request]' 
         return Response({'message': message}, status=status.HTTP_200_OK)
     return Response({'detail': 'Método no permitido'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA PROCESAR ACCIONES DEL JUEGO ---
+# * --------------------------------------------------------------------------------------------------
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def process_game_action(request):
+    user = request.user
+    newly_unlocked_badges = check_and_unlock_badges(user)
+    response_data = {
+        'message': 'Acción procesada.',
+        'newly_unlocked_badges': [badge.title for badge in newly_unlocked_badges]
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
+
 

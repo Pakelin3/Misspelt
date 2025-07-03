@@ -1,4 +1,4 @@
-from api.models import User, Profile, Word, Badge, UserStats, EmailVerificationToken
+from api.models import User, Profile, Word, Badge, UserStats, EmailVerificationToken, Avatar
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
@@ -11,7 +11,7 @@ from datetime import timedelta
 
 
 # * --------------------------------------------------------------------------------------------------
-# ! --- MODELO ---
+# ! --- MODELO USER ---
 # * --------------------------------------------------------------------------------------------------
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,7 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email']
 
 # * --------------------------------------------------------------------------------------------------
-# ! --- MODELO ---
+# ! --- MODELO TOKEN ---
 # * --------------------------------------------------------------------------------------------------
 class myTokenObtainPairSerializer(TokenObtainPairSerializer):
     default_error_messages = {
@@ -42,7 +42,7 @@ class myTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
 # * --------------------------------------------------------------------------------------------------
-# ! --- MODELO ---
+# ! --- MODELO REGISTER ---
 # * --------------------------------------------------------------------------------------------------
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
@@ -97,7 +97,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 # * --------------------------------------------------------------------------------------------------
-# ! --- MODELO ---
+# ! --- MODELO WORD ---
 # * --------------------------------------------------------------------------------------------------
 class WordSerializer(serializers.ModelSerializer):
     substitutes = serializers.SlugRelatedField(
@@ -110,7 +110,7 @@ class WordSerializer(serializers.ModelSerializer):
         fields = '__all__' 
 
 # * --------------------------------------------------------------------------------------------------
-# ! --- MODELO ---
+# ! --- MODELO BADGE ---
 # * --------------------------------------------------------------------------------------------------
 class BadgeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -118,18 +118,40 @@ class BadgeSerializer(serializers.ModelSerializer):
         fields = '__all__' 
 
 # * --------------------------------------------------------------------------------------------------
-# ! --- MODELO ---
+# ! --- MODELO AVATAR ---
+# * --------------------------------------------------------------------------------------------------
+class AvatarSerializer(serializers.ModelSerializer): #
+    class Meta:
+        model = Avatar
+        fields = '__all__'
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- MODELO USERSTATS ---
 # * --------------------------------------------------------------------------------------------------
 class UserStatsSerializer(serializers.ModelSerializer):
     user_username = serializers.CharField(source='user.username', read_only=True)
-    
+    level = serializers.SerializerMethodField()
+    xp_for_next_level = serializers.SerializerMethodField()
+    xp_progress_in_current_level = serializers.SerializerMethodField()
+    unlocked_badges = BadgeSerializer(many=True, read_only=True) 
+    unlocked_avatars = AvatarSerializer(many=True, read_only=True)    
     class Meta:
         model = UserStats
         fields = '__all__'
-        read_only_fields = ['user'] 
+        read_only_fields = ['user']
+
+    def get_level(self, obj):
+        return obj.get_level()
+
+    def get_xp_for_next_level(self, obj):
+        return obj.get_xp_for_next_level()
+
+    def get_xp_progress_in_current_level(self, obj):
+        return round(obj.get_xp_progress_in_current_level(), 2)
+
 
 # * --------------------------------------------------------------------------------------------------
-# ! --- MODELO ---
+# ! --- MODELO ADMINUSER ---
 # * --------------------------------------------------------------------------------------------------
 class AdminUserSerializer(serializers.ModelSerializer):
 

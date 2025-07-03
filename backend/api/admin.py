@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Profile, Word, UserStats, GameHistory, Badge
+from .models import User, Profile, Word, UserStats, GameHistory, Badge, Avatar
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -31,9 +31,22 @@ class GameHistoryAdmin(admin.ModelAdmin):
 
 
 class BadgeAdmin(admin.ModelAdmin):
-    list_display = ('title', 'category', 'description')
+    list_display = ('title', 'category', 'condition_description', 'unlock_condition_data_display')
     list_filter = ('category',)
-    search_fields = ('title', 'description')
+    search_fields = ('title', 'description', 'condition_description')
+    fields = ('title', 'description', 'image', 'category',
+            'condition_description', 'unlock_condition_data',
+            'reward_description', 'reward_data')
+
+    def unlock_condition_data_display(self, obj):
+        return str(obj.unlock_condition_data)
+    unlock_condition_data_display.short_description = "Condición Desbloqueo"
+
+class AvatarAdmin(admin.ModelAdmin):
+    list_display = ('name', 'image', 'is_default')
+    list_filter = ('is_default',)
+    search_fields = ('name',)
+
 
 
 
@@ -43,3 +56,4 @@ admin.site.register(Word, WordAdmin)
 admin.site.register(UserStats, UserStatsAdmin)
 admin.site.register(GameHistory, GameHistoryAdmin)
 admin.site.register(Badge, BadgeAdmin)
+admin.site.register(Avatar, AvatarAdmin)
