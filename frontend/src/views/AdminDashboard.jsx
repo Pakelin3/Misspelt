@@ -3,6 +3,7 @@ import Sidebar from '@/components/Sidebar'
 import DashboardStatsCards from '@/components/admin/DashboardStatsCards';
 import DictionaryAdminPanel from '@/components/admin/DictionaryAdminPanel';
 import BadgesAdminPanel from '@/components/admin/BadgesAdminPanel';
+import AvatarAdminPanel from '@/components/admin/AvatarAdminPanel';
 import { useTheme } from '@/context/ThemeContext';
 import { Routes, Route } from 'react-router-dom';
 
@@ -17,6 +18,7 @@ function AdminDashboard() {
                     <Route index element={<DashboardStatsCards />} />
                     <Route path="words" element={<DictionaryAdminPanel />} />
                     <Route path="badges" element={<BadgesAdminPanel />} />
+                    <Route path="avatars" element={<AvatarAdminPanel />} />
                 </Routes>
             </div>
         </div>

@@ -27,18 +27,15 @@ function DictionaryAdminPanel() {
     const [currentPage, setCurrentPage] = useState(1);
 
     const fetchWords = useCallback(async (page, limit) => {
-        console.log("fetchWords called with page:", page, "limit:", limit);
         setLoading(true);
         setError(null);
         try {
             const response = await api.get(`/words/?page=${page}&limit=${limit}`);
-            console.log("API response count:", response.data.count, "results length:", response.data.results.length);
             setWords(response.data.results);
             setTotalRows(response.data.count);
         } catch (err) {
             console.error("Error fetching words:", err);
             if (axios.isCancel(err) || err.code === 'ECONNABORTED') {
-                console.log("Request aborted, not setting error state for aborted requests.");
                 // setError(null);
             } else {
                 setError("No se pudieron cargar las palabras. Asegúrate de tener permisos de administrador.");
@@ -49,7 +46,6 @@ function DictionaryAdminPanel() {
     }, [api]);
 
     useEffect(() => {
-        console.log("useEffect triggered for page:", currentPage, "perPage:", perPage); 
         fetchWords(currentPage, perPage);
     }, [fetchWords, currentPage, perPage]);
 
@@ -268,16 +264,17 @@ function DictionaryAdminPanel() {
         pagination: {
             style: {
                 backgroundColor: theme === 'light' ? 'var(--color-bg-card)' : 'var(--color-dark-bg-secondary)',
-                color: theme === 'light' ? 'var(--color-text-main)' : 'var(--color-dark-text)',
+                color: theme === 'light' ? '#000' : '#fff',
                 borderTopStyle: 'solid',
                 borderTopWidth: '1px',
                 borderTopColor: theme === 'light' ? 'var(--color-text-secondary)' : 'var(--color-dark-border)',
             },
             pageButtonsStyle: {
-                backgroundColor: theme === 'light' ? 'var(--color-bg-main)' : 'var(--color-dark-bg-tertiary)',
-                color: theme === 'light' ? 'var(--color-text-main)' : 'var(--color-dark-text)',
+                backgroundColor: theme === 'light' ? '#e0e0e0' : 'var(--color-dark-bg-tertiary)',
+                color: theme === 'light' ? '#000' : '#fff',
+                fill: theme === 'light' ? '#000' : '#bbb',
                 '&:hover': {
-                    backgroundColor: theme === 'light' ? '#4ECDC4' : '#a0a0a0',
+                    backgroundColor: theme === 'light' ? '#9f9f9f' : '#a0a0a0',
                 },
                 '&:disabled': {
                     opacity: 0.5,
@@ -290,12 +287,10 @@ function DictionaryAdminPanel() {
     };
 
     const handlePageChange = page => {
-        console.log("onChangePage received page:", page);
         setCurrentPage(page);
     };
 
     const handlePerPageChange = (newPerPage, page) => {
-        console.log("onChangeRowsPerPage received newPerPage:", newPerPage, "and page:", page);
         setPerPage(newPerPage);
         setCurrentPage(page);
     };
@@ -309,8 +304,8 @@ function DictionaryAdminPanel() {
                     onClick={handleNewWord}
                     className={`px-4 py-2 cursor-pointer rounded-full flex items-center gap-2 font-semibold transition-colors whitespace-nowrap
                         ${theme === 'light'
-                            ? 'bg-[var(--color-bg-secondary)] text-[var(--color-body-bg)] hover:bg-[var(--color-bg-tertiary)]'
-                            : 'bg-[var(--color-accent-blue)] text-white hover:bg-[var(--color-bg-tertiary)]'
+                            ? 'bg-[var(--color-bg-secondary)] text-[var(--color-body-bg)] hover:bg-[var(--color-bg-secondary-hover)]'
+                            : 'bg-[var(--color-bg-secondary)] text-white hover:bg-[var(--color-bg-secondary-hover)]'
                         }`}>
                     <Plus className="w-5 h-5" />
                     Nueva Palabra

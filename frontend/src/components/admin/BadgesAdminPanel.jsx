@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import useAxios from '@/utils/useAxios';
 import { useTheme } from '@/context/ThemeContext';
-import { Plus, Edit, Trash2, Save, XCircle, UploadCloud } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, XCircle, UploadCloud,  } from 'lucide-react';
 import Swal from 'sweetalert2';
 import DataTable from 'react-data-table-component';
 
@@ -185,6 +185,7 @@ function BadgeAdminPanel() {
             let parsedRewardData = {};
             try {
                 parsedRewardData = JSON.parse(formRewardData || '{}');
+                // eslint-disable-next-line no-unused-vars
             } catch (jsonErr) {
                 Swal.fire({
                     title: 'Error de JSON',
@@ -238,6 +239,7 @@ function BadgeAdminPanel() {
                     } else {
                         errorMessage += " Detalles: " + JSON.stringify(errorDetails);
                     }
+                    // eslint-disable-next-line no-unused-vars
                 } catch (parseErr) {
                     errorMessage += " Detalles: " + err.response.data;
                 }
@@ -258,7 +260,7 @@ function BadgeAdminPanel() {
     const columns = [
         {
             name: 'Imagen',
-            
+
             cell: row => {
                 //console.log("URL de la imagen en DataTable:", row.image);
                 return (
@@ -365,16 +367,17 @@ function BadgeAdminPanel() {
         pagination: {
             style: {
                 backgroundColor: theme === 'light' ? 'var(--color-bg-card)' : 'var(--color-dark-bg-secondary)',
-                color: theme === 'light' ? 'var(--color-text-main)' : 'var(--color-dark-text)',
+                color: theme === 'light' ? '#000' : '#fff',
                 borderTopStyle: 'solid',
                 borderTopWidth: '1px',
                 borderTopColor: theme === 'light' ? 'var(--color-text-secondary)' : 'var(--color-dark-border)',
             },
             pageButtonsStyle: {
-                backgroundColor: theme === 'light' ? 'var(--color-bg-main)' : 'var(--color-dark-bg-tertiary)',
-                color: theme === 'light' ? 'var(--color-text-main)' : 'var(--color-dark-text)',
+                backgroundColor: theme === 'light' ? '#e0e0e0' : 'var(--color-dark-bg-tertiary)',
+                color: theme === 'light' ? '#000' : '#fff',
+                fill: theme === 'light' ? '#000' : '#bbb',
                 '&:hover': {
-                    backgroundColor: theme === 'light' ? '#4ECDC4' : '#a0a0a0',
+                    backgroundColor: theme === 'light' ? '#9f9f9f' : '#a0a0a0',
                 },
                 '&:disabled': {
                     opacity: 0.5,
@@ -404,8 +407,8 @@ function BadgeAdminPanel() {
                     onClick={handleNewBadge}
                     className={`px-4 py-2 rounded-full flex items-center gap-2 font-semibold transition-colors
                         ${theme === 'light'
-                            ? 'bg-[var(--color-bg-secondary)] text-[var(--color-body-bg)] hover:bg-[var(--color-bg-tertiary)]'
-                            : 'bg-[var(--color-accent-blue)] text-white hover:bg-[var(--color-bg-tertiary)]'
+                            ? 'bg-[var(--color-bg-secondary)] text-[var(--color-body-bg)] hover:bg-[var(--color-bg-secondary-hover)]'
+                            : 'bg-[var(--color-bg-secondary)] text-white hover:bg-[var(--color-bg-secondary-hover)]'
                         }`}>
                     <Plus className="w-5 h-5" />
                     Nueva Insignia
@@ -484,35 +487,71 @@ function BadgeAdminPanel() {
                 {/* Campo Imagen (File Upload) */}
                 <div>
                     <label htmlFor="image" className="block text-sm font-medium text-[var(--color-text-main)] mb-1">Imagen (PNG o WEBP, &lt; 1MB):</label>
-                    <div>
+
+                    {/* Contenedor principal para el input de archivo personalizado */}
+                    <div className={`relative border-2 border-dashed rounded-md p-4 text-center cursor-pointer
+        ${imageError ? 'border-red-500' : (theme === 'light' ? 'border-[var(--color-text-secondary)]' : 'border-[var(--color-dark-border)]')}
+        ${imagePreview && 'pb-12'} `} // Añade padding si hay previsualización para los botones
+                        onClick={() => document.getElementById('actual-image-input').click()} // Permite hacer clic en cualquier parte del div
+                        onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('bg-blue-100', 'dark:bg-blue-900'); }} // Estilo al arrastrar
+                        onDragLeave={(e) => { e.currentTarget.classList.remove('bg-blue-100', 'dark:bg-blue-900'); }} // Quita estilo al salir
+                        onDrop={(e) => { e.preventDefault(); e.currentTarget.classList.remove('bg-blue-100', 'dark:bg-blue-900'); handleImageChange({ target: { files: e.dataTransfer.files } }); }} // Maneja soltar
+                    >
+                        {/* Input de archivo real (oculto visualmente) */}
                         <input
                             type="file"
-                            id="image"
+                            id="actual-image-input" // Nuevo ID para el input oculto
                             onChange={handleImageChange}
-                            accept=".png,.webp,.jpg,.jpeg"
-                            className={`w-full text-sm text-[var(--color-text-main)] file:mr-4 file:py-2 file:px-4
-                            file:rounded-full file:border-0 file:text-sm file:font-semibold
-                            ${theme === 'light'
-                                    ? 'file:bg-[var(--color-bg-secondary)] file:text-[var(--color-text)] hover:file:bg-[var(--color-bg-secondary-hover)]'
-                                    : 'file:bg-[var(--color-dark-bg-tertiary)] file:text-[var(--color-dark-text)] hover:file:bg-[var(--color-dark-border)]'
-                                }
-                            `}
+                            accept=".png,.webp"
+                            className="hidden" // Oculta el input de archivo predeterminado
                         />
+
+                        {!imagePreview && ( // Mostrar el mensaje "Arrastra o haz clic" si no hay imagen seleccionada
+                            <p className={`text-[var(--color-text-secondary)] ${theme === 'light' ? '' : 'dark:text-[var(--color-dark-text-secondary)]'}`}>
+                                Arrastra tu imagen aquí o haz clic para seleccionar.
+                            </p>
+                        )}
+
+                        {imagePreview && ( // Previsualización de la imagen seleccionada o existente
+                            <div className="flex flex-col items-center gap-2">
+                                <img src={imagePreview} alt="Previsualización" className="h-20 w-20 object-contain rounded " />
+                                <span className={`text-sm ${theme === 'light' ? 'text-[var(--color-text-main)]' : 'text-[var(--color-dark-text)]'}`}>
+                                    {formImage instanceof File ? formImage.name : 'Imagen actual'}
+                                </span>
+                                {formImage instanceof File && ( // Mostrar tamaño y fecha solo para archivos nuevos
+                                    <span className={`text-xs ${theme === 'light' ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-dark-text-secondary)]'}`}>
+                                        {(formImage.size / 1024).toFixed(2)} KB - {new Date().toLocaleDateString()}
+                                    </span>
+                                )}
+                                {/* Barra de progreso / indicador de tamaño */}
+                                {formImage instanceof File && (
+                                    <div className="w-full mt-2">
+                                        <div className={`h-2 rounded-full ${formImage.size > 1024 * 1024 ? 'bg-red-500' : 'bg-[var(--color-accent-blue)]'}`}
+                                            style={{ width: `${Math.min(100, (formImage.size / (1024 * 1024)) * 100)}%` }}></div>
+                                        <p className={`text-xs mt-1 ${formImage.size > 1024 * 1024 ? 'text-red-500' : 'text-[var(--color-text-secondary)]'}`}>
+                                            {(formImage.size / 1024).toFixed(2)} KB / 1024 KB
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Botones de acción flotantes (ej. eliminar) */}
+                                <div className="absolute top-2 right-2 flex gap-2">
+                                    {/* Botón de eliminar (X) */}
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); setFormImage(null); setImagePreview(''); setImageError(''); }}
+                                        className="p-1 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
+                                    >
+                                        <XCircle className="w-4 h-4" />
+                                    </button>
+                                    {/* Aquí puedes añadir otros botones como "ver", "subir" si tuvieran lógica independiente */}
+                                </div>
+                            </div>
+                        )}
                     </div>
-                    {imageError && (
+
+                    {imageError && ( // Mensajes de error de validación de imagen
                         <p className="text-red-500 text-xs mt-1">{imageError}</p>
-                    )}
-                    {imagePreview && (
-                        <div className="mt-2 flex items-center gap-2">
-                            <img src={imagePreview} alt="Previsualización" className="h-16 w-16 object-contain border rounded" />
-                            <span className="text-sm text-[var(--color-text-secondary)]">{formImage ? formImage.name : ''}</span> {/* Muestra el nombre del archivo */}
-                        </div>
-                    )}
-                    {editingBadge && !imagePreview && formImage && typeof formImage === 'string' && (
-                        <div className="mt-2 flex items-center gap-2">
-                            <img src={formImage} alt="Imagen actual" className="h-16 w-16 object-contain border rounded" />
-                            <span className="text-sm text-[var(--color-text-secondary)]">Imagen actual</span>
-                        </div>
                     )}
                 </div>
 

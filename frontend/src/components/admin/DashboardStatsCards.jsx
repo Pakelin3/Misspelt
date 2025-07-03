@@ -25,7 +25,7 @@ function DashboardStatsCards() {
         setLoading(true);
         setError(null);
         try {
-            const response = await api.get('/admin/dashboard-data/');
+            const response = await api.get('/dashboard-data/');
             setStats(response.data);
             setError(null);
         } catch (err) {
