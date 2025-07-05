@@ -34,7 +34,6 @@ class myTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['username'] = user.username
         token['email'] = user.email
         token['bio'] = user.profile.bio if hasattr(user, 'profile') else None
-        #token['online'] = user.is_online if hasattr(user, 'profile') else None
         token['image'] = str(user.profile.image) if hasattr(user, 'profile') and user.profile.image else None 
         token['verified'] = user.profile.verified if hasattr(user, 'profile') else False 
         token['is_staff'] = user.is_staff
@@ -133,8 +132,8 @@ class UserStatsSerializer(serializers.ModelSerializer):
     level = serializers.SerializerMethodField()
     xp_for_next_level = serializers.SerializerMethodField()
     xp_progress_in_current_level = serializers.SerializerMethodField()
-    unlocked_badges = BadgeSerializer(many=True, read_only=True) 
-    unlocked_avatars = AvatarSerializer(many=True, read_only=True)    
+    unlocked_badges = BadgeSerializer(many=True, read_only=True, source='badges') 
+    unlocked_avatars = AvatarSerializer(many=True, read_only=True)  
     class Meta:
         model = UserStats
         fields = '__all__'

@@ -251,7 +251,7 @@ class Badge(models.Model):
     ]
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='BASIC')
     condition_description = models.TextField(help_text="Descripción legible de la condición (e.g., 'Acertar 10 slangs')")
-    unlock_condition_data = models.JSONField(default=dict, blank=True, help_text="Datos programáticos para las condiciones de desbloqueo (e.g., {'type': 'correct_slangs', 'value': 10})")
+    unlock_condition_data = models.JSONField(default=list, blank=True, help_text="Lista de objetos de condición (e.g., [{'type': 'correct_slangs', 'value': 10}])")
     reward_description = models.TextField(help_text="Descripción de la recompensa (e.g., '+30 EXP, Nuevo Avatar')")
     reward_data = models.JSONField(default=dict, blank=True, help_text="Datos programáticos para las recompensas (e.g., {'exp': 30, 'avatar_id': 5})")
 

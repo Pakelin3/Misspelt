@@ -1,14 +1,16 @@
-from rest_framework import generics, status, viewsets
+# api/views.py
+
+from rest_framework import generics, status, viewsets, mixins
 from rest_framework.decorators import api_view, permission_classes, action
-from rest_framework.pagination import PageNumberPagination 
+from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
-from api.models import User, Word, Badge, UserStats, EmailVerificationToken, Avatar
-from api.services import award_badge_rewards
-from api.badge_unlock_logic import check_and_unlock_badges
+from api.models import User, Word, Badge, UserStats, EmailVerificationToken, Avatar #
+from api.services import award_badge_rewards #
+from api.badge_unlock_logic import check_and_unlock_badges #
 from django.shortcuts import redirect
 from django.conf import settings
 from api.serializer import (
@@ -25,7 +27,7 @@ from api.serializer import (
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA AUTENTICACION ---
 # * --------------------------------------------------------------------------------------------------
-class MyTokenObtainPairView(TokenObtainPairView):
+class MyTokenObtainPairView(TokenObtainPairView): #
     serializer_class = myTokenObtainPairSerializer
 
     def post(self, request, *args, **kwargs):
@@ -48,7 +50,7 @@ class MyTokenObtainPairView(TokenObtainPairView):
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA CIERRE DE SESION ---
 # * --------------------------------------------------------------------------------------------------
-class LogoutView(APIView):
+class LogoutView(APIView): #
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
@@ -61,20 +63,20 @@ class LogoutView(APIView):
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA VERIFICACION DE EMAIL ---
 # * --------------------------------------------------------------------------------------------------
-class VerifyEmailView(APIView):
+class VerifyEmailView(APIView): #
     permission_classes = [AllowAny]
 
     def get(self, request, token, *args, **kwargs):
         try:
-            verification_token = EmailVerificationToken.objects.get(token=token)
+            verification_token = EmailVerificationToken.objects.get(token=token) #
             user = verification_token.user
 
             if user.profile.verified:
-                return redirect(f"{settings.FRONTEND_URL}/verify-email?status=already_verified")
+                return redirect(f"{settings.FRONTEND_URL}/verify-email?status=already_verified") #
 
-            if verification_token.is_valid():
-                user.profile.verified = True
-                user.profile.save()
+            if verification_token.is_valid(): #
+                user.profile.verified = True #
+                user.profile.save() #
                 verification_token.delete()
 
                 return redirect(f"{settings.FRONTEND_URL}/verify-email?status=success")
@@ -82,7 +84,7 @@ class VerifyEmailView(APIView):
                 verification_token.delete() 
                 return redirect(f"{settings.FRONTEND_URL}/verify-email?status=expired_or_invalid")
 
-        except EmailVerificationToken.DoesNotExist:
+        except EmailVerificationToken.DoesNotExist: #
             return redirect(f"{settings.FRONTEND_URL}/verify-email?status=token_not_found")
         except Exception as e:
             print(f"Error durante la verificación del email: {e}")
@@ -91,33 +93,33 @@ class VerifyEmailView(APIView):
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA REGISTRO DE USUARIO ---
 # * --------------------------------------------------------------------------------------------------
-class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
+class RegisterView(generics.CreateAPIView): #
+    queryset = User.objects.all() #
     permission_classes = [AllowAny]
-    serializer_class = RegisterSerializer
+    serializer_class = RegisterSerializer #
     def perform_create(self, serializer):
         user = serializer.save()
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA DASHBOARD ADMIN ---
 # * --------------------------------------------------------------------------------------------------
-class AdminDashboardDataAPIView(APIView):
+class AdminDashboardDataAPIView(APIView): #
     permission_classes = [IsAuthenticated, IsAdminUser] 
 
     def get(self, request, *args, **kwargs):
         dashboard_stats = {
             'message': f'¡Bienvenido {request.user.username} al Panel de Administración!',
-            'total_users': User.objects.count(),
-            'active_users': User.objects.filter(is_online=True).count(),
-            'total_words': Word.objects.count(),
-            'total_badges': Badge.objects.count(),
+            'total_users': User.objects.count(), #
+            'active_users': User.objects.filter(is_online=True).count(), #
+            'total_words': Word.objects.count(), #
+            'total_badges': Badge.objects.count(), #
         }
         return Response(dashboard_stats, status=status.HTTP_200_OK)
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA DASHBOARD USUARIO ---
 # * --------------------------------------------------------------------------------------------------
-class UserIsStaffAPIView(APIView):
+class UserIsStaffAPIView(APIView): #
     permission_classes = [IsAuthenticated] 
 
     def get(self, request, *args, **kwargs):
@@ -127,7 +129,7 @@ class UserIsStaffAPIView(APIView):
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA PAGINACION ---
 # * --------------------------------------------------------------------------------------------------
-class WordPagination(PageNumberPagination):
+class WordPagination(PageNumberPagination): #
     page_size = 6
     page_size_query_param = 'limit'
     max_page_size = 100
@@ -135,9 +137,9 @@ class WordPagination(PageNumberPagination):
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA PALABRAS (CRUD) ---
 # * --------------------------------------------------------------------------------------------------
-class WordViewSet(viewsets.ModelViewSet):
-    queryset = Word.objects.all().order_by('-created_at')
-    serializer_class = WordSerializer
+class WordViewSet(viewsets.ModelViewSet): #
+    queryset = Word.objects.all().order_by('-created_at') #
+    serializer_class = WordSerializer #
     pagination_class = WordPagination
     filter_backends = [DjangoFilterBackend] 
     filterset_fields = ['word_type']
@@ -155,7 +157,7 @@ class WordViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def random(self, request):
-        word = Word.objects.order_by('?').first()
+        word = Word.objects.order_by('?').first() #
         if word:
             serializer = self.get_serializer(word)
             return Response(serializer.data)
@@ -165,40 +167,37 @@ class WordViewSet(viewsets.ModelViewSet):
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA INSIGNIAS (CRUD) ---
 # * --------------------------------------------------------------------------------------------------
-class BadgeViewSet(viewsets.ModelViewSet):
-    queryset = Badge.objects.all().order_by('title')
-    serializer_class = BadgeSerializer
-    permission_classes = [IsAuthenticated, IsAdminUser]
-
-# * --------------------------------------------------------------------------------------------------
-# ! --- VIEWS PARA ESTADISTICAS DE USUARIOS (CRUD) ---
-# * --------------------------------------------------------------------------------------------------
-class UserStatsViewSet(viewsets.ReadOnlyModelViewSet): 
-    queryset = UserStats.objects.all().order_by('user__username') # Ordena por nombre de usuario
-    serializer_class = UserStatsSerializer
+class BadgeViewSet(viewsets.ModelViewSet): #
+    queryset = Badge.objects.all().order_by('title') #
+    serializer_class = BadgeSerializer #
     permission_classes = [IsAuthenticated, IsAdminUser]
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA AVATARES (CRUD) ---
 # * --------------------------------------------------------------------------------------------------
-class AvatarViewSet(viewsets.ModelViewSet):
-    queryset = Avatar.objects.all().order_by('name') # Consulta todos los avatares, ordenados por nombre
-    serializer_class = AvatarSerializer # Usa el serializador que acabas de crear
+class AvatarViewSet(viewsets.ModelViewSet): #
+    queryset = Avatar.objects.all().order_by('name') #
+    serializer_class = AvatarSerializer #
     # Restringir permisos solo a administradores, ya que el CRUD es para gestión
     permission_classes = [IsAuthenticated, IsAdminUser]
-    # No necesitas paginación si la lista de avatares no es muy grande,
-    # pero puedes añadirla si es necesario (como en WordPagination)
+
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA ESTADISTICAS DE USUARIOS (CRUD) ---
 # * --------------------------------------------------------------------------------------------------
-class UserStatsViewSet(viewsets.ReadOnlyModelViewSet): 
+# CONSOLIDADA: Esta es la única definición correcta de UserStatsViewSet
+class UserStatsViewSet(
+    mixins.RetrieveModelMixin,   # Permite GET para detalle por ID (admin)
+    mixins.UpdateModelMixin,     # Permite PUT/PATCH para detalle por ID (admin)
+    mixins.ListModelMixin,       # Permite GET para lista (admin)
+    viewsets.GenericViewSet      # Base para vistas que manejan operaciones específicas
+):
     serializer_class = UserStatsSerializer #
 
     def get_queryset(self):
         """
-        Permite a los administradores ver todas las estadísticas,
-        y a los usuarios normales ver solo las suyas.
+        Permite a los administradores ver todas las estadísticas.
+        Un usuario normal solo puede ver las suyas.
         """
         if self.request.user.is_staff: #
             return UserStats.objects.all().order_by('user__username') #
@@ -206,38 +205,71 @@ class UserStatsViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_permissions(self):
         """
-        Ajusta los permisos para la acción 'me' y otras.
+        Ajusta los permisos para la acción 'me' (cualquier autenticado)
+        y para las otras acciones (solo admins).
         """
         if self.action == 'me':
             self.permission_classes = [IsAuthenticated] # Cualquier usuario autenticado puede ver sus propias stats
+        elif self.action in ['retrieve', 'list', 'update', 'partial_update']:
+            self.permission_classes = [IsAuthenticated, IsAdminUser] # Para operaciones estándar, solo admin
         else:
-            self.permission_classes = [IsAuthenticated, IsAdminUser] # Para listado y detalle (por ID), solo admin
+            self.permission_classes = [IsAuthenticated] # Permisos por defecto para otras acciones
         return super().get_permissions()
 
-    # ACERCIÓN 'me' - MOVIDA DENTRO DE LA CLASE
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get', 'patch']) # Permite GET y PATCH para la acción 'me'
     def me(self, request):
         """
-        Obtiene las estadísticas del usuario actualmente autenticado.
+        Obtiene o actualiza parcialmente las estadísticas del usuario autenticado.
         Si no existen, las crea.
+        También verifica y desbloquea insignias.
         """
         user_stats, created = UserStats.objects.get_or_create(user=request.user) #
-        serializer = self.get_serializer(user_stats)
-        return Response(serializer.data)
+
+        if request.method == 'GET':
+            # Ejecutar check_and_unlock_badges en cada GET a /me/
+            # Esto asegura que los badges se verifiquen y desbloqueen justo antes de devolver los datos.
+            newly_unlocked_badges_on_get = check_and_unlock_badges(request.user) #
+            
+            # Recargar user_stats para obtener los cambios si los hubo (ej. badge añadido)
+            user_stats.refresh_from_db() 
+
+            serializer = self.get_serializer(user_stats)
+            response_data = serializer.data
+            
+            # Incluir badges desbloqueados en esta petición GET
+            if newly_unlocked_badges_on_get:
+                response_data['newly_unlocked_badges_on_get'] = [badge.title for badge in newly_unlocked_badges_on_get]
+
+            return Response(response_data)
+        
+        elif request.method == 'PATCH':
+            # Usar partial=True para PATCH, permitiendo actualizar solo los campos enviados
+            serializer = self.get_serializer(user_stats, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            
+            # Vuelve a verificar insignias después de la actualización de stats
+            newly_unlocked_badges_on_patch = check_and_unlock_badges(request.user) #
+            
+            response_data = serializer.data
+            response_data['newly_unlocked_badges'] = [badge.title for badge in newly_unlocked_badges_on_patch]
+
+            return Response(response_data)
+
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA USUARIOS (CRUD) ---
 # * --------------------------------------------------------------------------------------------------
 class AdminUserViewSet(viewsets.ReadOnlyModelViewSet): # Usamos ReadOnly para evitar que el admin de frontend modifique usuarios directamente aquí
-    queryset = User.objects.all().order_by('username')
-    serializer_class = AdminUserSerializer 
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    queryset = User.objects.all().order_by('username') #
+    serializer_class = AdminUserSerializer #
+    permission_classes = [IsAuthenticated, IsAdminUser] #
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA RUTAS ---
 # * --------------------------------------------------------------------------------------------------
 @api_view(['GET'])
-def getRoutes(request):
+def getRoutes(request): #
     routes = [
         '/api/token/',
         '/api/register/',
@@ -269,7 +301,7 @@ def getRoutes(request):
 # * --------------------------------------------------------------------------------------------------
 @api_view(['GET' , 'POST'])
 @permission_classes([IsAuthenticated])
-def testEndPoint(request):
+def testEndPoint(request): #
     if request.method == 'GET':
         message = f'Bienvenido {request.user} al dashboard [GET request]'
         return Response({'message': message}, status=status.HTTP_200_OK)
@@ -285,13 +317,11 @@ def testEndPoint(request):
 # * --------------------------------------------------------------------------------------------------
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def process_game_action(request):
+def process_game_action(request): #
     user = request.user
-    newly_unlocked_badges = check_and_unlock_badges(user)
+    newly_unlocked_badges = check_and_unlock_badges(user) #
     response_data = {
         'message': 'Acción procesada.',
         'newly_unlocked_badges': [badge.title for badge in newly_unlocked_badges]
     }
     return Response(response_data, status=status.HTTP_200_OK)
-
-
