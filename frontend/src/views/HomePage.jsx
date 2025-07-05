@@ -15,7 +15,7 @@ function Homepage() {
             </section>
 
             <section className='flex justify-around m-20 gap-20 flex-wrap-reverse items-end'>
-                <div className='block max-w-md p-6 bg-[var(--color-bg-card)] shadow-lg border border-[var(--color-bg-secondary)] rounded-lg justify-self-start '> 
+                <div className='block max-w-md p-6 w-md bg-[var(--color-bg-card)] shadow-lg border border-[var(--color-bg-secondary)] rounded-lg justify-self-start '> 
                     <RandomWordCard />
                 </div>
                 <div className="block max-w-md p-6 bg-[var(--color-bg-card)] shadow-lg border rounded-lg border-[var(--color-bg-secondary)]"> 

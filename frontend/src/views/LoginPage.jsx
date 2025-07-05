@@ -74,7 +74,7 @@ function LoginPage({ onScreenChange }) {
                         placeholder="Correo electrónico o nombre de usuario"
                         name="email"
                         value={email}
-                        onChange={(e) => { setEmail(e.target.value); setErrors(prev => ({ ...prev, email: undefined, detail: undefined })); }}
+                        onChange={(e) => { setEmail(e.target.value.toLowerCase()); setErrors(prev => ({ ...prev, email: undefined, detail: undefined })); }}
                         className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2
                             ${theme === 'light' ? 'text-[var(--color-text)] border-[var(--color-text-secondary)] focus:ring-[var(--color-bg-secondary)]' :
                                 'text-[var(--color-dark-text)] border-[var(--color-dark-border)] focus:ring-[var(--color-bg-secondary)]'}

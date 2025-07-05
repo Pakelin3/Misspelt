@@ -246,6 +246,12 @@ function AvatarAdminPanel() {
             button: true,
         },
         {
+            name: 'ID',
+            selector: row => row.id,
+            sortable: true,
+            width: '80px',
+        },
+        {
             name: 'Nombre',
             selector: row => row.name,
             sortable: true,

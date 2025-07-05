@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import useAxios from '@/utils/useAxios';
 import { useTheme } from '@/context/ThemeContext';
-import { Plus, Edit, Trash2, Save, XCircle, UploadCloud,  } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, XCircle, UploadCloud } from 'lucide-react';
 import Swal from 'sweetalert2';
 import DataTable from 'react-data-table-component';
 
@@ -21,6 +21,8 @@ function BadgeAdminPanel() {
     const [imageError, setImageError] = useState(''); // Mensajes de error de validación de imagen
     const [formCategory, setFormCategory] = useState('BASIC');
     const [formConditionDescription, setFormConditionDescription] = useState('');
+    const [formUnlockConditionType, setFormUnlockConditionType] = useState('');
+    const [formUnlockConditionValue, setFormUnlockConditionValue] = useState('');
     const [formRewardDescription, setFormRewardDescription] = useState('');
     const [formRewardData, setFormRewardData] = useState('');
 
@@ -55,8 +57,10 @@ function BadgeAdminPanel() {
         setImageError('');
         setFormCategory('BASIC');
         setFormConditionDescription('');
+        setFormUnlockConditionType('');
+        setFormUnlockConditionValue('');
         setFormRewardDescription('');
-        setFormRewardData('');
+        setFormRewardData(JSON.stringify({}, null, 2));
     };
 
     const handleNewBadge = () => {
@@ -75,8 +79,16 @@ function BadgeAdminPanel() {
         setFormCategory(badge.category);
         setFormConditionDescription(badge.condition_description);
         setFormRewardDescription(badge.reward_description);
-        setFormRewardData(JSON.stringify(badge.reward_data, null, 2));
+        setFormRewardData(JSON.stringify(badge.reward_data || {}, null, 2));
         setIsFormOpen(true);
+        if (badge.unlock_condition_data && Array.isArray(badge.unlock_condition_data) && badge.unlock_condition_data.length > 0) {
+            const firstCondition = badge.unlock_condition_data[0];
+            setFormUnlockConditionType(firstCondition.type || '');
+            setFormUnlockConditionValue(firstCondition.value || '');
+        } else {
+            setFormUnlockConditionType('');
+            setFormUnlockConditionValue('');
+        }
     };
 
     const handleImageChange = (e) => {
@@ -176,16 +188,27 @@ function BadgeAdminPanel() {
         formData.append('condition_description', formConditionDescription);
         formData.append('reward_description', formRewardDescription);
 
+
+        let unlockConditionDataArray = [];
+        if (formUnlockConditionType && formUnlockConditionValue !== '') {
+            unlockConditionDataArray.push({
+                type: formUnlockConditionType,
+                value: Number(formUnlockConditionValue)
+            });
+        }
+        formData.append('unlock_condition_data', JSON.stringify(unlockConditionDataArray));
+
         if (formImage instanceof File) {
             formData.append('image', formImage);
-        } else if (editingBadge && formImage === '') {
-            formData.append('image', '');
+        } else if (editingBadge && !formImage && imagePreview === '') {
+            formData.append('image', ''); 
         }
         try {
             let parsedRewardData = {};
             try {
-                parsedRewardData = JSON.parse(formRewardData || '{}');
-                // eslint-disable-next-line no-unused-vars
+                // Asegúrate de que el JSON sea válido antes de enviarlo
+                parsedRewardData = JSON.parse(formRewardData);
+            // eslint-disable-next-line no-unused-vars
             } catch (jsonErr) {
                 Swal.fire({
                     title: 'Error de JSON',
@@ -197,7 +220,6 @@ function BadgeAdminPanel() {
                 return;
             }
             formData.append('reward_data', JSON.stringify(parsedRewardData));
-
 
             if (editingBadge) {
                 await api.put(`/badges/${editingBadge.id}/`, formData);
@@ -304,6 +326,39 @@ function BadgeAdminPanel() {
             cell: row => (
                 <span className={theme === 'light' ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-dark-text-secondary)]'}>{row.description}</span>
             )
+        },
+        {
+            name: 'Condición Prog.',
+            cell: row => {
+                if (row.unlock_condition_data && Array.isArray(row.unlock_condition_data) && row.unlock_condition_data.length > 0) {
+                    const firstCondition = row.unlock_condition_data[0];
+                    const conditionType = firstCondition.type;
+                    const requiredValue = firstCondition.value;
+    
+                    const conditionTypeToSpanish = {
+                        'correct_slangs': 'Slangs Acertados',
+                        'total_exp_achieved': 'Experiencia Total',
+                        'answered_total_questions': 'Preguntas Respondidas',
+                        'words_seen_total': 'Palabras Vistas',
+                        'phrasal_verbs_seen': 'Phrasal Verbs Vistos',
+                        'correct_answers_total': 'Respuestas Correctas',
+                        'total_slangs_questions': 'Preguntas de Slangs',
+                        'correct_phrasal_verbs': 'Phrasal Verbs Correctos',
+                        'total_phrasal_verbs_questions': 'Preguntas de Phrasal Verbs',
+                        'current_streak': 'Racha Actual',
+                        'longest_streak': 'Racha Más Larga',
+                    };
+                    
+                    return (
+                        <span className={theme === 'light' ? 'text-[var(--color-text-main)]' : 'text-[var(--color-dark-text)]'}>
+                            {`${conditionTypeToSpanish[conditionType] || conditionType}: ${requiredValue}`}
+                        </span>
+                    );
+                }
+                return <span className={theme === 'light' ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-dark-text-secondary)]'}>N/A</span>;
+            },
+            grow: 2,
+            minWidth: '200px',
         },
         {
             name: 'Acciones',
@@ -593,6 +648,60 @@ function BadgeAdminPanel() {
                         placeholder="Ej: 'Acertar 10 slangs'"
                     ></textarea>
                 </div>
+
+                {/* Campo Datos de la Condición (Interactivos) */}
+                <div>
+                    <label htmlFor="unlockConditionType" className="block text-sm font-medium text-[var(--color-text-main)] mb-1">Tipo de Condición:</label>
+                    <select
+                        id="unlockConditionType"
+                        value={formUnlockConditionType}
+                        onChange={(e) => {
+                            setFormUnlockConditionType(e.target.value);
+                            // Opcional: si cambias el tipo, podrías resetear el valor para evitar confusiones
+                            setFormUnlockConditionValue('');
+                        }}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2
+            ${theme === 'light'
+                                ? 'border-[var(--color-text-secondary)] text-[var(--color-text)] focus:ring-[var(--color-bg-secondary)] bg-white'
+                                : 'border-[var(--color-dark-border)] text-[var(--color-dark-text)] focus:ring-[var(--color-accent-blue)] bg-[var(--color-dark-bg-tertiary)]'
+                            }`}
+                    >
+                        {/* 
+                        // TODO: Mapeando a los 'type' en badge_unlock_logic.py 
+                        */}
+                        <option value="">Selecciona un tipo de condición</option>
+                        <option value="correct_slangs">Slangs Acertados</option>
+                        <option value="total_exp_achieved">Experiencia Total Obtenida</option>
+                        <option value="answered_total_questions">Preguntas Totales Respondidas</option>
+                        <option value="words_seen_total">Palabras Vistas</option>
+                        <option value="phrasal_verbs_seen">Phrasal Verbs Vistos</option>
+                        <option value="correct_phrasal_verbs">Phrasal Verbs Correctos</option>
+                        <option value="total_phrasal_verbs_questions">Preguntas de Phrasal Verbs</option>
+                        <option value="correct_answers_total">Respuestas Correctas Totales</option>
+                        <option value="total_slangs_questions">Preguntas de Slangs vistas</option>
+                        <option value="current_streak">Racha Actual</option>
+                        <option value="longest_streak">Racha más larga</option>
+                    </select>
+                </div>
+
+                {formUnlockConditionType && ( // Mostrar el campo de cantidad solo si se ha seleccionado un tipo
+                    <div>
+                        <label htmlFor="unlockConditionValue" className="block text-sm font-medium text-[var(--color-text-main)] mb-1">Cantidad Requerida:</label>
+                        <input
+                            type="number"
+                            id="unlockConditionValue"
+                            value={formUnlockConditionValue}
+                            onChange={(e) => setFormUnlockConditionValue(e.target.value)}
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2
+                ${theme === 'light'
+                                    ? 'border-[var(--color-text-secondary)] text-[var(--color-text)] focus:ring-[var(--color-bg-secondary)]'
+                                    : 'border-[var(--color-dark-border)] text-[var(--color-dark-text)] focus:ring-[var(--color-accent-blue)]'
+                                }`}
+                            min="0"
+                            required={formUnlockConditionType !== ''} // Hacerlo requerido si se ha elegido un tipo
+                        />
+                    </div>
+                )}
 
                 {/* Campo Descripción de la Recompensa */}
                 <div>

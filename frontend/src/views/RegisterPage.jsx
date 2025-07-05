@@ -70,7 +70,7 @@ function RegisterPage({ onScreenChange }) {
                         placeholder="Correo electrónico"
                         value={email}
                         onChange={(e) => {
-                            setEmail(e.target.value);
+                            setEmail(e.target.value.toLowerCase());
                             setErrors(prev => ({ ...prev, email: undefined }));
                         }}
                         className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2

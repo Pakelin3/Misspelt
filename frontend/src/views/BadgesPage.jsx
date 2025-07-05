@@ -1,20 +1,17 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
-import useAxios from '@/utils/useAxios'; // Para hacer peticiones al backend
-import { useTheme } from '@/context/ThemeContext'; // Para el tema claro/oscuro
-import AuthContext from '@/context/AuthContext'; // Para obtener el usuario y sus stats
-import { ScaleLoader } from 'react-spinners'; // Para el indicador de carga
+import useAxios from '@/utils/useAxios'; 
+import { useTheme } from '@/context/ThemeContext'; 
+import AuthContext from '@/context/AuthContext'; 
+import { ScaleLoader } from 'react-spinners'; 
 
 function BadgesPage() {
-    const api = useAxios(); // Hook para peticiones autenticadas
-    const { theme } = useTheme(); // Tema actual
-    const { user } = useContext(AuthContext); // Usuario logueado
-
-    const [allBadges, setAllBadges] = useState([]); // Todos los badges disponibles
-    const [userStats, setUserStats] = useState(null); // Estadísticas del usuario actual (para XP y contadores)
-    const [loading, setLoading] = useState(true); // Estado de carga
-    const [error, setError] = useState(null); // Estado de error
-
-    // Estado para un mensaje informativo si no hay badges o stats
+    const api = useAxios(); 
+    const { theme } = useTheme(); 
+    const { user } = useContext(AuthContext); 
+    const [allBadges, setAllBadges] = useState([]); 
+    const [userStats, setUserStats] = useState(null); 
+    const [loading, setLoading] = useState(true); 
+    const [error, setError] = useState(null); 
     const [infoMessage, setInfoMessage] = useState(null);
 
     const fetchBadgeData = useCallback(async () => {
@@ -23,21 +20,20 @@ function BadgesPage() {
         setInfoMessage(null);
         try {
             // 1. Obtener todos los badges del sistema
-            const allBadgesResponse = await api.get('/badges/'); // Asume /badges/ endpoint para todos los badges
+            const allBadgesResponse = await api.get('/badges/'); 
             const fetchedAllBadges = allBadgesResponse.data.results || [];
             setAllBadges(fetchedAllBadges);
-
             // 2. Obtener las estadísticas del usuario actual
             let currentUserStats = null;
-            if (user && user.user_id) { // Asegúrate de que el usuario esté logueado y tenga user_id
+            if (user && user.user_id) {
                 try {
-                    const userStatsResponse = await api.get(`/user-stats/me/`); // <-- ¡CAMBIO CLAVE!
+                    const userStatsResponse = await api.get(`/user-stats/me/`); 
                     currentUserStats = userStatsResponse.data;
                     setUserStats(currentUserStats);
                 } catch (userStatsErr) {
                     console.warn("No se pudieron cargar las estadísticas del usuario. Podría no tener entradas en UserStats.", userStatsErr);
                     setInfoMessage("No se encontraron estadísticas para tu usuario. Juega un poco para empezar a ganar insignias.");
-                    setUserStats(null); // Asegurar que sea null si falla
+                    setUserStats(null); 
                 }
             } else {
                 setInfoMessage("Debes iniciar sesión para ver tus insignias.");
@@ -56,41 +52,72 @@ function BadgesPage() {
         } finally {
             setLoading(false);
         }
-    }, [api, user]); // user como dependencia para re-fetch si el usuario cambia
+    }, [api, user]); 
 
     useEffect(() => {
         fetchBadgeData();
     }, [fetchBadgeData]);
 
-    // Función para determinar si un badge está desbloqueado y obtener su progreso
     const getBadgeStatus = (badge) => {
-        if (!userStats || !userStats.unlocked_badges) {
-            return { unlocked: false, progress: 0, showProgress: false }; // Si no hay stats o badges, ninguno desbloqueado
+        if (!userStats || !userStats.unlocked_badges || !Array.isArray(userStats.unlocked_badges)) {
+            return { unlocked: false, progress: 0, showProgress: false, conditionText: badge.condition_description };
         }
-
-        const isUnlocked = userStats.unlocked_badges.some(ub => ub.id === badge.id); //
+        const isUnlocked = userStats.unlocked_badges.some(ub => ub.id === badge.id); 
 
         let progress = 0;
         let showProgress = false;
+        let conditionText = badge.condition_description; 
 
         if (isUnlocked) {
             progress = 100;
-            showProgress = true; // Si está desbloqueado, mostramos 100% de progreso
-        } else if (badge.unlock_condition_data && userStats) { // Si el badge tiene una condición programática
-            const condition = badge.unlock_condition_data;
-            const userCurrentValue = userStats[condition.type]; // Obtener el valor actual del usuario (ej. correct_slangs)
-            const requiredValue = condition.value;
+            showProgress = true; 
+            conditionText = badge.reward_description; 
+        } else if (badge.unlock_condition_data && Array.isArray(badge.unlock_condition_data) && badge.unlock_condition_data.length > 0 && userStats) {
+            const conditionTypeToSpanish = {
+                'correct_slangs': 'Slangs acertados',
+                'total_exp_achieved': 'Experiencia total', 
+                'answered_total_questions': 'Preguntas respondidas',
+                'words_seen_total': 'Palabras vistas',  
+                'phrasal_verbs_seen': 'Phrasal verbs vistos',
+                'correct_answers_total': 'Respuestas correctas',
+                'total_slangs_questions': 'Preguntas de slangs',
+                'correct_phrasal_verbs': 'Phrasal verbs correctos',
+                'total_phrasal_verbs_questions': 'Preguntas de phrasal verbs',
+                'current_streak': 'Racha actual',
+                'longest_streak': 'Racha más larga',
+            };
+
+            const conditionTypeToUserStatsField = {
+                'correct_slangs': 'correct_slangs',
+                'total_exp_achieved': 'experience', 
+                'answered_total_questions': 'total_questions_answered',
+                'words_seen_total': 'words_seen_total',
+                'phrasal_verbs_seen': 'phrasal_verbs_seen',
+                'correct_answers_total': 'correct_answers_total',
+                'total_slangs_questions': 'total_slangs_questions',
+                'correct_phrasal_verbs': 'correct_phrasal_verbs',
+                'total_phrasal_verbs_questions': 'total_phrasal_verbs_questions',
+                'current_streak': 'current_streak',
+                'longest_streak': 'longest_streak',
+            };
+
+            const firstCondition = badge.unlock_condition_data[0]; 
+            const conditionType = firstCondition.type; 
+            const requiredValue = firstCondition.value;
+            const userStatsFieldName = conditionTypeToUserStatsField[conditionType];
+            const userCurrentValue = userStatsFieldName ? userStats[userStatsFieldName] : undefined; 
             
-            // Asegúrate de que userCurrentValue no sea undefined/null y que requiredValue sea válido
             if (typeof userCurrentValue === 'number' && typeof requiredValue === 'number' && requiredValue > 0) {
                 progress = Math.min(100, (userCurrentValue / requiredValue) * 100);
-                showProgress = true; // Mostrar barra si hay condición y datos numéricos
+                showProgress = true; 
+                conditionText = `${conditionTypeToSpanish[conditionType] || conditionType}: ${userCurrentValue}/${requiredValue}`;
             } else {
                 progress = 0;
-                showProgress = false; // No mostrar si los datos no son válidos o falta la stat
+                showProgress = false;
+                conditionText = badge.condition_description; 
             }
         }
-        return { unlocked: isUnlocked, progress: Math.floor(progress), showProgress: showProgress }; // Redondear a entero
+        return { unlocked: isUnlocked, progress: Math.floor(progress), showProgress: showProgress, conditionText: conditionText };
     };
 
     // --- RENDERIZADO DEL COMPONENTE ---
@@ -137,13 +164,8 @@ function BadgesPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 max-w-7xl mx-auto">
                 {allBadges.map(badge => {
-                    const { unlocked, progress, showProgress } = getBadgeStatus(badge);
+                    const { unlocked, progress, showProgress, conditionText } = getBadgeStatus(badge);
                     
-                    // Clases para la imagen según el progreso/desbloqueo
-                    const imageClasses = unlocked 
-                        ? '' // Desbloqueado: color completo
-                        : (progress > 0 ? '' : 'grayscale opacity-70'); // Con progreso: color; Sin progreso: gris/opaco
-
                     return (
                         <div
                             key={badge.id}
@@ -155,10 +177,9 @@ function BadgesPage() {
                             {/* Icono/Imagen del Badge */}
                             <div className="relative w-24 h-24 mb-4">
                                 <img
-                                    src={badge.image} // URL completa de la imagen del badge
+                                    src={badge.image}
                                     alt={badge.title}
-                                    className={`w-full h-full object-contain transition-all duration-300 ${imageClasses}`} // Aplica las clases de la imagen
-                                />
+                                    className={`w-full h-full object-contain transition-all duration-300 ${unlocked ? '' : 'grayscale opacity-70'}`}/>
                                 {unlocked && (
                                     <div className="absolute bottom-0 right-0 p-1 bg-[var(--color-accent-green)] rounded-full text-white">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check"><path d="M20 6 9 17l-5-5"/></svg>
@@ -173,14 +194,14 @@ function BadgesPage() {
 
                             {/* Requerimiento / Descripción de la Condición */}
                             <p className={`text-sm text-center mb-3 ${theme === 'light' ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-dark-text-secondary)]'}`}>
-                                {unlocked ? badge.reward_description : badge.condition_description}
+                                {conditionText} {/* Usa el conditionText calculado */}
                             </p>
 
                             {/* Barra de Progreso */}
                             {showProgress && ( // Mostrar progreso solo si `showProgress` es true
                                 <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-auto">
                                     <div
-                                        className="bg-[var(--color-accent-blue)] h-2.5 rounded-full transition-all duration-500"
+                                        className="bg-[var(--color-bg-secondary)] h-2.5 rounded-full transition-all duration-500"
                                         style={{ width: `${progress}%` }}
                                     ></div>
                                     <p className={`text-xs text-right mt-1 ${theme === 'light' ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-dark-text-secondary)]'}`}>

@@ -9,6 +9,7 @@ import DictionaryPage from './views/DictionaryPage';
 import RegisterPage from './views/RegisterPage';
 import LoginPage from './views/LoginPage';
 import Dashboard from './views/Dashboard';
+import ProfilePage from './views/ProfilePage';
 import Navbar from './components/Navbar';
 import AdminDashboard from './views/AdminDashboard';
 import EmailVerificationLandingPage from './views/EmailVerificationLandingPage';
@@ -59,7 +60,7 @@ function App() {
                 } />
                 <Route path="/play" element={<div>Jugar Page</div>} />
                 <Route path="/badges" element={<BadgesPage />} />
-                <Route path="/profile" element={<div>perfil</div>} />
+                <Route path="/profile" element={<ProfilePage />} />
               </Route>
 
               {/* 
