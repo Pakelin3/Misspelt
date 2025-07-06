@@ -252,8 +252,8 @@ function DictionaryAdminPanel() {
         },
         cells: {
             style: {
-                color: theme === 'light' ? 'var(--color-text-main)' : 'var(--color-dark-text)',
                 backgroundColor: theme === 'light' ? 'var(--color-bg-card)' : 'var(--color-dark-bg-secondary)',
+                color: theme === 'light' ? 'var(--color-text-main)' : 'var(--color-dark-text)',
                 '&:not(:last-of-type)': {
                     borderRightStyle: 'solid',
                     borderRightWidth: '1px',
@@ -335,8 +335,8 @@ function DictionaryAdminPanel() {
     );
 
     const renderWordForm = () => (
-        <div className={`p-4 rounded-lg shadow-md
-            ${theme === 'light' ? 'bg-[var(--color-bg-card)]' : 'bg-[var(--color-dark-bg-secondary)]'}`}>
+        // Añadir una clase 'modal-content' o similar para controlar el ancho máximo del modal
+        <div className={`p-4 rounded-lg shadow-md w-full max-w-lg mx-auto ${theme === 'light' ? 'bg-[var(--color-bg-card)]' : 'bg-[var(--color-dark-bg-secondary)]'}`}>
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-[var(--color-text-main)]">{editingWord ? 'Editar Palabra' : 'Crear Nueva Palabra'}</h2>
                 <button
@@ -346,7 +346,7 @@ function DictionaryAdminPanel() {
                     <XCircle className="w-6 h-6" />
                 </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Campos de la palabra */}
                 <div>
@@ -440,7 +440,7 @@ function DictionaryAdminPanel() {
                         id="tags"
                         value={formTags}
                         onChange={(e) => setFormTags(e.target.value)}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 h-24 resize-y
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2
                             ${theme === 'light'
                                 ? 'border-[var(--color-text-secondary)] text-[var(--color-text)] focus:ring-[var(--color-bg-secondary)]'
                                 : 'border-[var(--color-dark-border)] text-[var(--color-dark-text)] focus:ring-[var(--color-accent-blue)]'
@@ -478,26 +478,12 @@ function DictionaryAdminPanel() {
 
     return (
         <div className="p-4 sm:p-6 lg:p-8">
+            {renderWordList()}
             {isFormOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 sm:hidden">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
                     {renderWordForm()}
                 </div>
             )}
-
-            <div className={`hidden sm:grid ${isFormOpen ? 'sm:grid-cols-2' : 'sm:grid-cols-1'} gap-6`}>
-                <div className={`${isFormOpen ? '' : 'sm:col-span-1'}`}>
-                    {renderWordList()}
-                </div>
-                {isFormOpen && (
-                    <div className="sm:col-span-1">
-                        {renderWordForm()}
-                    </div>
-                )}
-            </div>
-
-            <div className="sm:hidden">
-                {!isFormOpen && renderWordList()}
-            </div>
         </div>
     );
 }

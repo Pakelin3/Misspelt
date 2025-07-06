@@ -567,30 +567,13 @@ function AvatarAdminPanel() {
     // --- RENDER PRINCIPAL ---
     return (
         <div className="p-4 sm:p-6 lg:p-8">
-            {/* Modal para formulario en móviles (si isFormOpen es true) */}
-            {isFormOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 sm:hidden">
-                    {renderAvatarForm()}
-                </div>
-            )}
-
-            {/* Layout para tablets y desktops */}
-            <div className={`hidden sm:grid ${isFormOpen ? 'sm:grid-cols-2' : 'sm:grid-cols-1'} gap-6`}>
-                <div className={`${isFormOpen ? '' : 'sm:col-span-1'}`}>
-                    {renderAvatarList()}
-                </div>
-                {isFormOpen && (
-                    <div className="sm:col-span-1">
-                        {renderAvatarForm()}
-                    </div>
-                )}
+        {renderAvatarList()}
+        {isFormOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+                {renderAvatarForm()}
             </div>
-
-            {/* Layout para móviles (solo muestra lista o formulario, no ambos) */}
-            <div className="sm:hidden">
-                {!isFormOpen && renderAvatarList()}
-            </div>
-        </div>
+        )}
+    </div>
     );
 }
 

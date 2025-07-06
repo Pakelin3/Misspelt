@@ -13,19 +13,17 @@ function BadgeAdminPanel() {
     const [error, setError] = useState(null);
     const [editingBadge, setEditingBadge] = useState(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
-
     const [formTitle, setFormTitle] = useState('');
     const [formDescription, setFormDescription] = useState('');
-    const [formImage, setFormImage] = useState(null); // Ahora guarda el objeto File (o null)
-    const [imagePreview, setImagePreview] = useState(''); // Guarda la URL para previsualización
-    const [imageError, setImageError] = useState(''); // Mensajes de error de validación de imagen
+    const [formImage, setFormImage] = useState(null);
+    const [imagePreview, setImagePreview] = useState('');
+    const [imageError, setImageError] = useState('');
     const [formCategory, setFormCategory] = useState('BASIC');
     const [formConditionDescription, setFormConditionDescription] = useState('');
     const [formUnlockConditionType, setFormUnlockConditionType] = useState('');
     const [formUnlockConditionValue, setFormUnlockConditionValue] = useState('');
     const [formRewardDescription, setFormRewardDescription] = useState('');
     const [formRewardData, setFormRewardData] = useState('');
-
     const [totalRows, setTotalRows] = useState(0);
     const [perPage, setPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
@@ -201,14 +199,14 @@ function BadgeAdminPanel() {
         if (formImage instanceof File) {
             formData.append('image', formImage);
         } else if (editingBadge && !formImage && imagePreview === '') {
-            formData.append('image', ''); 
+            formData.append('image', '');
         }
         try {
             let parsedRewardData = {};
             try {
                 // Asegúrate de que el JSON sea válido antes de enviarlo
                 parsedRewardData = JSON.parse(formRewardData);
-            // eslint-disable-next-line no-unused-vars
+                // eslint-disable-next-line no-unused-vars
             } catch (jsonErr) {
                 Swal.fire({
                     title: 'Error de JSON',
@@ -334,7 +332,7 @@ function BadgeAdminPanel() {
                     const firstCondition = row.unlock_condition_data[0];
                     const conditionType = firstCondition.type;
                     const requiredValue = firstCondition.value;
-    
+
                     const conditionTypeToSpanish = {
                         'correct_slangs': 'Slangs Acertados',
                         'total_exp_achieved': 'Experiencia Total',
@@ -348,7 +346,7 @@ function BadgeAdminPanel() {
                         'current_streak': 'Racha Actual',
                         'longest_streak': 'Racha Más Larga',
                     };
-                    
+
                     return (
                         <span className={theme === 'light' ? 'text-[var(--color-text-main)]' : 'text-[var(--color-dark-text)]'}>
                             {`${conditionTypeToSpanish[conditionType] || conditionType}: ${requiredValue}`}
@@ -493,7 +491,8 @@ function BadgeAdminPanel() {
     );
 
     const renderBadgeForm = () => (
-        <div className={`p-4 rounded-lg shadow-md
+
+        <div className={`p-4 rounded-lg shadow-md w-full max-w-lg mx-auto max-h-[calc(100vh-4rem)] overflow-y-auto
             ${theme === 'light' ? 'bg-[var(--color-bg-card)]' : 'bg-[var(--color-dark-bg-secondary)]'}`}>
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-[var(--color-text-main)]">{editingBadge ? 'Editar Insignia' : 'Crear Nueva Insignia'}</h2>
@@ -766,26 +765,12 @@ function BadgeAdminPanel() {
 
     return (
         <div className="p-4 sm:p-6 lg:p-8">
+            {renderBadgeList()}
             {isFormOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 sm:hidden">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
                     {renderBadgeForm()}
                 </div>
             )}
-
-            <div className={`hidden sm:grid ${isFormOpen ? 'sm:grid-cols-2' : 'sm:grid-cols-1'} gap-6`}>
-                <div className={`${isFormOpen ? '' : 'sm:col-span-1'}`}>
-                    {renderBadgeList()}
-                </div>
-                {isFormOpen && (
-                    <div className="sm:col-span-1">
-                        {renderBadgeForm()}
-                    </div>
-                )}
-            </div>
-
-            <div className="sm:hidden">
-                {!isFormOpen && renderBadgeList()}
-            </div>
         </div>
     );
 }
