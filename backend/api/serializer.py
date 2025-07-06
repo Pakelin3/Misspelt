@@ -27,18 +27,32 @@ class myTokenObtainPairSerializer(TokenObtainPairSerializer):
         'user_not_found': 'El usuario no existe.',
         'invalid_password': 'La contraseña es incorrecta.',
     }
-    @classmethod
-    def get_token(cls, user):
+    def get_token(self, user): # <-- Cambia 'cls' por 'self'
         token = super().get_token(user)
-        token['full_name'] = user.profile.full_name if hasattr(user, 'profile') else None 
+        token['full_name'] = user.profile.full_name if hasattr(user, 'profile') else None
         token['username'] = user.username
         token['email'] = user.email
         token['bio'] = user.profile.bio if hasattr(user, 'profile') else None
-        token['image'] = str(user.profile.image) if hasattr(user, 'profile') and user.profile.image else None 
-        token['verified'] = user.profile.verified if hasattr(user, 'profile') else False 
+        token['verified'] = user.profile.verified if hasattr(user, 'profile') else False
         token['is_staff'] = user.is_staff
 
-        return token
+        # Cambia cls.context.get('request') por self.context.get('request')
+        request = self.context.get('request')
+
+        profile_image_url = None
+        if hasattr(user, 'profile') and user.profile.image is not None and user.profile.image != '':
+            if request:
+                profile_image_url = request.build_absolute_uri(user.profile.image.url)
+        token['profile_image_url'] = profile_image_url
+
+        # serializer.py (dentro de myTokenObtainPairSerializer.get_token)
+        current_avatar_url = None
+        if hasattr(user, 'profile') and user.profile.current_avatar is not None:
+            if request:
+                current_avatar_url = request.build_absolute_uri(user.profile.current_avatar.image.url)
+        token['current_avatar_url'] = current_avatar_url
+
+        return token        
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- MODELO REGISTER ---
@@ -78,15 +92,12 @@ class RegisterSerializer(serializers.ModelSerializer):
             user=user,
             defaults={'expires_at': timezone.now() + timedelta(hours=24)}
         )
-        # Si el token ya existía, actualiza su expiración
         if not created:
             token_obj.expires_at = timezone.now() + timedelta(hours=24)
             token_obj.save()
 
-        # Construye la URL completa que apunta al frontend, usando el token_obj correcto
-        full_verify_url = f"{settings.FRONTEND_URL}/verify-email/{str(token_obj.token)}/" # Convertir a str explícitamente si es UUID
+        full_verify_url = f"{settings.FRONTEND_URL}/verify-email/{str(token_obj.token)}/" 
 
-        # Envía el correo
         subject = 'Activa tu cuenta en SlangMaster'
         message = render_to_string('emails/email_verification.html', {
             'username': user.username,

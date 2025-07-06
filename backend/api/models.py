@@ -60,7 +60,7 @@ class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=255, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
-    image = models.ImageField(default='default.jpg',upload_to='user_images', blank=True, null=True)
+    image = models.ImageField(default='avatars/default.jpg', upload_to='avatars/', blank=True, null=True)
     current_avatar = models.ForeignKey(
         'Avatar',
         on_delete=models.SET_NULL, # Si se borra un avatar, el campo se pone a NULL
@@ -78,14 +78,24 @@ class Profile(models.Model):
 # * --------------------------------------------------------------------------------------------------
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        profile = Profile.objects.create(user=instance) 
-        user_stats = UserStats.objects.create(user=instance) 
-        default_avatars = Avatar.objects.filter(is_default=True)
-        user_stats.unlocked_avatars.set(default_avatars)
+        profile = Profile.objects.create(user=instance)
+        user_stats = UserStats.objects.create(user=instance)
 
-        if default_avatars.exists():
-            profile.current_avatar = default_avatars.first()
-            profile.save()
+        all_default_avatars = Avatar.objects.filter(is_default=True)
+        user_stats.unlocked_avatars.set(all_default_avatars)
+
+        try:
+            # Busca el avatar por un nombre específico (ej. 'default') y que sea is_default=True
+            specific_default_avatar = Avatar.objects.get(name='default', is_default=True)
+            profile.current_avatar = specific_default_avatar
+        except Avatar.DoesNotExist:
+            # Si ese específico no existe, asigna el primero que sea default
+            if all_default_avatars.exists():
+                profile.current_avatar = all_default_avatars.first()
+            else:
+                profile.current_avatar = None
+
+        profile.save()
 
 def save_user_profile(sender, instance, **kwargs):
     if hasattr(instance, 'profile'):

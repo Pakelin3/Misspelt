@@ -224,6 +224,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 
 FRONTEND_URL = 'https://localhost:5173' 
+BACKEND_URL = 'https://localhost:8000' 
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

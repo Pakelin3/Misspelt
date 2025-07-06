@@ -31,7 +31,7 @@ class MyTokenObtainPairView(TokenObtainPairView): #
     serializer_class = myTokenObtainPairSerializer
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         response = Response(serializer.validated_data, status=status.HTTP_200_OK)
         user = serializer.user 
@@ -93,33 +93,33 @@ class VerifyEmailView(APIView): #
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA REGISTRO DE USUARIO ---
 # * --------------------------------------------------------------------------------------------------
-class RegisterView(generics.CreateAPIView): #
-    queryset = User.objects.all() #
+class RegisterView(generics.CreateAPIView): 
+    queryset = User.objects.all() 
     permission_classes = [AllowAny]
-    serializer_class = RegisterSerializer #
+    serializer_class = RegisterSerializer 
     def perform_create(self, serializer):
         user = serializer.save()
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA DASHBOARD ADMIN ---
 # * --------------------------------------------------------------------------------------------------
-class AdminDashboardDataAPIView(APIView): #
+class AdminDashboardDataAPIView(APIView): 
     permission_classes = [IsAuthenticated, IsAdminUser] 
 
     def get(self, request, *args, **kwargs):
         dashboard_stats = {
             'message': f'¡Bienvenido {request.user.username} al Panel de Administración!',
-            'total_users': User.objects.count(), #
-            'active_users': User.objects.filter(is_online=True).count(), #
-            'total_words': Word.objects.count(), #
-            'total_badges': Badge.objects.count(), #
+            'total_users': User.objects.count(), 
+            'active_users': User.objects.filter(is_online=True).count(), 
+            'total_words': Word.objects.count(), 
+            'total_badges': Badge.objects.count(), 
         }
         return Response(dashboard_stats, status=status.HTTP_200_OK)
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA DASHBOARD USUARIO ---
 # * --------------------------------------------------------------------------------------------------
-class UserIsStaffAPIView(APIView): #
+class UserIsStaffAPIView(APIView): 
     permission_classes = [IsAuthenticated] 
 
     def get(self, request, *args, **kwargs):
@@ -129,7 +129,7 @@ class UserIsStaffAPIView(APIView): #
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA PAGINACION ---
 # * --------------------------------------------------------------------------------------------------
-class WordPagination(PageNumberPagination): #
+class WordPagination(PageNumberPagination):     
     page_size = 6
     page_size_query_param = 'limit'
     max_page_size = 100
@@ -137,9 +137,9 @@ class WordPagination(PageNumberPagination): #
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA PALABRAS (CRUD) ---
 # * --------------------------------------------------------------------------------------------------
-class WordViewSet(viewsets.ModelViewSet): #
-    queryset = Word.objects.all().order_by('-created_at') #
-    serializer_class = WordSerializer #
+class WordViewSet(viewsets.ModelViewSet): 
+    queryset = Word.objects.all().order_by('-created_at') 
+    serializer_class = WordSerializer 
     pagination_class = WordPagination
     filter_backends = [DjangoFilterBackend] 
     filterset_fields = ['word_type']
@@ -157,7 +157,7 @@ class WordViewSet(viewsets.ModelViewSet): #
 
     @action(detail=False, methods=['get'])
     def random(self, request):
-        word = Word.objects.order_by('?').first() #
+        word = Word.objects.order_by('?').first()
         if word:
             serializer = self.get_serializer(word)
             return Response(serializer.data)
@@ -167,25 +167,24 @@ class WordViewSet(viewsets.ModelViewSet): #
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA INSIGNIAS (CRUD) ---
 # * --------------------------------------------------------------------------------------------------
-class BadgeViewSet(viewsets.ModelViewSet): #
-    queryset = Badge.objects.all().order_by('title') #
-    serializer_class = BadgeSerializer #
-    permission_classes = [IsAuthenticated, IsAdminUser]
+class BadgeViewSet(viewsets.ModelViewSet): 
+    queryset = Badge.objects.all().order_by('title') 
+    serializer_class = BadgeSerializer 
+    #permission_classes = [IsAuthenticated, IsAdminUser]
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA AVATARES (CRUD) ---
 # * --------------------------------------------------------------------------------------------------
-class AvatarViewSet(viewsets.ModelViewSet): #
-    queryset = Avatar.objects.all().order_by('name') #
-    serializer_class = AvatarSerializer #
+class AvatarViewSet(viewsets.ModelViewSet): 
+    queryset = Avatar.objects.all().order_by('name') 
+    serializer_class = AvatarSerializer 
     # Restringir permisos solo a administradores, ya que el CRUD es para gestión
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    #permission_classes = [IsAuthenticated, IsAdminUser]
 
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA ESTADISTICAS DE USUARIOS (CRUD) ---
 # * --------------------------------------------------------------------------------------------------
-# CONSOLIDADA: Esta es la única definición correcta de UserStatsViewSet
 class UserStatsViewSet(
     mixins.RetrieveModelMixin,   # Permite GET para detalle por ID (admin)
     mixins.UpdateModelMixin,     # Permite PUT/PATCH para detalle por ID (admin)
@@ -228,11 +227,9 @@ class UserStatsViewSet(
         if request.method == 'GET':
             # Ejecutar check_and_unlock_badges en cada GET a /me/
             # Esto asegura que los badges se verifiquen y desbloqueen justo antes de devolver los datos.
-            newly_unlocked_badges_on_get = check_and_unlock_badges(request.user) #
-            
+            newly_unlocked_badges_on_get = check_and_unlock_badges(request.user) 
             # Recargar user_stats para obtener los cambios si los hubo (ej. badge añadido)
             user_stats.refresh_from_db() 
-
             serializer = self.get_serializer(user_stats)
             response_data = serializer.data
             
@@ -243,13 +240,11 @@ class UserStatsViewSet(
             return Response(response_data)
         
         elif request.method == 'PATCH':
-            # Usar partial=True para PATCH, permitiendo actualizar solo los campos enviados
+            # Usar partial=True para PATCH, actualiza solo los campos enviados
             serializer = self.get_serializer(user_stats, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            
-            # Vuelve a verificar insignias después de la actualización de stats
-            newly_unlocked_badges_on_patch = check_and_unlock_badges(request.user) #
+            newly_unlocked_badges_on_patch = check_and_unlock_badges(request.user)
             
             response_data = serializer.data
             response_data['newly_unlocked_badges'] = [badge.title for badge in newly_unlocked_badges_on_patch]
