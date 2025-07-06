@@ -1,23 +1,19 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import AuthContext from '@/context/AuthContext';
-import { useTheme } from '@/context/ThemeContext'; 
-import veFlagSrc from '@/assets/ve.svg';
-import usaFlagSrc from '@/assets/us.svg';
-import { Sun, Moon } from 'lucide-react'; 
+import { useTheme } from '@/context/ThemeContext';
+import { Sun, Moon } from 'lucide-react';
+import DropdownLenguage from "@/components/DropdownLenguage";
 
 function Navbar() {
     const { user, logoutUser } = useContext(AuthContext);
-    const { theme, toggleTheme } = useTheme(); 
+    const { theme, toggleTheme } = useTheme();
     const location = useLocation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-    const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
-    const [selectedLanguage, setSelectedLanguage] = useState({ name: 'Español', flag: veFlagSrc });
-    const languageDropdownRef = useRef(null);
+    const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
     const mobileMenuRef = useRef(null);
     const mobileMenuButtonRef = useRef(null);
-
+    const profileDropdownRef = useRef(null);
 
     const isActive = (path) => {
         if (path === "/") {
@@ -30,25 +26,18 @@ function Navbar() {
         setIsMobileMenuOpen(!isMobileMenuOpen);
     };
 
-    const toggleLanguageDropdown = () => {
-        setIsLanguageDropdownOpen(prev => !prev);
-    };
-
-    const handleLanguageSelect = (languageName, flagSrc) => {
-        setSelectedLanguage({ name: languageName, flag: flagSrc });
-        setIsLanguageDropdownOpen(false);
-        // ! `LanguageContext` similar a `AuthContext`.
-        console.log(`Idioma seleccionado: ${languageName}`);
+    const toggleProfileDropdown = () => {
+        setIsProfileDropdownOpen(prev => !prev);
     };
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target)) {
-                setIsLanguageDropdownOpen(false);
-            }
             if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target) &&
                 mobileMenuButtonRef.current && !mobileMenuButtonRef.current.contains(event.target)) {
                 setIsMobileMenuOpen(false);
+            }
+            if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+                setIsProfileDropdownOpen(false);
             }
         };
 
@@ -62,13 +51,29 @@ function Navbar() {
         setIsMobileMenuOpen(false);
     }, [location.pathname]);
 
+    let finalProfileImageSrc = '';
+    if (user) {
+        if (user.current_avatar_url) {
+            finalProfileImageSrc = user.current_avatar_url;
+        } else if (user.profile_image_url) {
+            finalProfileImageSrc = user.profile_image_url;
+        }
+    }
+    if (!finalProfileImageSrc) {
+        finalProfileImageSrc = 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fstackoverflow.com%2Fquestions%2F38576264%2Fhow-can-i-programmatically-check-if-a-google-users-profile-picture-isnt-defaul&psig=AOvVaw1TrWin8HXRPftPqI2iPWv5&ust=1751834937122000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCOjs_urLpo4DFQAAAAAdAAAAABAE';
+    }
+
     return (
-        <nav className="bg-[var(--color-bg-secondary)] p-3 shadow-md z-50 sticky top-0"> 
+        <nav className="bg-[var(--color-bg-secondary)] p-3 shadow-md z-50 sticky top-0">
             <div className="flex w-full items-center justify-between">
                 <div className="flex items-center gap-6 md:gap-8">
                     <div className="flex items-center gap-2 md:gap-3">
-                        <div className="w-10 h-10 bg-[var(--color-white)] rounded-full"></div> 
-                        <Link
+                        <div className="h-10 px-2 flex items-center justify-center bg-[var(--color-white)] rounded-full"> NombreGame</div>
+                        
+                    </div>
+
+                    <div className="hidden md:flex items-center gap-6">
+                    <Link
                             to="/"
                             className={`
                                 text-[var(--color-white)]
@@ -82,10 +87,7 @@ function Navbar() {
                                     : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
                                 }
                             `}
-                        >Inicio</Link>
-                    </div>
-
-                    <div className="hidden md:flex items-center gap-6">
+                        >🏠 Inicio</Link>
                         <Link
                             to="/play"
                             className={`
@@ -154,7 +156,7 @@ function Navbar() {
                 <div className="flex items-center gap-3 md:gap-4 ml-auto">
                     <button
                         onClick={toggleTheme}
-                        className="px-3 py-1 rounded-md hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-[var(--color-bg-tertiary)] flex items-center gap-1"
+                        className="px-3 py-1 rounded-md hover:bg-black/10 focus:outline-none cursor-pointer focus:ring-2 focus:ring-[var(--color-bg-tertiary)] flex items-center gap-1"
                         aria-label="Cambiar tema"
                     >
                         {theme === 'light' ? (
@@ -164,60 +166,55 @@ function Navbar() {
                         )}
                     </button>
 
-                    <div className="relative inline-block" ref={languageDropdownRef}>
-                        <button
-                            onClick={toggleLanguageDropdown}
-                            className="text-[var(--color-white)] px-3 py-1 rounded-md hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-[var(--color-bg-tertiary)] flex items-center gap-1"
-                        >
-                            {selectedLanguage.name} <img src={selectedLanguage.flag} alt={`Bandera de ${selectedLanguage.name}`} className="w-6 h-auto" />
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className={`ml-1 transition-transform duration-200 ${isLanguageDropdownOpen ? 'rotate-180' : ''}`}
-                            >
-                                <path d="m6 9 6 6 6-6" />
-                            </svg>
-                        </button>
-                        {isLanguageDropdownOpen && (
-                            <div className="absolute top-full right-0 mt-2 bg-[var(--color-white)] rounded-md shadow-lg min-w-[160px] z-10 py-2">
-                                <div
-                                    onClick={() => handleLanguageSelect('Español', veFlagSrc)}
-                                    className="px-4 py-2 text-gray-800 hover:bg-gray-100 cursor-pointer flex items-center gap-2"
-                                >
-                                    Español <img src={veFlagSrc} alt="Bandera de Venezuela" className="w-6 h-auto" />
-                                </div>
-                                <div
-                                    onClick={() => handleLanguageSelect('English', usaFlagSrc)}
-                                    className="px-4 py-2 text-gray-800 hover:bg-gray-100 cursor-pointer flex items-center gap-2"
-                                >
-                                    English <img src={usaFlagSrc} alt="Bandera de Estados Unidos" className="w-6 h-auto" />
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
                     {user ? (
-                        <div className="hidden md:flex items-center gap-3 md:gap-4">
-                            <Link
-                                to={"/profile"}
-                                className="text-[var(--color-white)] font-medium text-sm whitespace-nowrap"
-                            >
-                                {user.username}
-                            </Link>
+                        <div ref={profileDropdownRef} className="hidden md:flex items-center gap-2 md:gap-1">
+                            <img
+                                src={finalProfileImageSrc}
+                                className="w-10 h-10 rounded-full object-cover ml-1"
+                            />
                             <button
-                                className="bg-[var(--color-bg-tertiary)] text-[var(--color-white)] px-4 py-2 rounded-full hover:bg-[var(--color-bg-tertiary-hover)] transition-colors duration-150 text-sm whitespace-nowrap"
-                                onClick={logoutUser}
-                            >
-                                Cerrar sesión
+                                onClick={toggleProfileDropdown}
+                                className="text-[var(--color-white)] px-3 py-1 rounded-md hover:bg-black/10 focus:outline-none
+                                focus:ring-2 focus:ring-[var(--color-bg-tertiary)] flex items-center gap-1 cursor-pointer">
+                                {user.username}
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className={`ml-1 transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`}
+                                >
+                                    <path d="m6 9 6 6 6-6" />
+                                </svg>
                             </button>
+                            {isProfileDropdownOpen && (
+                                <div className="absolute top-full right-0 mt-2 bg-[var(--color-white)] rounded-md shadow-lg min-w-[160px] z-10 py-2">
+                                    <Link
+                                        to="/profile"
+                                        onClick={toggleProfileDropdown}
+                                        className="px-4 py-2 font-bold text-md text-gray-600 hover:bg-gray-100 cursor-pointer flex items-center gap-2 whitespace-nowrap"
+                                    >
+                                        Perfil
+                                    </Link>
+                                    <DropdownLenguage />
+                                    <div className="flex items-center justify-center mt-6 gap-2">
+                                        <button
+                                            className="bg-[var(--color-bg-tertiary)] text-[var(--color-white)] px-4 py-2 rounded-full 
+                                            hover:bg-[var(--color-bg-tertiary-hover)] transition-colors duration-150 text-sm whitespace-nowrap"
+                                            onClick={logoutUser}
+                                        >
+                                            Cerrar sesión
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
+
                     ) : (
                         <div className="hidden md:flex items-center gap-3 md:gap-4">
                             <Link
@@ -288,12 +285,23 @@ function Navbar() {
             >
                 <div className="flex flex-col items-center gap-4 py-2 ">
                     <Link
+                        to="/"
+                        onClick={toggleMobileMenu}
+                        className={`text-[var(--color-white)] py-2 ${isActive("/")
+                            ? "border-b-2 border-[var(--color-bg-tertiary)]"
+                            : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
+                            }`}
+                    >
+                        🏠 Inicio
+                    </Link>
+
+                    <Link
                         to="/play"
                         onClick={toggleMobileMenu}
                         className={`text-[var(--color-white)] py-2 ${isActive("/play")
-                                    ? "border-b-2 border-[var(--color-bg-tertiary)]"
-                                    : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
-                                }`}
+                            ? "border-b-2 border-[var(--color-bg-tertiary)]"
+                            : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
+                            }`}
                     >
                         🎮 Jugar
                     </Link>
@@ -301,9 +309,9 @@ function Navbar() {
                         to="/dictionary"
                         onClick={toggleMobileMenu}
                         className={`text-[var(--color-white)] py-2 ${isActive("/dictionary")
-                                    ? "border-b-2 border-[var(--color-bg-tertiary)]"
-                                    : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
-                                }`}
+                            ? "border-b-2 border-[var(--color-bg-tertiary)]"
+                            : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
+                            }`}
                     >
                         📚 Diccionario
                     </Link>
@@ -311,9 +319,9 @@ function Navbar() {
                         to="/ia"
                         onClick={toggleMobileMenu}
                         className={`text-[var(--color-white)] py-2 ${isActive("/ia")
-                                    ? "border-b-2 border-[var(--color-bg-tertiary)]"
-                                    : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
-                                }`}
+                            ? "border-b-2 border-[var(--color-bg-tertiary)]"
+                            : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
+                            }`}
                     >
                         🤖 IA
                     </Link>
@@ -321,9 +329,9 @@ function Navbar() {
                         to="/badges"
                         onClick={toggleMobileMenu}
                         className={`text-[var(--color-white)] py-2 ${isActive("/badges")
-                                    ? "border-b-2 border-[var(--color-bg-tertiary)]"
-                                    : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
-                                }`}
+                            ? "border-b-2 border-[var(--color-bg-tertiary)]"
+                            : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
+                            }`}
                     >
                         🏆 Insignias
                     </Link>
@@ -332,9 +340,9 @@ function Navbar() {
                             to="/admin-dashboard"
                             onClick={toggleMobileMenu}
                             className={`text-[var(--color-white)] py-2 ${isActive("/admin-dashboard")
-                                        ? "border-b-2 border-[var(--color-bg-tertiary)]"
-                                        : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
-                                    }`}
+                                ? "border-b-2 border-[var(--color-bg-tertiary)]"
+                                : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
+                                }`}
                         >
                             ⚙️ Admin Panel
                         </Link>
@@ -345,8 +353,12 @@ function Navbar() {
                             <Link
                                 to={"/profile"}
                                 onClick={toggleMobileMenu}
-                                className="text-[var(--color-white)] py-2 font-medium"
+                                className="text-[var(--color-white)] py-2 font-medium flex items-center gap-2"
                             >
+                                <img
+                                src={finalProfileImageSrc}
+                                className="w-10 h-10 rounded-full object-cover ml-1"
+                            />
                                 {user.username}
                             </Link>
                             <button
