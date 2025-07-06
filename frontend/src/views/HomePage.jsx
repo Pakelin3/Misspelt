@@ -14,7 +14,7 @@ function Homepage() {
                 <p className='text-gray-500'>Próximamente: Preview del juego...</p> 
             </section>
 
-            <section className='flex justify-around m-20 gap-20 flex-wrap-reverse items-end'>
+            <section className='flex justify-around my-20 px-5 gap-20 flex-wrap-reverse items-end'>
                 <div className='block max-w-md p-6 w-md bg-[var(--color-bg-card)] shadow-lg border border-[var(--color-bg-secondary)] rounded-lg justify-self-start '> 
                     <RandomWordCard />
                 </div>

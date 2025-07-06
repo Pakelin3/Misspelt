@@ -91,6 +91,7 @@ export const AuthProvider = ({ children }) => {
                 localStorage.setItem('authTokens', JSON.stringify(response.data));
                 navigate('/');
                 showToast("Inicio de sesión exitoso", "success");
+                console.log("Usuario decodificado después del login:", jwtDecode(response.data.access));
                 return {};
             }
         } catch (error) {
@@ -168,7 +169,7 @@ export const AuthProvider = ({ children }) => {
 
     const logoutUser = useCallback(async () => { 
         try {
-            await axios.post(`${baseURL}/token/logout/`, {}, {
+            await axios.post(`${baseURL}/logout/`, {}, {
                 headers: {
                     Authorization: `Bearer ${authTokens?.access}`
                 }
@@ -256,6 +257,7 @@ export const AuthProvider = ({ children }) => {
         loginUser,
         logoutUser,
         updateToken,
+        baseURL
     };
 
     useEffect(() => {
