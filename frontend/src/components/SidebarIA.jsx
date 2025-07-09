@@ -14,7 +14,7 @@ function SidebarIA({ isOpen, toggleSidebar }) {
                 ${isOpen ? 'w-64' : 'w-0 overflow-hidden'}
                 md:w-64 md:sticky md:h-full md:flex-shrink-0 md:p-4
                 ${theme === 'light'
-                    ? 'bg-[var(--color-bg-main-darker)] text-[var(--color-text-main)] border-[var(--color-text-secondary)]'
+                    ? 'bg-[var(--color-bg-secondary)] text-[var(--color-text-main)] border-[var(--color-text-secondary)]'
                     : 'bg-[var(--color-dark-bg-secondary)] text-[var(--color-dark-text)] border-[var(--color-dark-border)]'
                 }
             `}
@@ -38,7 +38,7 @@ function SidebarIA({ isOpen, toggleSidebar }) {
             <div className={`${isOpen ? 'h-full flex flex-col flex-1' : 'hidden md:flex flex-col flex-1 h-full'}`}>
                 <button className={`flex items-center w-full px-2 py-2 mb-4 rounded-full transition-colors gap-2
                     ${theme === 'light'
-                        ? 'text-neutral-700 hover:bg-teal-200'
+                        ? 'text-neutral-700 hover:bg-[var(--color-bg-secondary-hover)]'
                         : 'text-[var(--color-dark-text)] hover:bg-neutral-600 '
                     }`}>
                     <Plus className="w-5 h-5" />
@@ -49,7 +49,7 @@ function SidebarIA({ isOpen, toggleSidebar }) {
                     <h3 className={`text-sm font-semibold uppercase mb-2 pl-4 ${theme === 'light' ? 'text-[var(--color-text)]' : 'text-[var(--color-dark-text-secondary)]'}`}>Recientes</h3>
                     <a href="#" className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors
                         ${theme === 'light'
-                            ? 'hover:bg-teal-200 text-[var(--color-text-main)]'
+                            ? 'hover:bg-[var(--color-bg-secondary-hover)] text-[var(--color-text-main)]'
                             : 'hover:bg-[var(--color-dark-border)] text-[var(--color-dark-text)]'
                         }`}>
                         <Search className={`w-4 h-4 ${theme === 'light' ? 'text-neutral-900' : 'text-[var(--color-dark-text-secondary)]'}`} />
@@ -57,7 +57,7 @@ function SidebarIA({ isOpen, toggleSidebar }) {
                     </a>
                     <a href="#" className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors
                         ${theme === 'light'
-                            ? 'bg-[var(--color-bg-secondary)] text-[var(--color-text-main)]'
+                            ? 'bg-teal-200 text-[var(--color-text-main)]'
                             : 'bg-[var(--color-dark-border)] text-[var(--color-dark-text)]'
                         }`}>
                         <Layers className={`w-4 h-4 ${theme === 'light' ? 'text-neutral-900' : 'text-[var(--color-dark-text-secondary)]'}`} />
@@ -65,7 +65,7 @@ function SidebarIA({ isOpen, toggleSidebar }) {
                     </a>
                     <a href="#" className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors
                         ${theme === 'light'
-                            ? 'hover:bg-teal-200 text-[var(--color-text-main)]'
+                            ? 'hover:bg-[var(--color-bg-secondary-hover)] text-[var(--color-text-main)]'
                             : 'hover:bg-[var(--color-dark-border)] text-[var(--color-dark-text)]'
                         }`}>
                         <UploadCloud className={`w-4 h-4 ${theme === 'light' ? 'text-neutral-900' : 'text-[var(--color-dark-text-secondary)]'}`} />
@@ -80,21 +80,21 @@ function SidebarIA({ isOpen, toggleSidebar }) {
                 <div className="w-full space-y-2">
                     <a href="#" className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors
                         ${theme === 'light'
-                            ? 'hover:bg-teal-200 text-[var(--color-text-main)]'
+                            ? 'hover:bg-[var(--color-bg-secondary-hover)] text-[var(--color-text-main)]'
                             : 'hover:bg-[var(--color-dark-border)] text-[var(--color-dark-text)]'
                         }`}>
-                        <Settings className={`w-5 h-5 ${theme === 'light' ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-dark-text-secondary)]'}`} />
+                        <Settings className={`w-5 h-5 ${theme === 'light' ? 'text-black' : 'text-[var(--color-dark-text-secondary)]'}`} />
                         <span>Ajustes y ayuda</span>
                     </a>
                     <Link
                         to="/"  
                         className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors
                             ${theme === 'light'
-                                ? 'hover:bg-teal-200 text-[var(--color-text-main)]'
+                                ? 'hover:bg-[var(--color-bg-secondary-hover)] text-[var(--color-text-main)]'
                                 : 'hover:bg-[var(--color-dark-border)] text-[var(--color-dark-text)]'
                             }`}
                             
-                    ><ArrowLeft className={`w-5 h-5 ${theme === 'light' ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-dark-text-secondary)]'}`}/>
+                    ><ArrowLeft className={`w-5 h-5 ${theme === 'light' ? 'text-black' : 'text-[var(--color-dark-text-secondary)]'}`}/>
                     <span>Volver al inicio</span></Link>
                 </div>
             </div>

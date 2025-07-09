@@ -1,13 +1,11 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import AuthContext from '@/context/AuthContext';
-import { useTheme } from '@/context/ThemeContext';
-import { Sun, Moon } from 'lucide-react';
 import DropdownLenguage from "@/components/DropdownLenguage";
+import ThemeButton from "@/components/ThemeButton";
 
 function Navbar() {
     const { user, logoutUser } = useContext(AuthContext);
-    const { theme, toggleTheme } = useTheme();
     const location = useLocation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
@@ -78,13 +76,13 @@ function Navbar() {
     return (
         <nav className="bg-[var(--color-bg-secondary)] p-3 shadow-md z-50 sticky top-0">
             <div className="flex w-full items-center justify-between">
-                <div className="flex items-center gap-6 md:gap-8">
+                <div className="flex items-center gap-2 lg:gap-6 transition-all ease-in-out duration-300">
                     <div className="flex items-center gap-2 md:gap-3">
                         <div className="h-10 px-2 flex items-center justify-center bg-[var(--color-white)] rounded-full"> NombreGame</div>
 
                     </div>
 
-                    <div className="hidden md:flex items-center gap-6">
+                    <div className="hidden md:flex items-center gap-4 lg:gap-6 transition-all ease-in-out duration-300 ">
                         <Link
                             to="/"
                             className={`
@@ -93,7 +91,7 @@ function Navbar() {
                                 whitespace-pre
                                 font-medium
                                 pb-0.5
-                                transition-colors duration-150 ease-in-out
+                                transition-colors duration-200 ease-in-out
                                 ${isActive("/")
                                     ? "border-b-2 border-[var(--color-bg-tertiary)]"
                                     : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
@@ -106,7 +104,7 @@ function Navbar() {
                                 text-[var(--color-white)]
                                 pb-0.5
                                 whitespace-pre
-                                transition-colors duration-150 ease-in-out
+                                transition-colors duration-200 ease-in-out
                                 ${isActive("/play")
                                     ? "border-b-2 border-[var(--color-bg-tertiary)]"
                                     : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
@@ -118,7 +116,7 @@ function Navbar() {
                                 text-[var(--color-white)]
                                 pb-0.5
                                 whitespace-pre
-                                transition-colors duration-150 ease-in-out
+                                transition-colors duration-200 ease-in-out
                                 ${isActive("/dictionary")
                                     ? "border-b-2 border-[var(--color-bg-tertiary)]"
                                     : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
@@ -130,7 +128,7 @@ function Navbar() {
                                 text-[var(--color-white)]
                                 pb-0.5
                                 whitespace-pre
-                                transition-colors duration-150 ease-in-out
+                                transition-colors duration-200 ease-in-out
                                 ${isActive("/ia")
                                     ? "border-b-2 border-[var(--color-bg-tertiary)]"
                                     : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
@@ -142,7 +140,7 @@ function Navbar() {
                                 text-[var(--color-white)]
                                 pb-0.5
                                 whitespace-pre
-                                transition-colors duration-150 ease-in-out
+                                transition-colors duration-200 ease-in-out
                                 ${isActive("/badges")
                                     ? "border-b-2 border-[var(--color-bg-tertiary)]"
                                     : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
@@ -155,7 +153,7 @@ function Navbar() {
                                 text-[var(--color-white)]
                                 pb-0.5
                                 whitespace-pre
-                                transition-colors duration-150 ease-in-out
+                                transition-colors duration-200 ease-in-out
                                 ${isActive("/admin-dashboard")
                                         ? "border-b-2 border-[var(--color-bg-tertiary)]"
                                         : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
@@ -166,17 +164,7 @@ function Navbar() {
                 </div>
 
                 <div className="flex items-center gap-3 md:gap-4 ml-auto">
-                    <button
-                        onClick={toggleTheme}
-                        className="px-3 py-1 rounded-md hover:bg-black/10 focus:outline-none cursor-pointer focus:ring-2 focus:ring-[var(--color-bg-tertiary)] flex items-center gap-1"
-                        aria-label="Cambiar tema"
-                    >
-                        {theme === 'light' ? (
-                            <Moon className="w-5 h-5 text-gray-800 dark:text-gray-200" />
-                        ) : (
-                            <Sun className="w-5 h-5 text-gray-800 dark:text-gray-200" />
-                        )}
-                    </button>
+                    <ThemeButton />
 
                     {user ? (
                         <div ref={profileDropdownRef} className="hidden md:flex items-center gap-2 md:gap-1">
@@ -205,24 +193,21 @@ function Navbar() {
                                 </svg>
                             </button>
                             {isProfileDropdownOpen && (
-                                <div className="absolute top-full right-0 mt-2 bg-[var(--color-white)] rounded-md shadow-lg min-w-[160px] z-10 py-2">
+                                <div className="absolute top-full right-5 mt-2 gap-2 bg-[var(--color-white)] rounded-md shadow-lg min-w-[160px] z-10">
                                     <Link
                                         to="/profile"
                                         onClick={toggleProfileDropdown}
-                                        className="px-4 py-2 font-bold text-md text-gray-600 hover:bg-gray-100 cursor-pointer flex items-center gap-2 whitespace-nowrap"
+                                        className="px-4 py-2 flex items-center font-bold text-md text-gray-600 hover:bg-gray-100 cursor-pointer whitespace-nowrap"
                                     >
                                         Perfil
                                     </Link>
                                     <DropdownLenguage />
-                                    <div className="flex items-center justify-center mt-6 gap-2">
-                                        <button
-                                            className="bg-[var(--color-bg-tertiary)] text-[var(--color-white)] px-4 py-2 rounded-full 
-                                            hover:bg-[var(--color-bg-tertiary-hover)] transition-colors duration-150 text-sm whitespace-nowrap"
-                                            onClick={logoutUser}
-                                        >
-                                            Cerrar sesión
-                                        </button>
-                                    </div>
+                                    <button
+                                        className="bg-[var(--color-bg-tertiary)] text-[var(--color-white)] py-2 rounded-b-md w-full hover:bg-[var(--color-bg-tertiary-hover)] transition-colors duration-150 text-sm whitespace-nowrap"
+                                        onClick={logoutUser}
+                                    >
+                                        Cerrar sesión
+                                    </button>
                                 </div>
                             )}
                         </div>

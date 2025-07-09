@@ -133,7 +133,7 @@ function DictionaryPage() {
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-2xl font-bold text-[var(--color-text-main)]">{selectedWord.text}</h2>
                             <span
-                                className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${selectedWord.word_type === "PHRASAL_VERB"
+                                className={`inline-block px-3 py-1 rounded-full text-xs mr-12 font-medium ${selectedWord.word_type === "PHRASAL_VERB"
                                     ? "bg-[var(--color-accent-phrasalverbs)] text-[var(--color-bg-body)]"
                                     : "bg-[var(--color-accent-slangs)] text-[var(--color-bg-body)]"
                                     } dark:${selectedWord.word_type === "PHRASAL_VERB"
@@ -209,7 +209,7 @@ function DictionaryPage() {
         <div className="min-h-screen bg-[var(--color-body-bg)] p-4 transition-colors">
             <div className="max-w-7xl min-h-max mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-4 mb-6">
-                    {/* ... (Tu input de búsqueda y filtros existentes) ... */}
+                    {/* ... (Input de búsqueda y filtros existentes) ... */}
                     <div className="relative flex-1 max-w-md min-w-80">
                         <Search className="absolute left-3  top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] w-4 h-4 transition-colors" />
                         <input
@@ -229,7 +229,7 @@ function DictionaryPage() {
                         <div className="relative" ref={filterDropdownRef}>
                             <button
                                 onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
-                                className={`flex items-center gap-2     w-40 px-4 py-2 rounded-full font-medium transition-colors cursor-pointer
+                                className={`flex items-center gap-2 min-w-40 px-4 py-2 rounded-full font-medium transition-colors cursor-pointer
                                 ${theme === 'light'
                                         ? 'bg-neutral-200 text-[var(--color-text-main)] hover:bg-neutral-300'
                                         : 'bg-[var(--color-dark-bg-secondary)] text-[var(--color-dark-text-secondary)] hover:bg-[var(--color-dark-bg-tertiary)]'
@@ -254,7 +254,7 @@ function DictionaryPage() {
                             </button>
 
                             {isFilterDropdownOpen && (
-                                <div className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg z-10 p-1
+                                <div className={`absolute left-0 mt-2 w-48 rounded-lg shadow-lg z-10 p-1
                                 ${theme === 'light' ? 'bg-[var(--color-bg-card)]' : 'bg-[var(--color-dark-bg-secondary)]'}`}>
                                     <div
                                         onClick={() => handleFilterSelect("SLANG")}
@@ -267,7 +267,7 @@ function DictionaryPage() {
                                     </div>
                                     <div
                                         onClick={() => handleFilterSelect("PHRASAL_VERB")}
-                                        className={`block px-4 py-2 text-sm cursor-pointer transition-colors
+                                        className={`block px-4 py-2 text-sm cursor-pointer transition-colors    
                                         ${selectedFilter === "PHRASAL_VERB"
                                                 ? (theme === 'light' ? 'bg-[var(--color-accent-phrasalverbs)] text-[var(--color-bg-body)]' : 'bg-[var(--color-accent-phrasalverbs)] text-black')
                                                 : (theme === 'light' ? 'text-[var(--color-text-main)] hover:bg-[var(--color-accent-phrasalverbs)]' : 'text-[var(--color-dark-text)] hover:bg-[var(--color-accent-phrasalverbs)] hover:text-black')
@@ -317,7 +317,7 @@ function DictionaryPage() {
                                     {words.map((word) => (
                                         <div
                                             key={word.id}
-                                            className={`${theme === 'light' ? 'bg-[var(--color-bg-main)]' : 'bg-[var(--color-dark-bg-secondary)]'} min-h-48 hover:shadow-2xl hover:scale-105 transition-all duration-300 rounded-2xl gap-4 p-4 cursor-pointer 
+                                            className={`${theme === 'light' ? 'bg-[var(--color-bg-main)]' : 'bg-[var(--color-dark-bg-secondary)]'} sm:min-h-48 min-h-36 hover:shadow-2xl hover:scale-105 transition-all duration-300 rounded-2xl gap-4 p-4 cursor-pointer 
                                                 justify-between flex flex-col`}
                                             onClick={() => handleCardClick(word)}
                                         >
@@ -336,7 +336,7 @@ function DictionaryPage() {
                                                 </span>
                                             </div>
                                             <p className="text-[var(--color-text-secondary)] text-sm italic">"{word.description}"</p>
-                                            <div className="flex items-center justify-between">
+                                            <div className="flex items-center justify-end">
                                                 <button className={`p-2 rounded-full transition-colors ${theme === 'light' ? 'hover:bg-[var(--color-bg-main)]' : 'hover:bg-[var(--color-dark-bg-tertiary)]'}`}>
                                                     <Heart className="w-5 h-5 text-[var(--color-text-secondary)] dark:text-gray-400" />
                                                 </button>
@@ -388,7 +388,7 @@ function DictionaryPage() {
                 </div>
             </div>
 
-            {/* RENDERIZAR EL MODAL CONDICIONALMENTE AQUÍ AL FINAL */}
+            {/* RENDERIZAR EL MODAL CONDICIONALMENTE AL FINAL */}
             {isModalOpen && (
                 <WordDetailModal
                     selectedWord={selectedWord}

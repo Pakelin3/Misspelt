@@ -49,26 +49,14 @@ function ChatInput({ onSendMessage }) {
                     `} 
                     style={{ scrollbarWidth: 'thin' }}
                 />
-
-                <button
-                    type="submit"
-                    className={`p-2 ml-2 mb-1 rounded-full transition-colors focus:outline-none flex-shrink-0
-                        ${inputText.trim()
-                            ? 'bg-[var(--color-accent-blue)] hover:bg-blue-600 text-white' // ! Activo
-                            : 'hidden cursor-not-allowed' // ! Inactivo
-                        }`}
-                    disabled={!inputText.trim()}
-                >
-                    <SendHorizonal className="w-5 h-5" />
-                </button>
             </div>
 
-            <div className="flex items-center w-full mt-2 pl-2"> 
-                <button type="button" className={`p-2 rounded-full mr-1.5 focus:outline-none
-                    ${theme === 'light' ? 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-main)]' : 'text-[var(--color-dark-text)] hover:bg-[var(--color-dark-bg-tertiary)]'}`}>
-                    <Plus className="w-5 h-5" />
-                </button>
+            <div className="flex items-center justify-between    w-full mt-2 pl-2">             
                 <div className="flex items-center gap-1">
+                    <button type="button" className={`p-2 rounded-full cursor-not-allowed focus:outline-none
+                        ${theme === 'light' ? 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-main)]' : 'text-[var(--color-dark-text)] hover:bg-[var(--color-dark-bg-tertiary)]'}`}>
+                        <Plus className="w-5 h-5" />
+                    </button>
                     <button type="button" className={`p-2 rounded-full cursor-not-allowed focus:outline-none
                         ${theme === 'light' ? 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-main)]' : 'text-[var(--color-dark-text-secondary)] hover:bg-[var(--color-dark-bg-tertiary)]'}`} title="Video (deshabilitado)">
                         <Video className="w-5 h-5" />
@@ -82,6 +70,17 @@ function ChatInput({ onSendMessage }) {
                         <Image className="w-5 h-5" />
                     </button>
                 </div>
+                <button
+                    type="submit"
+                    className={`p-2 rounded-full transition-all ease-in-out duration-300 focus:outline-none flex-shrink-0
+                        ${inputText.trim()
+                            ? 'bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-tertiary-hover)] text-white' // ! Activo
+                            : 'hidden cursor-not-allowed' // ! Inactivo
+                        }`}
+                    disabled={!inputText.trim()}
+                >
+                    <SendHorizonal className="w-3 h-3" />
+                </button>
             </div>
         </form>
     );

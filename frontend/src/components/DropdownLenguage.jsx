@@ -31,7 +31,7 @@ function DropdownLenguage() {
     }, []);
 
     return (
-        <div className=" font-bold text-md text-gray-600 hover:bg-gray-100 cursor-pointer flex items-center justify-between whitespace-nowrap" ref={languageDropdownRef}>
+        <div className="  w-full text-gray-600 hover:bg-gray-100 cursor-pointer flex items-center justify-between whitespace-nowrap" ref={languageDropdownRef}>
             <button
                 onClick={handleLanguageDropdownClick}
                 className="px-4 py-2 flex items-center w-full cursor-pointer "
