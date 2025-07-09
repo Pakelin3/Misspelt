@@ -169,7 +169,7 @@ function BadgesPage() {
                     return (
                         <div
                             key={badge.id}
-                            className={`badge-card relative overflow-hidden rounded-lg shadow-md p-6 flex flex-col items-center justify-between transition-transform duration-200 hover:scale-105
+                            className={`badge-card relative overflow-hidden rounded-lg shadow-md p-6 flex flex-col items-center hover:shadow-2xl transition-all duration-300 justify-between hover:scale-105
                                 ${theme === 'light' ? 'bg-[var(--color-bg-card)]' : 'bg-[var(--color-dark-bg-secondary)]'}
                                 ${unlocked ? 'border-2 border-[var(--color-accent-green)]' : 'border-2 border-transparent'}
                             `}

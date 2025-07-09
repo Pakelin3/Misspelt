@@ -1,6 +1,6 @@
 // App.jsx
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 import PrivateRoute from '@/utils/PrivatesRoutes';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
@@ -35,7 +35,6 @@ function App() {
         <ThemeProvider>
           <AuthProvider>
             <Navbar />
-
             <Routes>
               {/* 
             // ! Rutas públicas 
@@ -53,7 +52,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/dictionary" element={<DictionaryPage />} />
                 <Route path="/ia" element={
-                  <div className="flex h-[calc(100vh-76px)] relative bg-[#1e1e1e] text-gray-100">
+                  <div className="flex h-[100dvh] relative bg-[#1e1e1e] text-gray-100">
                     <SidebarIA isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
                     <MainContent isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
                   </div>
