@@ -51,6 +51,15 @@ function Navbar() {
         setIsMobileMenuOpen(false);
     }, [location.pathname]);
 
+    const noNavbarPaths = ['/login', '/register', '/check-email', '/verify-email/:token', '/ia'];
+    const shouldShowNavbar = !noNavbarPaths.some(path => {
+        if (path.includes(':')) {
+            const regexPath = new RegExp(`^${path.replace(/:[^/]+/g, '[^/]+')}$`);
+            return regexPath.test(location.pathname);
+        }
+        return location.pathname === path;
+    });
+
     let finalProfileImageSrc = '';
     if (user) {
         if (user.current_avatar_url) {
@@ -62,6 +71,9 @@ function Navbar() {
     if (!finalProfileImageSrc) {
         finalProfileImageSrc = 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fstackoverflow.com%2Fquestions%2F38576264%2Fhow-can-i-programmatically-check-if-a-google-users-profile-picture-isnt-defaul&psig=AOvVaw1TrWin8HXRPftPqI2iPWv5&ust=1751834937122000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCOjs_urLpo4DFQAAAAAdAAAAABAE';
     }
+    if (!shouldShowNavbar) {
+        return null;
+    }
 
     return (
         <nav className="bg-[var(--color-bg-secondary)] p-3 shadow-md z-50 sticky top-0">
@@ -69,11 +81,11 @@ function Navbar() {
                 <div className="flex items-center gap-6 md:gap-8">
                     <div className="flex items-center gap-2 md:gap-3">
                         <div className="h-10 px-2 flex items-center justify-center bg-[var(--color-white)] rounded-full"> NombreGame</div>
-                        
+
                     </div>
 
                     <div className="hidden md:flex items-center gap-6">
-                    <Link
+                        <Link
                             to="/"
                             className={`
                                 text-[var(--color-white)]
@@ -356,9 +368,9 @@ function Navbar() {
                                 className="text-[var(--color-white)] py-2 font-medium flex items-center gap-2"
                             >
                                 <img
-                                src={finalProfileImageSrc}
-                                className="w-10 h-10 rounded-full object-cover ml-1"
-                            />
+                                    src={finalProfileImageSrc}
+                                    className="w-10 h-10 rounded-full object-cover ml-1"
+                                />
                                 {user.username}
                             </Link>
                             <button
