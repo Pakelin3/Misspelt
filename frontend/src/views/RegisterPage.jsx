@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import AuthContext from '@/context/AuthContext';
 import googleIcon from '@/assets/google.svg';
-import { useTheme } from '@/context/ThemeContext';
+import { LeafIcon } from '@/components/PixelIcons';
 
 function RegisterPage({ onScreenChange }) {
     const [email, setEmail] = useState('');
@@ -11,13 +11,18 @@ function RegisterPage({ onScreenChange }) {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [errors, setErrors] = useState({});
 
-    const { registerUser } = React.useContext(AuthContext);
-    const { theme } = useTheme();
+    const { registerUser } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrors({});
+
+        // Validación rápida en el cliente
+        if (password !== confirmPassword) {
+            setErrors({ confirm_password: ["Las contraseñas no coinciden"] });
+            return;
+        }
 
         const responseErrors = await registerUser(email, username, password, confirmPassword);
 
@@ -27,132 +32,149 @@ function RegisterPage({ onScreenChange }) {
     };
 
     return (
-        <div className="flex justify-center items-center min-h-[calc(100vh-theme(spacing.16))] bg-[var(--color-body-bg)] p-4">
-            <div className="bg-[var(--color-bg-card)] p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md relative">
+        <div className="flex justify-center items-center min-h-screen bg-background p-4 font-sans">
+            <div className="bg-card pixel-border p-6 sm:p-8 w-full max-w-md relative shadow-none">
+                
+                {/* Botón Cerrar */}
                 <Link
                     to="/"
                     onClick={(e) => {
                         e.preventDefault();
-                        if (onScreenChange) {
-                            onScreenChange('register');
-                        } else {
-                            navigate('/');
-                        }
+                        onScreenChange ? onScreenChange('register') : navigate('/');
                     }}
-                    className="absolute top-4 right-4 text-[var(--color-text-secondary)] text-2xl hover:text-[var(--color-text)] transition-colors"
-                > &times;
+                    className="absolute top-4 right-4 text-muted-foreground hover:text-destructive font-mono text-xl transition-colors no-underline"
+                > 
+                    X
                 </Link>
 
                 <div className="text-center mb-6">
-                    <div className="w-20 h-20 bg-[var(--color-bg-secondary)]  rounded-full mx-auto mb-4"></div>
-                    <h2 className="text-2xl font-semibold text-[var(--color-text-main)]">Crea una cuenta</h2>
+                    <div className="flex justify-center mb-4">
+                        <div className="h-16 w-16 bg-primary/20 rounded-sm flex items-center justify-center pixel-border-primary">
+                            <LeafIcon className="w-10 h-10 text-primary" />
+                        </div>
+                    </div>
+                    {/* Título en Arcade */}
+                    <h2 className="text-xl md:text-2xl font-mono text-foreground mb-2 uppercase leading-tight">
+                        Nueva Partida
+                    </h2>
+                    {/* Subtítulo en VT323 */}
+                    <p className="text-muted-foreground text-2xl font-sans">
+                        Crea tu perfil de granjero
+                    </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    <button type="button" className="flex cursor-not-allowed items-center justify-center gap-2 px-4 py-3 border rounded-lg font-medium transition-colors
-                        border-[var(--color-text-secondary)] text-[var(--color-text-main)] hover:bg-[var(--color-bg-main)] hover:text-[var(--color-text-secondary)] 
-                        dark:hover:bg-[var(--color-dark-bg-tertiary)] dark:border-[var(--color-dark-border)]">
-                        <img src={googleIcon} alt="Google Icon" className="w-5 h-5" />
-                        Continuar con Google
+                    
+                    {/* Botón Google */}
+                    <button type="button" className="flex cursor-not-allowed items-center justify-center gap-3 px-4 py-3 border-2 border-foreground bg-white text-foreground font-sans text-2xl hover:bg-muted transition-colors opacity-70">
+                        <img src={googleIcon} alt="Google" className="w-5 h-5 pixel-rendering" />
+                        Registro con Google
                     </button>
 
-                    <div className="flex items-center text-center text-[var(--color-text-secondary)] my-4">
-                        <span className="flex-grow border-b border-[var(--color-text-secondary)] dark:border-[var(--color-dark-border)]"></span>
-                        <span className="px-3 bg-[var(--color-bg-card)]">También puedes</span>
-                        <span className="flex-grow border-b border-[var(--color-text-secondary)] dark:border-[var(--color-dark-border)]"></span>
+                    <div className="flex items-center text-center text-muted-foreground my-2">
+                        <span className="flex-grow border-b-2 border-muted"></span>
+                        <span className="px-3 bg-card font-mono text-xs">O</span>
+                        <span className="flex-grow border-b-2 border-muted"></span>
                     </div>
 
-                    <p className="text-sm text-[var(--color-text-secondary)] text-center mb-4">
-                        Introduce tu correo electrónico para crear una cuenta
-                    </p>
-                    <input
-                        type="email"
-                        placeholder="Correo electrónico"
-                        value={email}
-                        onChange={(e) => {
-                            setEmail(e.target.value.toLowerCase());
-                            setErrors(prev => ({ ...prev, email: undefined }));
-                        }}
-                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2
-                            ${theme === 'light' ? 'text-[var(--color-text)] border-[var(--color-text-secondary)] focus:ring-[var(--color-bg-secondary)]' :
-                            'text-[var(--color-dark-text)] border-[var(--color-dark-border)] focus:ring-[var(--color-bg-secondary)]'} 
-                            ${errors.email ? 'border-red-500 focus:ring-red-500' : ''}`}
-                        required
-                    />
-                    {errors.email && <label className="text-red-500 text-sm mt-1 ml-1">{errors.email[0]}</label>}
+                    {/* Input Email */}
+                    <div className="space-y-1">
+                        <input
+                            type="email"
+                            placeholder="Correo electrónico..."
+                            value={email}
+                            onChange={(e) => {
+                                setEmail(e.target.value.toLowerCase());
+                                setErrors(prev => ({ ...prev, email: undefined }));
+                            }}
+                            className={`w-full px-4 py-3 bg-background border-2 font-sans text-2xl placeholder:text-muted-foreground/70 focus:outline-none focus:ring-0
+                                ${errors.email ? 'border-destructive text-destructive' : 'border-muted focus:border-primary text-foreground'}`}
+                            required
+                        />
+                        {errors.email && <p className="text-destructive font-mono text-[10px] mt-1 tracking-tighter">* {errors.email[0]}</p>}
+                    </div>
 
-                    <input
-                        type="text"
-                        placeholder="Nombre de usuario"
-                        value={username}
-                        onChange={(e) => {
-                            setUsername(e.target.value);
-                            setErrors(prev => ({ ...prev, username: undefined }));
-                        }}
-                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2
-                            ${theme === 'light' ? 'text-[var(--color-text)] border-[var(--color-text-secondary)] focus:ring-[var(--color-bg-secondary)]' :
-                            'text-[var(--color-dark-text)] border-[var(--color-dark-border)] focus:ring-[var(--color-bg-secondary)]'} 
-                            ${errors.username ? 'border-red-500 focus:ring-red-500' : ''}`}
-                        required
-                    />
-                    {errors.username && <label className="text-red-500 text-sm mt-1 ml-1">{errors.username[0]}</label>}
+                    {/* Input Username */}
+                    <div className="space-y-1">
+                        <input
+                            type="text"
+                            placeholder="Nombre de usuario..."
+                            value={username}
+                            onChange={(e) => {
+                                setUsername(e.target.value);
+                                setErrors(prev => ({ ...prev, username: undefined }));
+                            }}
+                            className={`w-full px-4 py-3 bg-background border-2 font-sans text-2xl placeholder:text-muted-foreground/70 focus:outline-none focus:ring-0
+                                ${errors.username ? 'border-destructive text-destructive' : 'border-muted focus:border-primary text-foreground'}`}
+                            required
+                        />
+                        {errors.username && <p className="text-destructive font-mono text-[10px] mt-1 tracking-tighter">* {errors.username[0]}</p>}
+                    </div>
 
-                    <input
-                        type="password"
-                        placeholder="Contraseña"
-                        value={password}
-                        onChange={(e) => {
-                            setPassword(e.target.value);
-                            setErrors(prev => ({ ...prev, password: undefined, non_field_errors: undefined }));
-                        }}
-                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2
-                            ${theme === 'light' ? 'text-[var(--color-text)] border-[var(--color-text-secondary)] focus:ring-[var(--color-bg-secondary)]' :
-                            'text-[var(--color-dark-text)] border-[var(--color-dark-border)] focus:ring-[var(--color-bg-secondary)]'}
-                            ${errors.password ? 'border-red-500 focus:ring-red-500' : ''}`}
-                        required
-                    />
-                    {errors.password && <label className="text-red-500 text-sm mt-1 ml-1">{errors.password[0]}</label>}
+                    {/* Input Password */}
+                    <div className="space-y-1">
+                        <input
+                            type="password"
+                            placeholder="Contraseña..."
+                            value={password}
+                            onChange={(e) => {
+                                setPassword(e.target.value);
+                                setErrors(prev => ({ ...prev, password: undefined, non_field_errors: undefined }));
+                            }}
+                            className={`w-full px-4 py-3 bg-background border-2 font-sans text-2xl placeholder:text-muted-foreground/70 focus:outline-none focus:ring-0
+                                ${errors.password ? 'border-destructive text-destructive' : 'border-muted focus:border-primary text-foreground'}`}
+                            required
+                        />
+                        {errors.password && <p className="text-destructive font-mono text-[10px] mt-1 tracking-tighter">* {errors.password[0]}</p>}
+                    </div>
 
-                    <input
-                        type="password"
-                        placeholder="Confirmar contraseña"
-                        value={confirmPassword}
-                        onChange={(e) => {
-                            setConfirmPassword(e.target.value);
-                            setErrors(prev => ({ ...prev, confirm_password: undefined }));
-                        }}
-                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2
-                            ${theme === 'light' ? 'text-[var(--color-text)] border-[var(--color-text-secondary)] focus:ring-[var(--color-bg-secondary)]' :
-                            'text-[var(--color-dark-text)] border-[var(--color-dark-border)] focus:ring-[var(--color-bg-secondary)]'}
-                            ${errors.confirm_password ? 'border-red-500 focus:ring-red-500' : ''}`}
-                        required
-                    />
-                    {errors.confirm_password && <label className="text-red-500 text-sm mt-1 ml-1">{errors.confirm_password[0]}</label>}
+                    {/* Input Confirm Password */}
+                    <div className="space-y-1">
+                        <input
+                            type="password"
+                            placeholder="Confirmar contraseña..."
+                            value={confirmPassword}
+                            onChange={(e) => {
+                                setConfirmPassword(e.target.value);
+                                setErrors(prev => ({ ...prev, confirm_password: undefined }));
+                            }}
+                            className={`w-full px-4 py-3 bg-background border-2 font-sans text-2xl placeholder:text-muted-foreground/70 focus:outline-none focus:ring-0
+                                ${errors.confirm_password ? 'border-destructive text-destructive' : 'border-muted focus:border-primary text-foreground'}`}
+                            required
+                        />
+                        {errors.confirm_password && <p className="text-destructive font-mono text-[10px] mt-1 tracking-tighter">* {errors.confirm_password[0]}</p>}
+                    </div>
 
+                    {/* Errores Generales */}
                     {(errors.non_field_errors || errors.detail || errors.general_error) && (
-                        <p className="text-red-500 text-sm text-center font-medium mt-2">{errors.non_field_errors?.[0] || errors.detail || errors.general_error}</p>
+                        <div className="bg-destructive/10 border-2 border-destructive p-2 text-center mt-2">
+                            <p className="text-destructive font-mono text-[10px] leading-tight">
+                                {errors.non_field_errors?.[0] || errors.detail || errors.general_error}
+                            </p>
+                        </div>
                     )}
-                    <button type="submit" className="w-full cursor-pointer py-3 bg-[var(--color-bg-tertiary)] text-white
-                    rounded-lg font-semibold hover:bg-[var(--color-bg-tertiary-hover)] transition-colors mt-4">
-                        Crear cuenta
+
+                    {/* Botón Submit */}
+                    <button 
+                        type="submit" 
+                        className="w-full py-4 mt-4 bg-primary text-primary-foreground font-mono text-sm pixel-border-primary pixel-btn cursor-pointer uppercase tracking-wide shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]"
+                    >
+                        Crear Cuenta
                     </button>
 
-                    <p className="text-center text-[var(--color-text-secondary)] text-sm mt-4">
-                        ¿Ya tienes una cuenta?
+                    <div className="text-center text-muted-foreground text-xl font-sans mt-4">
+                        ¿Ya tienes granja?
                         <Link
                             to="/login"
                             onClick={(e) => {
                                 e.preventDefault();
-                                if (onScreenChange) {
-                                    onScreenChange('login');
-                                } else {
-                                    navigate('/login');
-                                }
+                                onScreenChange ? onScreenChange('login') : navigate('/login');
                             }}
-                            className="ml-1 text-[var(--color-accent-blue)] hover:underline"
-                        > Inicia sesión
+                            className="ml-2 text-accent hover:text-accent-foreground hover:underline decoration-2 underline-offset-4"
+                        > 
+                            INICIA SESIÓN
                         </Link>
-                    </p>
+                    </div>
                 </form>
             </div>
         </div>

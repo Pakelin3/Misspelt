@@ -1,29 +1,25 @@
-import React from 'react';
-import Accordion from '@/components/Accordion';
-import RandomWordCard from '@/components/RandomWordCard';
+import React from "react";
+import Navbar from "@/components/Navbar";// Tu Navbar pixelado
+import { HeroSection } from "@/components/landing/HeroSection";
+import { FeaturesSection } from "@/components/landing/FeaturesSection";
+import { QuizPreview } from "@/components/landing/QuizPreview";
+import { Footer } from "@/components/landing/Footer";
 
-function Homepage() {
-
+function HomePage() {
     return (
+        <div className="min-h-screen bg-background font-sans text-foreground selection:bg-accent selection:text-accent-foreground">
+            {/* El Navbar ya maneja su propio estado responsive */}
+            <Navbar />
+            
+            <main className="flex-1">
+                <HeroSection />
+                <FeaturesSection />
+                <QuizPreview />
+            </main>
 
-        <div className='min-h-auto my-20'>
-            <section className='flex justify-center min-h-96 items-center max-h-2/4 bg-gray-200 p-4'> 
-                {/*
-                 // TODO: Proximamente preview del juego
-                */}
-                <p className='text-gray-500'>Próximamente: Preview del juego...</p> 
-            </section>
-
-            <section className='flex justify-around my-20 px-5 gap-20 flex-wrap-reverse items-end'>
-                <div className='block max-w-md p-6 w-md bg-[var(--color-bg-card)] shadow-lg border border-[var(--color-bg-secondary)] rounded-lg justify-self-start '> 
-                    <RandomWordCard />
-                </div>
-                <div className="block max-w-md p-6 bg-[var(--color-bg-card)] shadow-lg border rounded-lg border-[var(--color-bg-secondary)]"> 
-                    <Accordion />
-                </div>
-            </section>
+            <Footer />
         </div>
     );
 }
 
-export default Homepage;    
+export default HomePage;

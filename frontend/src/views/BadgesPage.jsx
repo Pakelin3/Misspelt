@@ -1,95 +1,98 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
-import useAxios from '@/utils/useAxios'; 
-import { useTheme } from '@/context/ThemeContext'; 
-import AuthContext from '@/context/AuthContext'; 
-import { ScaleLoader } from 'react-spinners'; 
+import useAxios from '@/utils/useAxios';
+import AuthContext from '@/context/AuthContext';
+import Navbar from "@/components/Navbar";
+import BadgeCard from "@/components/badges/BadgeCard";
+import { TrophyIcon } from '@/components/PixelIcons';
 
 function BadgesPage() {
-    const api = useAxios(); 
-    const { theme } = useTheme(); 
-    const { user } = useContext(AuthContext); 
-    const [allBadges, setAllBadges] = useState([]); 
-    const [userStats, setUserStats] = useState(null); 
-    const [loading, setLoading] = useState(true); 
-    const [error, setError] = useState(null); 
+    const api = useAxios();
+    const { user } = useContext(AuthContext);
+
+    // Estados
+    const [allBadges, setAllBadges] = useState([]);
+    const [userStats, setUserStats] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [infoMessage, setInfoMessage] = useState(null);
 
+    // --- FETCH DE DATOS ---
     const fetchBadgeData = useCallback(async () => {
         setLoading(true);
         setError(null);
         setInfoMessage(null);
         try {
-            // 1. Obtener todos los badges del sistema
-            const allBadgesResponse = await api.get('/badges/'); 
+            // 1. Obtener insignias
+            const allBadgesResponse = await api.get('/badges/');
             const fetchedAllBadges = allBadgesResponse.data.results || [];
             setAllBadges(fetchedAllBadges);
-            // 2. Obtener las estadísticas del usuario actual
+
+            // 2. Obtener estadísticas (solo si hay usuario)
             let currentUserStats = null;
             if (user && user.user_id) {
                 try {
-                    const userStatsResponse = await api.get(`/user-stats/me/`); 
+                    const userStatsResponse = await api.get(`/user-stats/me/`);
                     currentUserStats = userStatsResponse.data;
                     setUserStats(currentUserStats);
                 } catch (userStatsErr) {
-                    console.warn("No se pudieron cargar las estadísticas del usuario. Podría no tener entradas en UserStats.", userStatsErr);
-                    setInfoMessage("No se encontraron estadísticas para tu usuario. Juega un poco para empezar a ganar insignias.");
-                    setUserStats(null); 
+                    console.warn("Stats no encontrados:", userStatsErr);
+                    setInfoMessage("Empieza a jugar para ver tus estadísticas.");
+                    setUserStats(null);
                 }
             } else {
-                setInfoMessage("Debes iniciar sesión para ver tus insignias.");
+                setInfoMessage("Inicia sesión para registrar tus logros.");
             }
 
+            // Mensajes de estado vacíos
             if (fetchedAllBadges.length === 0) {
-                setInfoMessage("No hay insignias configuradas en el sistema todavía.");
-            } else if (fetchedAllBadges.length > 0 && !user && !currentUserStats) {
-                setInfoMessage("Inicia sesión para ver tu progreso de insignias.");
+                setInfoMessage("No hay insignias disponibles en este momento.");
             }
-
 
         } catch (err) {
-            console.error("Error al cargar los datos de insignias:", err);
-            setError("Error al cargar las insignias o tus estadísticas. Inténtalo de nuevo más tarde.");
+            console.error("Error fetching badges:", err);
+            setError("No se pudo conectar con el gremio de aventureros.");
         } finally {
             setLoading(false);
         }
-    }, [api, user]); 
+    }, [api, user]);
 
     useEffect(() => {
         fetchBadgeData();
     }, [fetchBadgeData]);
 
+    // --- LÓGICA DE CÁLCULO DE ESTADO (Mantenida de tu código) ---
     const getBadgeStatus = (badge) => {
         if (!userStats || !userStats.unlocked_badges || !Array.isArray(userStats.unlocked_badges)) {
             return { unlocked: false, progress: 0, showProgress: false, conditionText: badge.condition_description };
         }
-        const isUnlocked = userStats.unlocked_badges.some(ub => ub.id === badge.id); 
+        const isUnlocked = userStats.unlocked_badges.some(ub => ub.id === badge.id);
 
         let progress = 0;
         let showProgress = false;
-        let conditionText = badge.condition_description; 
+        let conditionText = badge.condition_description;
 
         if (isUnlocked) {
             progress = 100;
-            showProgress = true; 
-            conditionText = badge.reward_description; 
+            showProgress = true;
+            conditionText = badge.reward_description || "¡Logro completado!";
         } else if (badge.unlock_condition_data && Array.isArray(badge.unlock_condition_data) && badge.unlock_condition_data.length > 0 && userStats) {
             const conditionTypeToSpanish = {
                 'correct_slangs': 'Slangs acertados',
-                'total_exp_achieved': 'Experiencia total', 
-                'answered_total_questions': 'Preguntas respondidas',
-                'words_seen_total': 'Palabras vistas',  
+                'total_exp_achieved': 'XP Total',
+                'answered_total_questions': 'Preguntas totales',
+                'words_seen_total': 'Palabras descubiertas',
                 'phrasal_verbs_seen': 'Phrasal verbs vistos',
-                'correct_answers_total': 'Respuestas correctas',
-                'total_slangs_questions': 'Preguntas de slangs',
-                'correct_phrasal_verbs': 'Phrasal verbs correctos',
-                'total_phrasal_verbs_questions': 'Preguntas de phrasal verbs',
+                'correct_answers_total': 'Aciertos totales',
+                'total_slangs_questions': 'Preguntas de Slang',
+                'correct_phrasal_verbs': 'Phrasal Verbs correctos',
+                'total_phrasal_verbs_questions': 'Preguntas PV',
                 'current_streak': 'Racha actual',
-                'longest_streak': 'Racha más larga',
+                'longest_streak': 'Mejor racha',
             };
 
             const conditionTypeToUserStatsField = {
                 'correct_slangs': 'correct_slangs',
-                'total_exp_achieved': 'experience', 
+                'total_exp_achieved': 'experience',
                 'answered_total_questions': 'total_questions_answered',
                 'words_seen_total': 'words_seen_total',
                 'phrasal_verbs_seen': 'phrasal_verbs_seen',
@@ -101,123 +104,69 @@ function BadgesPage() {
                 'longest_streak': 'longest_streak',
             };
 
-            const firstCondition = badge.unlock_condition_data[0]; 
-            const conditionType = firstCondition.type; 
+            const firstCondition = badge.unlock_condition_data[0];
+            const conditionType = firstCondition.type;
             const requiredValue = firstCondition.value;
             const userStatsFieldName = conditionTypeToUserStatsField[conditionType];
-            const userCurrentValue = userStatsFieldName ? userStats[userStatsFieldName] : undefined; 
-            
+            const userCurrentValue = userStatsFieldName ? userStats[userStatsFieldName] : undefined;
+
             if (typeof userCurrentValue === 'number' && typeof requiredValue === 'number' && requiredValue > 0) {
                 progress = Math.min(100, (userCurrentValue / requiredValue) * 100);
-                showProgress = true; 
+                showProgress = true;
                 conditionText = `${conditionTypeToSpanish[conditionType] || conditionType}: ${userCurrentValue}/${requiredValue}`;
-            } else {
-                progress = 0;
-                showProgress = false;
-                conditionText = badge.condition_description; 
             }
         }
         return { unlocked: isUnlocked, progress: Math.floor(progress), showProgress: showProgress, conditionText: conditionText };
     };
 
-    // --- RENDERIZADO DEL COMPONENTE ---
-
-    if (loading) {
-        return (
-            <div className={`min-h-[calc(100vh-64px)] flex items-center justify-center 
-                ${theme === 'light' ? 'bg-[var(--color-body-bg)]' : 'bg-[var(--color-dark-bg-main)]'}`}>
-                <ScaleLoader color={theme === 'light' ? 'var(--color-bg-tertiary)' : 'var(--color-bg-secondary)'} loading={true} size={50} aria-label="Cargando insignias" />
-                <p className={`ml-4 ${theme === 'light' ? 'text-[var(--color-text-main)]' : 'text-[var(--color-dark-text)]'}`}>Cargando insignias...</p>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className={`min-h-[calc(100vh-64px)] flex items-center justify-center 
-                ${theme === 'light' ? 'bg-[var(--color-body-bg)]' : 'bg-[var(--color-dark-bg-main)]'}`}>
-                <p className="text-red-500 text-center">{error}</p>
-            </div>
-        );
-    }
-
-    if (infoMessage) {
-        return (
-            <div className={`min-h-[calc(100vh-64px)] flex items-center justify-center p-4 
-                ${theme === 'light' ? 'bg-[var(--color-body-bg)]' : 'bg-[var(--color-dark-bg-main)]'}`}>
-                <div className={`p-6 rounded-lg text-center
-                    ${theme === 'light' ? 'bg-[var(--color-bg-card)] text-[var(--color-text-main)]' : 'bg-[var(--color-dark-bg-secondary)] text-[var(--color-dark-text)]'}`}>
-                    <p className="text-lg">{infoMessage}</p>
-                </div>
-            </div>
-        );
-    }
-
+    // --- RENDERIZADO ---
     return (
-        <div className={`min-h-[calc(100vh-64px)] p-6 ${theme === 'light' ? 'bg-[var(--color-body-bg)]' : 'bg-[var(--color-dark-bg-main)]'}`}>
-            <h1 className={`text-3xl font-bold mb-8 text-center ${theme === 'light' ? 'text-[var(--color-text-main)]' : 'text-[var(--color-dark-text)]'}`}>
-                Logros
-            </h1>
-            <p className={`text-md mb-8 text-center ${theme === 'light' ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-dark-text-secondary)]'}`}>
-                Desbloquea logros completando tareas en la plataforma.
-            </p>
+        <div className="min-h-screen bg-background font-sans flex flex-col">
+            <Navbar />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 max-w-7xl mx-auto">
-                {allBadges.map(badge => {
-                    const { unlocked, progress, showProgress, conditionText } = getBadgeStatus(badge);
-                    
-                    return (
-                        <div
-                            key={badge.id}
-                            className={`badge-card relative overflow-hidden rounded-lg shadow-md p-6 flex flex-col items-center hover:shadow-2xl transition-all duration-300 justify-between hover:scale-105
-                                ${theme === 'light' ? 'bg-[var(--color-bg-card)]' : 'bg-[var(--color-dark-bg-secondary)]'}
-                                ${unlocked ? 'border-2 border-[var(--color-accent-green)]' : 'border-2 border-transparent'}
-                            `}
-                        >
-                            {/* Icono/Imagen del Badge */}
-                            <div className="relative w-24 h-24 mb-4">
-                                <img
-                                    src={badge.image}
-                                    alt={badge.title}
-                                    className={`w-full h-full object-contain transition-all duration-300 ${unlocked ? '' : 'grayscale opacity-70'}`}/>
-                                {unlocked && (
-                                    <div className="absolute bottom-0 right-0 p-1 bg-[var(--color-accent-green)] rounded-full text-white">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check"><path d="M20 6 9 17l-5-5"/></svg>
-                                    </div>
-                                )}
-                            </div>
+            <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-8 md:py-12 mt-16">
+                
+                {/* HEADER */}
+                <div className="text-center mb-12">
+                    <div className="inline-flex items-center justify-center p-4 bg-accent/20 rounded-full pixel-border-accent mb-4">
+                        <TrophyIcon className="w-10 h-10 text-accent" />
+                    </div>
+                    <h1 className="text-3xl md:text-5xl font-mono text-foreground mb-4">SALA DE TROFEOS</h1>
+                    <p className="text-xl text-muted-foreground font-sans max-w-2xl mx-auto">
+                        Aquí se exhiben los hitos de tu aventura. ¡Completa desafíos para llenar las vitrinas!
+                    </p>
+                </div>
 
-                            {/* Título del Badge */}
-                            <h3 className={`text-lg font-semibold mb-2 text-center ${theme === 'light' ? 'text-[var(--color-text-main)]' : 'text-[var(--color-dark-text)]'}`}>
-                                {badge.title}
-                            </h3>
+                {/* MENSAJES DE ESTADO */}
+                {infoMessage && !loading && (
+                    <div className="mb-8 p-4 bg-primary/10 border-l-4 border-primary text-primary font-sans text-xl">
+                        {infoMessage}
+                    </div>
+                )}
 
-                            {/* Requerimiento / Descripción de la Condición */}
-                            <p className={`text-sm text-center mb-3 ${theme === 'light' ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-dark-text-secondary)]'}`}>
-                                {conditionText} {/* Usa el conditionText calculado */}
-                            </p>
+                {error && (
+                    <div className="mb-8 p-4 bg-destructive/10 border-l-4 border-destructive text-destructive font-mono text-xs">
+                        {error}
+                    </div>
+                )}
 
-                            {/* Barra de Progreso */}
-                            {showProgress && ( // Mostrar progreso solo si `showProgress` es true
-                                <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-auto">
-                                    <div
-                                        className="bg-[var(--color-bg-secondary)] h-2.5 rounded-full transition-all duration-500"
-                                        style={{ width: `${progress}%` }}
-                                    ></div>
-                                    <p className={`text-xs text-right mt-1 ${theme === 'light' ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-dark-text-secondary)]'}`}>
-                                        {progress}%
-                                    </p>
-                                </div>
-                            )}
-                            {/* Mensaje si no hay progreso visible */}
-                            {!showProgress && !unlocked && ( // Si no se muestra la barra y no está desbloqueado
-                                <p className={`text-xs text-center mt-auto ${theme === 'light' ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-dark-text-secondary)]'}`}>
-                                    (Condición no programática o no aplicable)
-                                </p>
-                            )}
-                        </div>
-                    );
-                })}
+                {/* GRID DE INSIGNIAS */}
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center h-64 gap-4">
+                        <div className="w-16 h-16 border-4 border-accent border-t-transparent animate-spin rounded-full"></div>
+                        <p className="font-mono text-xs text-muted-foreground animate-pulse">PULIENDO TROFEOS...</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                        {allBadges.map(badge => (
+                            <BadgeCard 
+                                key={badge.id} 
+                                badge={badge} 
+                                status={getBadgeStatus(badge)} 
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

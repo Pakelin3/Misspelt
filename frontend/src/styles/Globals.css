@@ -1,8 +1,8 @@
-@import "tailwindcss";
+/* @import "tailwindcss";
 
 
 :root {
-   /* --color-bg-main: #4ECDC4; */
+     (este no)--color-bg-main: #4ECDC4; 
     --color-bg-main: #edf4ed;
     --color-bg-main-darker: #c9f6ec;
     --color-bg-secondary: #00d5be;
@@ -30,7 +30,7 @@
     --color-accent-phrasalverbs: #FFC872;
 }
 
-html.light {
+/* html.light {
     --color-body-bg: var(--color-bg-main); 
     --color-navbar-bg: var(--color-bg-main); 
     --color-navbar-text: var(--color-bg-main); 
@@ -58,8 +58,8 @@ body {
     background-color: var(--color-body-bg);
     color: var(--color-text-main); 
     transition: background-color 0.3s ease, color 0.3s ease; 
-}
-
+} */
+/* 
 .navbar {
     background-color: var(--color-navbar-bg);
     color: var(--color-navbar-text);
@@ -88,8 +88,8 @@ body {
 .custom-scrollbar::-webkit-scrollbar {
     width: 8px; 
     height: 8px; 
-}
-
+} */
+/* 
 .custom-scrollbar::-webkit-scrollbar-track {
     background: var(--color-dark-bg-secondary); 
     border-radius: 10px;
@@ -98,13 +98,13 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb {
     background: #555; 
     border-radius: 10px;
-}
+} */
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+/* .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #777; 
-}
+} */
 
-.custom-scrollbar {
+/* .custom-scrollbar {
     scrollbar-width: thin; 
     scrollbar-color: #555 var(--color-dark-bg-secondary); 
-}
+}  */

@@ -19,6 +19,7 @@ import MainContent from '@/components/MainContent';
 import { StyleSheetManager } from 'styled-components';
 import isPropValid from '@emotion/is-prop-valid';
 import "./styles/Globals.css";
+import "./index.css";
 
 
 function App() {

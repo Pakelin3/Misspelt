@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import AuthContext from '@/context/AuthContext';
 import DropdownLenguage from "@/components/DropdownLenguage";
 import ThemeButton from "@/components/ThemeButton";
+import { BookIcon, BrainIcon, TrophyIcon, LeafIcon, SwordIcon, GearIcon } from "@/components/PixelIcons"; // <--- Agrega GearIcon
 
 function Navbar() {
     const { user, logoutUser } = useContext(AuthContext);
@@ -13,21 +14,16 @@ function Navbar() {
     const mobileMenuButtonRef = useRef(null);
     const profileDropdownRef = useRef(null);
 
+    // Lógica original de rutas activas
     const isActive = (path) => {
-        if (path === "/") {
-            return location.pathname === "/";
-        }
+        if (path === "/") return location.pathname === "/";
         return location.pathname.startsWith(path);
     };
 
-    const toggleMobileMenu = () => {
-        setIsMobileMenuOpen(!isMobileMenuOpen);
-    };
+    const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+    const toggleProfileDropdown = () => setIsProfileDropdownOpen(prev => !prev);
 
-    const toggleProfileDropdown = () => {
-        setIsProfileDropdownOpen(prev => !prev);
-    };
-
+    // Cierre al hacer click fuera
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target) &&
@@ -38,18 +34,18 @@ function Navbar() {
                 setIsProfileDropdownOpen(false);
             }
         };
-
         document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
+        return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    // Cerrar menú al cambiar de ruta
     useEffect(() => {
         setIsMobileMenuOpen(false);
+        setIsProfileDropdownOpen(false);
     }, [location.pathname]);
 
-    const noNavbarPaths = ['/login', '/register', '/check-email', '/verify-email/:token', '/ia'];
+    // Lógica de ocultar Navbar
+    const noNavbarPaths = ['/login', '/register', '/check-email', '/verify-email/:token', '/ia-fullmode']; // Agregué ia-fullmode por si acaso
     const shouldShowNavbar = !noNavbarPaths.some(path => {
         if (path.includes(':')) {
             const regexPath = new RegExp(`^${path.replace(/:[^/]+/g, '[^/]+')}$`);
@@ -58,336 +54,205 @@ function Navbar() {
         return location.pathname === path;
     });
 
-    let finalProfileImageSrc = '';
+    // Lógica de imagen de perfil
+    let finalProfileImageSrc = 'https://ui-avatars.com/api/?name=User&background=random'; // Fallback más limpio
     if (user) {
-        if (user.current_avatar_url) {
-            finalProfileImageSrc = user.current_avatar_url;
-        } else if (user.profile_image_url) {
-            finalProfileImageSrc = user.profile_image_url;
+        if (user.current_avatar_url) finalProfileImageSrc = user.current_avatar_url;
+        else if (user.profile_image_url) finalProfileImageSrc = user.profile_image_url;
+        else finalProfileImageSrc = `https://ui-avatars.com/api/?name=${user.username}&background=random`;
+    }
+
+    if (!shouldShowNavbar) return null;
+
+    // Clases comunes para links de navegación
+    const navLinkClass = (path) => `
+        flex items-center gap-2 px-3 py-2 font-sans text-lg rounded-sm transition-colors
+        ${isActive(path)
+            ? "bg-primary text-primary-foreground"
+            : "text-foreground hover:bg-primary/20 hover:text-foreground"
         }
-    }
-    if (!finalProfileImageSrc) {
-        finalProfileImageSrc = 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fstackoverflow.com%2Fquestions%2F38576264%2Fhow-can-i-programmatically-check-if-a-google-users-profile-picture-isnt-defaul&psig=AOvVaw1TrWin8HXRPftPqI2iPWv5&ust=1751834937122000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCOjs_urLpo4DFQAAAAAdAAAAABAE';
-    }
-    if (!shouldShowNavbar) {
-        return null;
-    }
+    `;
 
     return (
-        <nav className="bg-[var(--color-bg-secondary)] p-3 shadow-md z-50 sticky top-0">
-            <div className="flex w-full items-center justify-between">
-                <div className="flex items-center gap-2 lg:gap-6 transition-all ease-in-out duration-300">
-                    <div className="flex items-center gap-2 md:gap-3">
-                        <div className="h-10 px-2 flex items-center justify-center bg-[var(--color-white)] rounded-full"> NombreGame</div>
+        <header className="fixed top-0 left-0 right-0 z-50 border-b-4 border-foreground bg-card shadow-sm">
+            <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
 
-                    </div>
-
-                    <div className="hidden md:flex items-center gap-4 lg:gap-6 transition-all ease-in-out duration-300 ">
-                        <Link
-                            to="/"
-                            className={`
-                                text-[var(--color-white)]
-                                text-lg
-                                whitespace-pre
-                                font-medium
-                                pb-0.5
-                                transition-colors duration-200 ease-in-out
-                                ${isActive("/")
-                                    ? "border-b-2 border-[var(--color-bg-tertiary)]"
-                                    : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
-                                }
-                            `}
-                        >🏠 Inicio</Link>
-                        <Link
-                            to="/play"
-                            className={`
-                                text-[var(--color-white)]
-                                pb-0.5
-                                whitespace-pre
-                                transition-colors duration-200 ease-in-out
-                                ${isActive("/play")
-                                    ? "border-b-2 border-[var(--color-bg-tertiary)]"
-                                    : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
-                                }
-                            `}>🎮 Jugar</Link>
-                        <Link
-                            to="/dictionary"
-                            className={`
-                                text-[var(--color-white)]
-                                pb-0.5
-                                whitespace-pre
-                                transition-colors duration-200 ease-in-out
-                                ${isActive("/dictionary")
-                                    ? "border-b-2 border-[var(--color-bg-tertiary)]"
-                                    : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
-                                }
-                            `}>📚 Diccionario</Link>
-                        <Link
-                            to="/ia"
-                            className={`
-                                text-[var(--color-white)]
-                                pb-0.5
-                                whitespace-pre
-                                transition-colors duration-200 ease-in-out
-                                ${isActive("/ia")
-                                    ? "border-b-2 border-[var(--color-bg-tertiary)]"
-                                    : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
-                                }
-                            `}>🤖 IA</Link>
-                        <Link
-                            to="/badges"
-                            className={`
-                                text-[var(--color-white)]
-                                pb-0.5
-                                whitespace-pre
-                                transition-colors duration-200 ease-in-out
-                                ${isActive("/badges")
-                                    ? "border-b-2 border-[var(--color-bg-tertiary)]"
-                                    : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
-                                }
-                            `}>🏆 Insignias</Link>
-                        {user && user.is_staff && (
-                            <Link
-                                to="/admin-dashboard"
-                                className={`
-                                text-[var(--color-white)]
-                                pb-0.5
-                                whitespace-pre
-                                transition-colors duration-200 ease-in-out
-                                ${isActive("/admin-dashboard")
-                                        ? "border-b-2 border-[var(--color-bg-tertiary)]"
-                                        : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
-                                    }
-                            `}>⚙️ Admin Panel</Link>
-                        )}
-                    </div>
+                {/* --- LOGO --- */}
+                <div className="flex items-center gap-4">
+                    <Link to="/" className="flex items-center gap-2 group text-decoration-none">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-primary pixel-border-primary group-hover:scale-105 transition-transform">
+                            <LeafIcon className="w-6 h-6 text-primary-foreground" />
+                        </div>
+                        <span className="font-mono text-xs md:text-sm text-foreground tracking-tight leading-tight">
+                            WORD<br />FARM
+                        </span>
+                    </Link>
                 </div>
 
-                <div className="flex items-center gap-3 md:gap-4 ml-auto">
-                    <ThemeButton />
+                {/* --- DESKTOP NAV --- */}
+                <div className="hidden md:flex items-center ml-6 gap-1">
+                    {/* <Link to="/" className={navLinkClass("/")}>
+                            <LeafIcon className="w-5 h-5" /> Inicio
+                        </Link> */}
+                    <Link to="/dictionary" className={navLinkClass("/dictionary")}>
+                        <BookIcon className="w-5 h-5" /> Diccionario
+                    </Link>
+                    <Link to="/ia" className={navLinkClass("/ia")}>
+                        <BrainIcon className="w-5 h-5" /> IA
+                    </Link>
+                    <Link to="/badges" className={navLinkClass("/badges")}>
+                        <TrophyIcon className="w-5 h-5" /> Insignias
+                    </Link>
+                    {user && user.is_staff && (
+                        <Link to="/admin-dashboard" className={navLinkClass("/admin-dashboard")}>
+                            <GearIcon className="w-5 h-5" /> Admin {/* <--- Aquí el cambio */}
+                        </Link>
+                    )}
+                </div>
+
+                {/* --- RIGHT SECTION (Botones + User) --- */}
+                <div className="flex items-center gap-3">
+
+                    {/* Botón JUGAR destacado */}
+                    {/* <Link 
+                        to="/play" 
+                        className="hidden md:flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 font-mono text-[10px] pixel-border-primary pixel-btn text-decoration-none"
+                    >
+                        <SwordIcon className="w-4 h-4" /> JUGAR
+                    </Link> */}
+
+                    {/* <div className="hidden md:block">
+                        <ThemeButton /> 
+                    </div> */}
 
                     {user ? (
-                        <div ref={profileDropdownRef} className="hidden md:flex items-center gap-2 md:gap-1">
-                            <img
-                                src={finalProfileImageSrc}
-                                className="w-10 h-10 rounded-full object-cover ml-1"
-                            />
+                        /* --- USER DROPDOWN (Pixel Style) --- */
+                        <div className="relative" ref={profileDropdownRef}>
                             <button
                                 onClick={toggleProfileDropdown}
-                                className="text-[var(--color-white)] px-3 py-1 rounded-md hover:bg-black/10 focus:outline-none
-                                focus:ring-2 focus:ring-[var(--color-bg-tertiary)] flex items-center gap-1 cursor-pointer">
-                                {user.username}
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className={`ml-1 transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`}
-                                >
-                                    <path d="m6 9 6 6 6-6" />
-                                </svg>
+                                className="flex items-center gap-2 focus:outline-none hover:opacity-80 transition-opacity"
+                            >
+                                <img
+                                    src={finalProfileImageSrc}
+                                    alt="Profile"
+                                    className="w-10 h-10 pixel-border rounded-fulls bg-background object-cover"
+                                />
+                                <span className="hidden md:block font-mono text-xs truncate max-w-[100px]">
+                                    {user.username}
+                                </span>
                             </button>
+
                             {isProfileDropdownOpen && (
-                                <div className="absolute top-full right-5 mt-2 gap-2 bg-[var(--color-white)] rounded-md shadow-lg min-w-[160px] z-10">
+                                <div className="absolute right-0 mt-2 w-48 bg-card pixel-border z-50 p-1 animate-in fade-in zoom-in-95 duration-200">
+                                    <div className="px-4 py-2 border-b-2 border-muted mb-1">
+                                        {/* // TODO: Mostrar aqui el nivel real del jugador y agregar apodos por recompensa(si es muy dificil se hace por nivel)  */}
+                                        <p className="font-mono text-[10px] text-muted-foreground">Nivel 5 • Granjero</p>
+                                    </div>
+
                                     <Link
                                         to="/profile"
-                                        onClick={toggleProfileDropdown}
-                                        className="px-4 py-2 flex items-center font-bold text-md text-gray-600 hover:bg-gray-100 cursor-pointer whitespace-nowrap"
+                                        onClick={() => setIsProfileDropdownOpen(false)}
+                                        className="flex items-center px-4 py-2 font-sans text-lg hover:bg-primary hover:text-primary-foreground transition-colors rounded-sm"
                                     >
                                         Perfil
                                     </Link>
-                                    <DropdownLenguage />
+
+                                    {/* <div className="px-4 py-1">
+                                        <DropdownLenguage /> 
+                                    </div> */}
+
                                     <button
-                                        className="bg-[var(--color-bg-tertiary)] text-[var(--color-white)] py-2 rounded-b-md w-full hover:bg-[var(--color-bg-tertiary-hover)] transition-colors duration-150 text-sm whitespace-nowrap"
                                         onClick={logoutUser}
+                                        className="w-full text-left flex items-center px-4 py-2 font-sans text-lg text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors rounded-sm"
                                     >
-                                        Cerrar sesión
+                                        Cerrar Sesión
                                     </button>
                                 </div>
                             )}
                         </div>
-
                     ) : (
-                        <div className="hidden md:flex items-center gap-3 md:gap-4">
+                        /* --- AUTH BUTTONS (Pixel Style) --- */
+                        <div className="hidden md:flex items-center gap-2">
                             <Link
                                 to="/login"
-                                className="bg-[var(--color-bg-tertiary)] text-[var(--color-white)] px-4 py-2 rounded-full hover:bg-[var(--color-bg-tertiary-hover)] transition-colors duration-150 text-sm whitespace-nowrap"
+                                className="font-mono text-xs px-3 py-2 text-foreground hover:underline"
                             >
-                                Iniciar sesión
+                                LOGIN
                             </Link>
                             <Link
                                 to="/register"
-                                className="border border-[var(--color-white)] text-[var(--color-white)] px-4 py-2 rounded-full hover:bg-[var(--color-white)] hover:text-[var(--color-teal-400)] transition-colors duration-150 text-sm whitespace-nowrap"
+                                className="bg-accent text-accent-foreground px-3 py-2 font-mono text-xs pixel-border-accent pixel-btn text-decoration-none"
                             >
-                                Registrarse
+                                REGISTRO
                             </Link>
                         </div>
                     )}
 
+                    {/* --- MOBILE TOGGLE --- */}
                     <button
-                        className="md:hidden flex text-[var(--color-white)] focus:outline-none"
-                        onClick={toggleMobileMenu}
-                        aria-label="Abrir menú"
                         ref={mobileMenuButtonRef}
+                        className="md:hidden p-2 flex flex-col gap-1 justify-center items-center w-10 h-10 active:scale-95 transition-transform"
+                        onClick={toggleMobileMenu}
                     >
-                        {isMobileMenuOpen ? (
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-7 w-7"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M6 18L18 6M6 6l12 12"
-                                />
-                            </svg>
-                        ) : (
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-7 w-7"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M4 6h16M4 12h16m-7 6h7"
-                                />
-                            </svg>
-                        )}
+                        <span className={`block h-1 w-6 bg-foreground transition-transform ${isMobileMenuOpen ? "rotate-45 translate-y-2" : ""}`} />
+                        <span className={`block h-1 w-6 bg-foreground transition-opacity ${isMobileMenuOpen ? "opacity-0" : ""}`} />
+                        <span className={`block h-1 w-6 bg-foreground transition-transform ${isMobileMenuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
                     </button>
                 </div>
-            </div>
+            </nav>
 
-            {/* Menú móvil desplegable */}
-            <div
-                ref={mobileMenuRef}
-                className={`
-                    md:hidden
-                    absolute top-[64px] left-0 w-full bg-[var(--color-teal-400)] shadow-lg pb-4 z-40
-                    overflow-hidden transition-all duration-300 ease-in-out
-                    ${isMobileMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}
-                `}
-            >
-                <div className="flex flex-col items-center gap-4 py-2 ">
-                    <Link
-                        to="/"
-                        onClick={toggleMobileMenu}
-                        className={`text-[var(--color-white)] py-2 ${isActive("/")
-                            ? "border-b-2 border-[var(--color-bg-tertiary)]"
-                            : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
-                            }`}
-                    >
-                        🏠 Inicio
-                    </Link>
-
-                    <Link
-                        to="/play"
-                        onClick={toggleMobileMenu}
-                        className={`text-[var(--color-white)] py-2 ${isActive("/play")
-                            ? "border-b-2 border-[var(--color-bg-tertiary)]"
-                            : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
-                            }`}
-                    >
-                        🎮 Jugar
-                    </Link>
-                    <Link
-                        to="/dictionary"
-                        onClick={toggleMobileMenu}
-                        className={`text-[var(--color-white)] py-2 ${isActive("/dictionary")
-                            ? "border-b-2 border-[var(--color-bg-tertiary)]"
-                            : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
-                            }`}
-                    >
-                        📚 Diccionario
-                    </Link>
-                    <Link
-                        to="/ia"
-                        onClick={toggleMobileMenu}
-                        className={`text-[var(--color-white)] py-2 ${isActive("/ia")
-                            ? "border-b-2 border-[var(--color-bg-tertiary)]"
-                            : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
-                            }`}
-                    >
-                        🤖 IA
-                    </Link>
-                    <Link
-                        to="/badges"
-                        onClick={toggleMobileMenu}
-                        className={`text-[var(--color-white)] py-2 ${isActive("/badges")
-                            ? "border-b-2 border-[var(--color-bg-tertiary)]"
-                            : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
-                            }`}
-                    >
-                        🏆 Insignias
-                    </Link>
-                    {user && user.is_staff && (
-                        <Link
-                            to="/admin-dashboard"
-                            onClick={toggleMobileMenu}
-                            className={`text-[var(--color-white)] py-2 ${isActive("/admin-dashboard")
-                                ? "border-b-2 border-[var(--color-bg-tertiary)]"
-                                : "border-b-2 border-transparent hover:border-[var(--color-bg-tertiary)]"
-                                }`}
-                        >
-                            ⚙️ Admin Panel
+            {/* --- MOBILE MENU --- */}
+            {isMobileMenuOpen && (
+                <div
+                    ref={mobileMenuRef}
+                    className="md:hidden border-t-4 border-foreground bg-card px-4 pb-6 pt-2 animate-accordion-down"
+                >
+                    <ul className="flex flex-col gap-2">
+                        <Link to="/" onClick={toggleMobileMenu} className={navLinkClass("/")}>
+                            <LeafIcon className="w-5 h-5" /> Inicio
                         </Link>
-                    )}
-                    <hr className="w-1/2 border-[var(--color-white)] border-opacity-30 my-2" />
-                    {user ? (
-                        <>
-                            <Link
-                                to={"/profile"}
-                                onClick={toggleMobileMenu}
-                                className="text-[var(--color-white)] py-2 font-medium flex items-center gap-2"
-                            >
-                                <img
-                                    src={finalProfileImageSrc}
-                                    className="w-10 h-10 rounded-full object-cover ml-1"
-                                />
-                                {user.username}
-                            </Link>
-                            <button
-                                className="bg-[var(--color-bg-tertiary)] text-[var(--color-white)] px-6 py-2 rounded-full hover:bg-[var(--color-bg-tertiary-hover)] transition-colors duration-150 text-base"
-                                onClick={() => {
-                                    logoutUser();
-                                    toggleMobileMenu();
-                                }}
-                            >
-                                Cerrar sesión
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <Link
-                                to="/login"
-                                onClick={toggleMobileMenu}
-                                className="bg-[var(--color-bg-tertiary)] text-[var(--color-white)] px-6 py-2 rounded-full hover:bg-[var(--color-bg-tertiary-hover)] transition-colors duration-150 text-base"
-                            >
-                                Iniciar sesión
-                            </Link>
-                            <Link
-                                to="/register"
-                                className="border border-[var(--color-white)] text-[var(--color-white)] px-6 py-2 rounded-full hover:bg-[var(--color-white)] hover:text-[var(--color-teal-400)] transition-colors duration-150 text-base"
-                            >
-                                Registrarse
-                            </Link>
-                        </>
-                    )}
+                        <Link to="/play" onClick={toggleMobileMenu} className={navLinkClass("/play")}>
+                            <SwordIcon className="w-5 h-5" /> Jugar
+                        </Link>
+                        <Link to="/dictionary" onClick={toggleMobileMenu} className={navLinkClass("/dictionary")}>
+                            <BookIcon className="w-5 h-5" /> Diccionario
+                        </Link>
+                        <Link to="/ia" onClick={toggleMobileMenu} className={navLinkClass("/ia")}>
+                            <BrainIcon className="w-5 h-5" /> IA
+                        </Link>
+                        <Link to="/badges" onClick={toggleMobileMenu} className={navLinkClass("/badges")}>
+                            <TrophyIcon className="w-5 h-5" /> Insignias
+                        </Link>
+
+                        <hr className="border-2 border-muted my-2" />
+
+                        {user ? (
+                            <>
+                                <Link to="/profile" onClick={toggleMobileMenu} className="flex items-center gap-2 px-3 py-2 font-sans text-lg">
+                                    <img src={finalProfileImageSrc} className="w-6 h-6 rounded-sm pixel-border" />
+                                    Mi Perfil
+                                </Link>
+                                <button
+                                    onClick={() => { logoutUser(); toggleMobileMenu(); }}
+                                    className="w-full text-left px-3 py-2 font-sans text-lg text-destructive"
+                                >
+                                    Cerrar Sesión
+                                </button>
+                            </>
+                        ) : (
+                            <div className="flex flex-col gap-2 mt-2">
+                                <Link to="/login" onClick={toggleMobileMenu} className="text-center font-mono text-xs border-2 border-foreground py-2">
+                                    INICIAR SESIÓN
+                                </Link>
+                                <Link to="/register" onClick={toggleMobileMenu} className="text-center font-mono text-xs bg-primary text-primary-foreground py-2 pixel-border-primary">
+                                    REGISTRARSE
+                                </Link>
+                            </div>
+                        )}
+                    </ul>
                 </div>
-            </div>
-        </nav>
+            )}
+        </header>
     );
 }
 

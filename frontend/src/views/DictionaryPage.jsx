@@ -1,102 +1,98 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
-import { Search, Github, Heart, Volume2, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { useTheme } from '@/context/ThemeContext';
-import { Link } from 'react-router-dom';
+import { Search, Volume2, ChevronLeft, ChevronRight, X, BookOpen } from 'lucide-react';
+import Navbar from "@/components/Navbar";
+import { BookIcon } from '@/components/PixelIcons';
 
 const baseURL = import.meta.env.VITE_BACKEND_URL_API;
 
 function DictionaryPage() {
-    const { theme } = useTheme();
+    // Estados
     const [words, setWords] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalWordsCount, setTotalWordsCount] = useState(0);
     const wordsPerPage = 9;
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    
+    // Filtros y Búsqueda
     const [selectedFilter, setSelectedFilter] = useState("all");
     const [searchTerm, setSearchTerm] = useState("");
+    
+    // Este estado solo cambiará cuando el usuario deje de escribir
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(""); 
+    
+    // Modal
     const [selectedWord, setSelectedWord] = useState(null);
-    const selectedWordRef = useRef(selectedWord);
-    const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
-    const filterDropdownRef = useRef(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target)) {
-                setIsFilterDropdownOpen(false);
-            }
-        };
-
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
+    
+    const selectedWordRef = useRef(selectedWord);
 
     useEffect(() => {
         selectedWordRef.current = selectedWord;
     }, [selectedWord]);
 
+    // --- EFECTO DEBOUNCE (La Magia) ---
+    useEffect(() => {
+        const timerId = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+        }, 500); // 500ms de espera (medio segundo)
+
+        return () => {
+            clearTimeout(timerId);
+        };
+    }, [searchTerm]);
+
+    // --- LÓGICA DE FETCH ---
     const fetchWords = useCallback(async (page, currentSearchTerm, currentSelectedFilter, shouldResetSelectedWord = false) => {
         setLoading(true);
         setError(null);
         try {
             const typeParam = currentSelectedFilter !== "all" ? `&word_type=${currentSelectedFilter.toUpperCase().replace(' ', '_')}` : '';
+            // Usamos el término ya procesado (o el que pasemos por argumento)
             const searchParam = currentSearchTerm ? `&search=${currentSearchTerm}` : '';
             const response = await axios.get(`${baseURL}/words/?page=${page}&limit=${wordsPerPage}${typeParam}${searchParam}`);
-
             const fetchedWords = response.data.results || [];
             setWords(fetchedWords);
             setTotalWordsCount(response.data.count || 0);
 
             if (shouldResetSelectedWord || !selectedWordRef.current || !fetchedWords.some(word => word.id === selectedWordRef.current.id)) {
-                setSelectedWord(fetchedWords.length > 0 ? fetchedWords[0] : null);
-                setIsModalOpen(false);
+                if (shouldResetSelectedWord) setSelectedWord(null); 
             }
 
         } catch (err) {
             console.error("Error fetching words:", err);
-            setError("No se pudieron cargar las palabras. Inténtalo de nuevo más tarde.");
+            setError("No se pudo conectar con la biblioteca.");
             setWords([]);
             setTotalWordsCount(0);
-            setSelectedWord(null);
         } finally {
             setLoading(false);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [wordsPerPage, setSelectedWord, baseURL, selectedWordRef]);
+    }, [wordsPerPage, baseURL]);
 
+    // --- EFECTO DE BÚSQUEDA ---
+    // OJO: Ahora dependemos de 'debouncedSearchTerm', NO de 'searchTerm'
     useEffect(() => {
         setCurrentPage(1);
-        fetchWords(1, searchTerm, selectedFilter, true);
-    }, [searchTerm, selectedFilter, fetchWords]);
+        fetchWords(1, debouncedSearchTerm, selectedFilter, true);
+    }, [debouncedSearchTerm, selectedFilter, fetchWords]);
 
     useEffect(() => {
         if (currentPage > 0) {
-            fetchWords(currentPage, searchTerm, selectedFilter, false);
+            fetchWords(currentPage, debouncedSearchTerm, selectedFilter, false);
         }
-    }, [currentPage, searchTerm, selectedFilter, fetchWords]);
+    }, [currentPage, fetchWords]); 
+
 
     const totalPages = Math.ceil(totalWordsCount / wordsPerPage);
 
+    // Helpers UI
     const getSpanishWordType = (type) => {
         switch (type) {
-            case 'PHRASAL_VERB':
-                return 'Verbo frasal';
-            case 'SLANG':
-                return 'Jerga';
-            case 'all':
-                return 'Todos';
-            default:
-                return 'Desconocido';
+            case 'PHRASAL_VERB': return 'Phrasal Verb';
+            case 'SLANG': return 'Slang';
+            default: return 'Palabra';
         }
-    };
-
-    const handleFilterSelect = (filterType) => {
-        setSelectedFilter(filterType);
-        setIsFilterDropdownOpen(false);
     };
 
     const handleCardClick = (word) => {
@@ -104,299 +100,204 @@ function DictionaryPage() {
         setIsModalOpen(true);
     };
 
-    const WordDetailModal = ({ selectedWord, getSpanishWordType, onClose, theme }) => {
-        if (!selectedWord) {
-            return null;
-        }
+    // --- COMPONENTE MODAL INTERNO ---
+    const WordDetailModal = () => {
+        if (!selectedWord) return null;
 
         return (
-            <div
-                className="fixed inset-0 bg-black/75 flex justify-center items-center z-50 p-4 transition-colors"
-                onClick={onClose}
-            >
-                {/* Contenido del Modal */}
-                <div
-                    className={`relative ${theme === 'light' ? 'bg-[var(--color-bg-card)]' : 'bg-[var(--color-dark-bg-secondary)]'}
-                                rounded-3xl p-6 shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto`}
-                    onClick={e => e.stopPropagation()} // Evita que el clic en el contenido cierre el modal
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4" onClick={() => setIsModalOpen(false)}>
+                <div 
+                    className="relative bg-card pixel-border p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200"
+                    onClick={e => e.stopPropagation()}
                 >
-                    {/* Botón de cerrar */}
                     <button
-                        onClick={onClose}
-                        className={`absolute top-4 right-4 p-2 rounded-full transition-colors
-                                    ${theme === 'light' ? 'bg-neutral-200 text-[var(--color-text-main)] hover:bg-neutral-300' : 'bg-[var(--color-dark-bg-tertiary)] text-[var(--color-dark-text)] hover:bg-[var(--color-dark-border)]'}`}
+                        onClick={() => setIsModalOpen(false)}
+                        className="absolute top-4 right-4 text-muted-foreground hover:text-destructive transition-colors"
                     >
-                        <X className="w-5 h-5" />
+                        <X className="w-8 h-8" />
                     </button>
 
-                    <div>
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-2xl font-bold text-[var(--color-text-main)]">{selectedWord.text}</h2>
-                            <span
-                                className={`inline-block px-3 py-1 rounded-full text-xs mr-12 font-medium ${selectedWord.word_type === "PHRASAL_VERB"
-                                    ? "bg-[var(--color-accent-phrasalverbs)] text-[var(--color-bg-body)]"
-                                    : "bg-[var(--color-accent-slangs)] text-[var(--color-bg-body)]"
-                                    } dark:${selectedWord.word_type === "PHRASAL_VERB"
-                                        ? "bg-[var(--color-accent-phrasalverbs)] text-black"
-                                        : "bg-[var(--color-accent-slangs)] text-white"
-                                    }`}
-                            >
+                    <div className="flex flex-col gap-2 mb-6 border-b-4 border-muted pb-4">
+                        <div className="flex items-center gap-3">
+                            <span className={`px-3 py-1 text-[10px] font-mono text-primary-foreground bg-primary pixel-border-primary rounded-sm uppercase`}>
                                 {getSpanishWordType(selectedWord.word_type)}
                             </span>
                         </div>
+                        <h2 className="text-3xl md:text-4xl font-mono text-foreground">{selectedWord.text}</h2>
+                    </div>
 
-                        <div className="space-y-6">
-                            <div>
-                                <h3 className="text-lg font-semibold text-[var(--color-text-main)] mb-2">Definición:</h3>
-                                <p className="text-[var(--color-text-secondary)] text-sm leading-relaxed">
-                                    {selectedWord.description}
-                                </p>
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-semibold text-[var(--color-text-main)] mb-2">Ejemplos:</h3>
-                                <div className="space-y-3">
-                                    {selectedWord.examples && selectedWord.examples.length > 0 ? (
-                                        selectedWord.examples.map((example, index) => (
-                                            <p key={index} className="text-[var(--color-text-secondary)] text-sm">
-                                                "{example}"
-                                            </p>
-                                        ))
-                                    ) : (
-                                        <p className="text-[var(--color-text-secondary)] text-sm italic">No hay ejemplos disponibles.</p>
-                                    )}
-                                </div>
-                            </div>
+                    <div className="space-y-6 font-sans text-xl">
+                        <div className="bg-background p-4 border-2 border-dashed border-muted rounded-sm">
+                            <h3 className="font-mono text-xs text-accent mb-2 uppercase">Definición</h3>
+                            <p className="text-foreground leading-relaxed">
+                                {selectedWord.description}
+                            </p>
+                        </div>
 
-                            <div>
-                                <h3 className="text-lg font-semibold text-[var(--color-text-main)] mb-2">Sustitutos:</h3>
-                                <div className="space-y-2">
-                                    {selectedWord.substitutes && selectedWord.substitutes.length > 0 ? (
-                                        selectedWord.substitutes.map((substituteText, index) => (
-                                            <p key={index} className="text-[var(--color-text-secondary)] text-sm">
-                                                "{substituteText}"
-                                            </p>
-                                        ))
-                                    ) : (
-                                        <p className="text-[var(--color-text-secondary)] text-sm italic">No hay sustitutos disponibles.</p>
-                                    )}
-                                </div>
+                        <div>
+                            <h3 className="font-mono text-xs text-accent mb-2 uppercase">Ejemplos de Uso</h3>
+                            <div className="space-y-2">
+                                {selectedWord.examples && selectedWord.examples.length > 0 ? (
+                                    selectedWord.examples.map((example, index) => (
+                                        <div key={index} className="flex gap-2 text-muted-foreground italic">
+                                            <span className="not-italic">example {index + 1}:</span>
+                                            <p>"{example}"</p>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-muted-foreground italic">No hay ejemplos registrados.</p>
+                                )}
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex gap-3 mt-8">
-                        <button className="flex flex-1 justify-center items-center gap-2 cursor-not-allowed bg-[var(--color-bg-tertiary)] text-white py-2 rounded-full
-                                    font-semibold hover:bg-[var(--color-bg-tertiary)]/60 transition-colors text-center">
+                    <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-4 border-t-4 border-muted">
+                        <button className="flex-1 flex items-center justify-center gap-2 bg-muted text-muted-foreground py-3 font-mono text-xs cursor-not-allowed pixel-border opacity-70">
                             <Volume2 className="w-4 h-4" />
-                            <span>Escuchar</span>
+                            PRONUNCIACIÓN
                         </button>
-                        <Link
-                            to="/IA"
-                            className={`
-                                flex-1 cursor-pointer bg-[var(--color-bg-tertiary)] text-white py-3 rounded-full
-                                font-semibold hover:bg-[var(--color-bg-tertiary)]/60 transition-colors text-center flex justify-center items-center gap-2
-                            `}
-                        >Consultar I.A</Link>
+                        <button className="flex-1 flex items-center justify-center gap-2 bg-accent text-accent-foreground py-3 font-mono text-xs pixel-btn pixel-border-accent hover:brightness-110">
+                            {/* Nota: Asegúrate de importar BrainIcon si lo usas aquí, o usa otro icono */}
+                            CONSULTAR A LA I.A.
+                        </button>
                     </div>
                 </div>
             </div>
         );
     };
 
-
-
     return (
-        <div className="min-h-screen bg-[var(--color-body-bg)] p-4 transition-colors">
-            <div className="max-w-7xl min-h-max mx-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-4 mb-6">
-                    {/* ... (Input de búsqueda y filtros existentes) ... */}
-                    <div className="relative flex-1 max-w-md min-w-80">
-                        <Search className="absolute left-3  top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] w-4 h-4 transition-colors" />
-                        <input
-                            type="text"
-                            placeholder="Buscar jerga, verbo frasal o descripción..."
-                            className={`w-full pl-10 pr-4 py-2 rounded-full border focus:outline-none focus:ring-2 focus:border-transparent
-                                ${theme === 'light'
-                                    ? 'border-[var(--color-text-secondary)] text-[var(--color-text)] focus:ring-[var(--color-bg-secondary)]'
-                                    : 'border-[var(--color-dark-border)] text-[var(--color-dark-text)] focus:ring-[var(--color-accent-blue)]'
-                                }`}
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+        <div className="min-h-screen bg-background font-sans flex flex-col">
+            <Navbar />
+
+            <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-8 md:py-12 mt-16">
+                
+                <div className="text-center mb-10">
+                    <div className="inline-flex items-center justify-center p-3 bg-card pixel-border mb-4">
+                        <BookIcon className="w-8 h-8 text-primary" />
                     </div>
-
-                    <div className='flex items-center gap-4 md:justify-end   '>
-                        <div className="relative" ref={filterDropdownRef}>
-                            <button
-                                onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
-                                className={`flex items-center gap-2 min-w-40 px-4 py-2 rounded-full font-medium transition-colors cursor-pointer
-                                ${theme === 'light'
-                                        ? 'bg-neutral-200 text-[var(--color-text-main)] hover:bg-neutral-300'
-                                        : 'bg-[var(--color-dark-bg-secondary)] text-[var(--color-dark-text-secondary)] hover:bg-[var(--color-dark-bg-tertiary)]'
-                                    }`}
-                            >
-                                <span>Filtros: {getSpanishWordType(selectedFilter)}</span>
-                                <svg
-                                    className={`w-5 h-5 transition-transform duration-300 ${isFilterDropdownOpen ? 'rotate-180' : 'rotate-0'}
-                                ${theme === 'light' ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-dark-text-secondary)]'}`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M19 9l-7 7-7-7"
-                                    ></path>
-                                </svg>
-                            </button>
-
-                            {isFilterDropdownOpen && (
-                                <div className={`absolute left-0 mt-2 w-48 rounded-lg shadow-lg z-10 p-1
-                                ${theme === 'light' ? 'bg-[var(--color-bg-card)]' : 'bg-[var(--color-dark-bg-secondary)]'}`}>
-                                    <div
-                                        onClick={() => handleFilterSelect("SLANG")}
-                                        className={`block px-4 py-2 text-sm cursor-pointer transition-colors rounded-t-lg
-                                        ${selectedFilter === "SLANG"
-                                                ? (theme === 'light' ? 'bg-[var(--color-accent-slangs)] text-white' : 'bg-[var(--color-accent-slangs)] text-white')
-                                                : (theme === 'light' ? ' text-[var(--color-text-main)] hover:bg-[var(--color-accent-slangs)]/80 hover:text-white' : 'text-[var(--color-dark-text)]  hover:bg-[var(--color-accent-slangs)]/80')
-                                            }`}>
-                                        Jergas
-                                    </div>
-                                    <div
-                                        onClick={() => handleFilterSelect("PHRASAL_VERB")}
-                                        className={`block px-4 py-2 text-sm cursor-pointer transition-colors    
-                                        ${selectedFilter === "PHRASAL_VERB"
-                                                ? (theme === 'light' ? 'bg-[var(--color-accent-phrasalverbs)] text-[var(--color-bg-body)]' : 'bg-[var(--color-accent-phrasalverbs)] text-black')
-                                                : (theme === 'light' ? 'text-[var(--color-text-main)] hover:bg-[var(--color-accent-phrasalverbs)]' : 'text-[var(--color-dark-text)] hover:bg-[var(--color-accent-phrasalverbs)] hover:text-black')
-                                            }`}>
-                                        Verbos frasales
-                                    </div>
-                                    <div
-                                        onClick={() => handleFilterSelect("all")}
-                                        className={`block px-4 py-2 text-sm cursor-pointer transition-colors rounded-b-lg
-                                        ${selectedFilter === "all"
-                                                ? (theme === 'light' ? 'bg-neutral-300 text-[var(--color-bg-body)' : 'bg-neutral-700 text-white')
-                                                : (theme === 'light' ? 'text-[var(--color-text-main)] hover:bg-neutral-200' : 'text-[var(--color-dark-text)] hover:bg-neutral-700')
-                                            }`}>
-                                        Todos
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        <a href="https://github.com/pakelin3" target="_blank" rel="noopener noreferrer"
-                            className="flex items-center gap-2 w-40 justify-items-end bg-[var(--color-text)] text-[var(--color-bg-body)] px-4 py-2
-                        rounded-full hover:bg-[var(--color-text-secondary)] transition-colors dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700">
-                            <Github className="w-4 h-4" />
-                            GitHub
-                        </a>
-
-                    </div>
+                    <h1 className="text-3xl md:text-4xl font-mono text-foreground mb-2">GRAN DICCIONARIO</h1>
+                    <p className="text-xl text-muted-foreground font-sans max-w-lg mx-auto">
+                        Consulta tu colección de conocimientos adquiridos en la granja.
+                    </p>
                 </div>
 
-                <div className="flex items-center    gap-6">
-                    <div className="lg:col-span-2 shadow-2xl rounded-3xl p-6 bg-[var(--color-bg-card)]">
-                        <div className={`rounded-3xl p-6 relative
-                            ${theme === 'light' ? 'bg-teal-200' : 'bg-[var(--color-dark-bg-main)]'}`}>
-                            {loading && (
-                                <div className={`absolute inset-0 bg-opacity-75 min-h-max flex items-center justify-center rounded-3xl z-10
-                                    ${theme === 'light' ? 'bg-[var(--color-bg-main)]' : 'bg-[var(--color-dark-bg-main)]'}`}>
-                                    <p className="text-[var(--color-text)] text-lg font-bold">Cargando palabras...</p>
-                                </div>
-                            )}
-
-                            {error ? (
-                                <p className="text-center text-red-700 text-lg">{error}</p>
-                            ) : words.length === 0 && !loading ? (
-                                <p className="text-center text-[var(--color-text-secondary)] text-lg">No se encontraron palabras con los filtros aplicados.</p>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {words.map((word) => (
-                                        <div
-                                            key={word.id}
-                                            className={`${theme === 'light' ? 'bg-[var(--color-bg-main)]' : 'bg-[var(--color-dark-bg-secondary)]'} sm:min-h-48 min-h-36 hover:shadow-2xl hover:scale-105 transition-all duration-300 rounded-2xl gap-4 p-4 cursor-pointer 
-                                                justify-between flex flex-col`}
-                                            onClick={() => handleCardClick(word)}
-                                        >
-                                            <div className="flex items-start justify-between">
-                                                <h3 className="text-xl font-bold text-[var(--color-text-main)]">{word.text}</h3>
-                                                <span
-                                                    className={`inline-block px-3 py-1 whitespace-pre rounded-full text-xs font-medium ${word.word_type === "PHRASAL_VERB"
-                                                        ? "bg-[var(--color-accent-phrasalverbs)] text-[var(--color-bg-body)]"
-                                                        : "bg-[var(--color-accent-slangs)] text-[var(--color-bg-body)]"
-                                                        } dark:${word.word_type === "PHRASAL_VERB"
-                                                            ? "bg-[var(--color-accent-phrasalverbs)] text-black"
-                                                            : "bg-[var(--color-accent-slangs)] text-white"
-                                                        }`}
-                                                >
-                                                    {getSpanishWordType(word.word_type)}
-                                                </span>
-                                            </div>
-                                            <p className="text-[var(--color-text-secondary)] text-sm italic">"{word.description}"</p>
-                                            <div className="flex items-center justify-end">
-                                                <button className={`p-2 rounded-full transition-colors ${theme === 'light' ? 'hover:bg-[var(--color-bg-main)]' : 'hover:bg-[var(--color-dark-bg-tertiary)]'}`}>
-                                                    <Heart className="w-5 h-5 text-[var(--color-text-secondary)] dark:text-gray-400" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {!loading && words.length > 0 && totalPages > 1 && (
-                            <div className="flex justify-center items-center space-x-2 mt-6">
-                                <button
-                                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                                    disabled={currentPage === 1}
-                                    className="p-2 rounded-full bg-[var(--color-bg-main)] text-[var(--color-text-main)] hover:bg-[var(--color-bg-secondary)]
-                                        disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[var(--color-dark-bg-tertiary)] dark:text-[var(--color-dark-text)] dark:hover:bg-[var(--color-dark-border)]"
-                                >
-                                    <ChevronLeft className="w-5 h-5" />
-                                </button>
-                                {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNumber => (
-                                    <button
-                                        key={pageNumber}
-                                        onClick={() => setCurrentPage(pageNumber)}
-                                        className={`px-4 py-2 rounded-full font-medium transition-colors
-                                            ${currentPage === pageNumber
-                                                ? (theme === 'light'
-                                                    ? "bg-[var(--color-bg-secondary)] text-[var(--color-text)]"
-                                                    : "bg-[var(--color-bg-secondary)] text-white")
-                                                : (theme === 'light'
-                                                    ? "bg-[var(--color-bg-main)] text-[var(--color-text-main)] hover:bg-[var(--color-bg-secondary)] hover:text-[var(--color-body-bg)]"
-                                                    : "bg-[var(--color-dark-bg-secondary)] text-[var(--color-dark-text-secondary)] hover:bg-[var(--color-dark-bg-tertiary)]")
-                                            }`}
-                                    >
-                                        {pageNumber}
-                                    </button>
-                                ))}
-                                <button
-                                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                                    disabled={currentPage === totalPages}
-                                    className="p-2 rounded-full bg-[var(--color-bg-main)] text-[var(--color-text-main)] hover:bg-[var(--color-bg-secondary)]
-                                        disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[var(--color-dark-bg-tertiary)] dark:text-[var(--color-dark-text)] dark:hover:bg-[var(--color-dark-border)]"
-                                >
-                                    <ChevronRight className="w-5 h-5" />
-                                </button>
+                <div className="flex flex-col md:flex-row gap-4 mb-8 items-center justify-between bg-card/50 p-4 pixel-border">
+                    
+                    {/* INPUT DE BÚSQUEDA */}
+                    <div className="relative w-full md:max-w-md group">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
+                        <input
+                            type="text"
+                            placeholder="Buscar palabra..."
+                            className="w-full pl-10 pr-4 py-3 bg-background border-2 border-muted focus:border-primary focus:outline-none font-sans text-xl placeholder:text-muted-foreground transition-colors"
+                            value={searchTerm}
+                            // Aquí actualizamos el estado inmediato (visual)
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        {/* Indicador visual de carga mientras escribes (opcional) */}
+                        {searchTerm !== debouncedSearchTerm && (
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                <span className="block w-2 h-2 bg-primary rounded-full animate-ping"></span>
                             </div>
                         )}
                     </div>
+
+                    <div className="flex flex-wrap justify-center gap-2">
+                        {[
+                            { id: "all", label: "TODO" },
+                            { id: "SLANG", label: "JERGA" },
+                            { id: "PHRASAL_VERB", label: "VERBOS" }
+                        ].map((filter) => (
+                            <button
+                                key={filter.id}
+                                onClick={() => setSelectedFilter(filter.id)}
+                                className={`px-4 py-2 font-mono text-[10px] transition-all
+                                    ${selectedFilter === filter.id 
+                                        ? "bg-primary text-primary-foreground pixel-border-primary" 
+                                        : "bg-background text-foreground border-2 border-transparent hover:bg-muted hover:border-muted"
+                                    }`}
+                            >
+                                {filter.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
+
+                <div className="min-h-[400px]">
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center h-64 gap-4">
+                            <div className="w-12 h-12 border-4 border-primary border-t-transparent animate-spin rounded-full"></div>
+                            <p className="font-mono text-xs text-muted-foreground animate-pulse">CARGANDO LIBROS...</p>
+                        </div>
+                    ) : error ? (
+                        <div className="text-center p-8 bg-destructive/10 pixel-border border-destructive">
+                            <p className="text-destructive font-mono text-xs mb-2">ERROR DE CONEXIÓN</p>
+                            <p className="text-foreground font-sans text-xl">{error}</p>
+                        </div>
+                    ) : words.length === 0 ? (
+                        <div className="text-center p-12 bg-card pixel-border border-dashed">
+                            <p className="text-muted-foreground font-sans text-2xl">No se encontraron resultados.</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {words.map((word) => (
+                                <div
+                                    key={word.id}
+                                    onClick={() => handleCardClick(word)}
+                                    className="group bg-card pixel-border p-5 cursor-pointer hover:-translate-y-1 transition-transform relative overflow-hidden"
+                                >
+                                    <div className="absolute top-0 right-0 p-2">
+                                        <span className={`text-[8px] font-mono px-2 py-1 border border-foreground/20 
+                                            ${word.word_type === "PHRASAL_VERB" ? "bg-accent/20 text-accent-foreground" : "bg-secondary/30 text-secondary-foreground"}`}>
+                                            {word.word_type === "SLANG" ? "SLG" : "VB"}
+                                        </span>
+                                    </div>
+
+                                    <h3 className="text-2xl font-mono text-foreground mb-2 group-hover:text-primary transition-colors">
+                                        {word.text}
+                                    </h3>
+                                    
+                                    <p className="text-lg text-muted-foreground font-sans line-clamp-2 leading-tight mb-4">
+                                        "{word.description}"
+                                    </p>
+
+                                    <div className="flex items-center justify-between mt-auto pt-4 border-t-2 border-dashed border-muted">
+                                        <span className="text-xs font-mono text-muted-foreground opacity-50">CLICK PARA VER</span>
+                                        <BookOpen className="w-4 h-4 text-muted-foreground group-hover:text-primary" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {!loading && words.length > 0 && totalPages > 1 && (
+                    <div className="flex justify-center items-center gap-4 mt-12">
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={currentPage === 1}
+                            className="p-3 bg-card pixel-border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted transition-colors"
+                        >
+                            <ChevronLeft className="w-6 h-6" />
+                        </button>
+                        
+                        <div className="px-6 py-3 bg-card pixel-border font-mono text-xs">
+                            PÁGINA {currentPage} DE {totalPages}
+                        </div>
+
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            disabled={currentPage === totalPages}
+                            className="p-3 bg-card pixel-border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted transition-colors"
+                        >
+                            <ChevronRight className="w-6 h-6" />
+                        </button>
+                    </div>
+                )}
             </div>
 
-            {/* RENDERIZAR EL MODAL CONDICIONALMENTE AL FINAL */}
-            {isModalOpen && (
-                <WordDetailModal
-                    selectedWord={selectedWord}
-                    getSpanishWordType={getSpanishWordType}
-                    onClose={() => setIsModalOpen(false)}
-                    theme={theme}
-                />
-            )}
+            {isModalOpen && <WordDetailModal />}
         </div>
     );
 }

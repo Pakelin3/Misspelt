@@ -2,11 +2,14 @@ import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import AuthContext from '@/context/AuthContext';
 import googleIcon from '@/assets/google.svg';
-import { useTheme } from '@/context/ThemeContext'; 
+// Eliminamos useTheme porque el estilo Pixel Art tiene su propio tema fijo (por ahora)
+// import { useTheme } from '@/context/ThemeContext'; 
+import { LeafIcon } from '@/components/PixelIcons'; // Usamos el icono de la granja
 
 function LoginPage({ onScreenChange }) {
     const { loginUser } = useContext(AuthContext);
-    const { theme } = useTheme(); 
+    
+    // Estados originales
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
@@ -34,117 +37,130 @@ function LoginPage({ onScreenChange }) {
     };
 
     return (
-        <div className="flex justify-center items-center min-h-[calc(100vh-theme(spacing.16))] bg-[var(--color-body-bg)] p-4">
-            <div className="bg-[var(--color-bg-card)] p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md relative">
+        <div className="flex justify-center items-center min-h-screen bg-background p-4 font-sans">
+            {/* Contenedor Pixel Art */}
+            <div className="bg-card pixel-border p-6 sm:p-8 w-full max-w-md relative shadow-none">
+                
+                {/* Botón de cerrar (X) estilo pixel */}
                 <Link
                     to="/"
                     onClick={(e) => {
                         e.preventDefault();
-                        if (onScreenChange) {
-                            onScreenChange('login');
-                        } else {
-                            navigate('/');
-                        }
+                        onScreenChange ? onScreenChange('login') : navigate('/');
                     }}
-                    className="absolute top-4 right-4 text-[var(--color-text-secondary)] text-2xl hover:text-[var(--color-text)] transition-colors"
-                > &times;
+                    className="absolute top-4 right-4 text-muted-foreground hover:text-destructive font-mono text-xl transition-colors"
+                > 
+                    X
                 </Link>
 
-                <div className="text-center mb-6">
-                    <div className="w-20 h-20 bg-[var(--color-bg-secondary)] rounded-full mx-auto mb-4"></div>
-                    <h2 className="text-2xl font-semibold text-[var(--color-text-main)]">Iniciar sesión</h2>
+                <div className="text-center mb-8">
+                    <div className="flex justify-center mb-4">
+                        <div className="h-16 w-16 bg-primary/20 rounded-sm flex items-center justify-center pixel-border-primary">
+                            <LeafIcon className="w-10 h-10 text-primary" />
+                        </div>
+                    </div>
+                    <h2 className="text-xl md:text-2xl font-mono text-foreground mb-2">INICIAR SESIÓN</h2>
+                    <p className="text-muted-foreground text-lg">Bienvenido de vuelta a la granja</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    <button type="button" className="flex cursor-not-allowed items-center justify-center gap-2 px-4 py-3 border rounded-lg font-medium transition-colors
-                        border-[var(--color-text-secondary)] text-[var(--color-text-main)] hover:bg-[var(--color-bg-main)] hover:text-[var(--color-text-secondary)] 
-                        dark:hover:bg-[var(--color-dark-bg-tertiary)] dark:border-[var(--color-dark-border)]">
-                        <img src={googleIcon} alt="Google Icon" className="w-5 h-5" />
-                        Continuar con Google
+                <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                    
+                    {/* Botón Google Pixelado */}
+                    <button type="button" className="flex cursor-not-allowed items-center justify-center gap-3 px-4 py-3 border-2 border-foreground bg-white text-foreground font-sans text-xl hover:bg-muted transition-colors opacity-70">
+                        <img src={googleIcon} alt="Google Icon" className="w-5 h-5 pixel-rendering" />
+                        CONTINUAR CON GOOGLE
                     </button>
 
-                    <div className="flex items-center text-center text-[var(--color-text-secondary)] my-4">
-                        <span className="flex-grow border-b border-[var(--color-text-secondary)] dark:border-[var(--color-dark-border)]"></span>
-                        <span className="px-3 bg-[var(--color-bg-card)]">También puedes</span>
-                        <span className="flex-grow border-b border-[var(--color-text-secondary)] dark:border-[var(--color-dark-border)]"></span>
+                    <div className="flex items-center text-center text-muted-foreground my-2">
+                        <span className="flex-grow border-b-2 border-muted"></span>
+                        <span className="px-3 bg-card font-mono text-xs">O</span>
+                        <span className="flex-grow border-b-2 border-muted"></span>
                     </div>
 
-                    <input
-                        type="email"
-                        placeholder="Correo electrónico o nombre de usuario"
-                        name="email"
-                        value={email}
-                        onChange={(e) => { setEmail(e.target.value.toLowerCase()); setErrors(prev => ({ ...prev, email: undefined, detail: undefined })); }}
-                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2
-                            ${theme === 'light' ? 'text-[var(--color-text)] border-[var(--color-text-secondary)] focus:ring-[var(--color-bg-secondary)]' :
-                                'text-[var(--color-dark-text)] border-[var(--color-dark-border)] focus:ring-[var(--color-bg-secondary)]'}
-                            ${errors.email || errors.detail ? 'border-red-500 focus:ring-red-500' : ''}`}
-                        required
-                    />
-                    {errors.email && <label className="text-red-500 text-sm mt-1 ml-1">{errors.email[0]}</label>}
-
-                    <div className="relative">
+                    {/* Input Email */}
+                    <div className="space-y-1">
                         <input
-                            type={showPassword ? 'text' : 'password'}
-                            placeholder="Contraseña"
-                            name="password"
-                            value={password}
-                            onChange={(e) => { setPassword(e.target.value); setErrors(prev => ({ ...prev, password: undefined, detail: undefined })); }}
-                            className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2
-                                ${theme === 'light' ? 'text-[var(--color-text)] border-[var(--color-text-secondary)] focus:ring-[var(--color-bg-secondary)]' :
-                                    'text-[var(--color-dark-text)] border-[var(--color-dark-border)] focus:ring-[var(--color-bg-secondary)]'}
-                                ${errors.password || errors.detail ? 'border-red-500 focus:ring-red-500' : ''}`}
+                            type="text" // Cambiado a text para permitir username
+                            placeholder="Correo o usuario..."
+                            name="email"
+                            value={email}
+                            onChange={(e) => { setEmail(e.target.value.toLowerCase()); setErrors(prev => ({ ...prev, email: undefined, detail: undefined })); }}
+                            className={`w-full px-4 py-3 bg-background border-2 font-sans text-xl placeholder:text-muted-foreground focus:outline-none focus:ring-0
+                                ${errors.email || errors.detail ? 'border-destructive text-destructive' : 'border-muted focus:border-primary text-foreground'}`}
                             required
                         />
-                        <button
-                            type="button"
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-[var(--color-text-secondary)] hover:text-[var(--color-text)]" 
-                            onClick={() => setShowPassword(!showPassword)}
-                        >
-                            {showPassword ? '🙈' : '👁'}
-                        </button>
+                        {errors.email && <p className="text-destructive font-mono text-[10px] mt-1">* {errors.email[0]}</p>}
                     </div>
-                    {errors.password && <label className="text-red-500 text-sm mt-1 ml-1">{errors.password[0]}</label>}
+
+                    {/* Input Password */}
+                    <div className="space-y-1">
+                        <div className="relative">
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder="Contraseña..."
+                                name="password"
+                                value={password}
+                                onChange={(e) => { setPassword(e.target.value); setErrors(prev => ({ ...prev, password: undefined, detail: undefined })); }}
+                                className={`w-full px-4 py-3 bg-background border-2 font-sans text-xl placeholder:text-muted-foreground focus:outline-none focus:ring-0 pr-10
+                                    ${errors.password || errors.detail ? 'border-destructive text-destructive' : 'border-muted focus:border-primary text-foreground'}`}
+                                required
+                            />
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground" 
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                <span className="font-mono text-xs">{showPassword ? 'OCULTAR' : 'VER'}</span>
+                            </button>
+                        </div>
+                        {errors.password && <p className="text-destructive font-mono text-[10px] mt-1">* {errors.password[0]}</p>}
+                    </div>
 
                     {(errors.detail || errors.general_error) && (
-                        <p className="text-red-500 text-sm text-center font-medium mt-2">{errors.detail || errors.general_error}</p>
+                        <div className="bg-destructive/10 border-2 border-destructive p-2 text-center">
+                            <p className="text-destructive font-mono text-[10px]">{errors.detail || errors.general_error}</p>
+                        </div>
                     )}
 
-                    <div className="flex justify-between items-center text-sm mt-2">
-                        <label className="flex items-center text-[var(--color-text-main)] cursor-pointer"> 
+                    <div className="flex justify-between items-center text-lg">
+                        <label className="flex items-center text-foreground cursor-pointer select-none"> 
+                            <div className={`w-5 h-5 border-2 border-foreground mr-2 flex items-center justify-center ${rememberMe ? 'bg-primary' : 'bg-background'}`}>
+                                {rememberMe && <span className="text-primary-foreground font-bold text-sm">✓</span>}
+                            </div>
                             <input
                                 type="checkbox"
                                 checked={rememberMe}
                                 onChange={(e) => setRememberMe(e.target.checked)}
-                                className="mr-2 h-4 w-4 text-[var(--color-bg-secondary)] rounded focus:ring-[var(--color-bg-secondary)] border-[var(--color-text-secondary)]" 
+                                className="hidden" 
                             />
                             Recordarme
                         </label>
-                        <Link to="/forgot-password" className="text-[var(--color-bg-main)] hover:underline">¿Olvidó su contraseña?</Link> 
+                        <Link to="/forgot-password" className="text-accent text-lg hover:text-accent-foreground hover:underline decoration-2 underline-offset-2">
+                            ¿Olvidaste la contraseña?
+                        </Link> 
                     </div>
 
-                    
-                    <button type="submit" className="w-full cursor-pointer py-3 bg-[var(--color-bg-tertiary)] text-white rounded-lg font-semibold hover:bg-[var(--color-bg-tertiary-hover)] transition-colors mt-4"> 
-                        Iniciar sesión
+                    {/* Botón Submit Pixel Art */}
+                    <button 
+                        type="submit" 
+                        className="w-full py-4 mt-2 bg-primary text-primary-foreground font-mono text-sm pixel-border-primary pixel-btn cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]"
+                    > 
+                        ENTRAR A JUGAR
                     </button>
 
-                    
-                    <p className="text-center text-[var(--color-text-secondary)] text-sm mt-4"> 
-                        ¿No tienes una cuenta?
+                    <div className="text-center text-muted-foreground text-lg mt-4"> 
+                        ¿No tienes granja?
                         <Link
                             to="/register"
                             onClick={(e) => {
                                 e.preventDefault();
-                                if (onScreenChange) {
-                                    onScreenChange('register');
-                                } else {
-                                    navigate('/register');
-                                }
+                                onScreenChange ? onScreenChange('register') : navigate('/register');
                             }}
-                            className="ml-1 text-[var(--color-accent-blue)] hover:underline"
-                        > Crear cuenta
+                            className="ml-2 text-accent hover:text-accent-foreground hover:underline decoration-2 underline-offset-4 font-bold"
+                        > 
+                            CREAR CUENTA
                         </Link>
-                    </p>
+                    </div>
                 </form>
             </div>
         </div>
