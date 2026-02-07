@@ -13,8 +13,6 @@ router.register(r'user-stats', views.UserStatsViewSet, basename='user-stats')
 router.register(r'users', views.AdminUserViewSet, basename='user')
 router.register(r'avatars', views.AvatarViewSet, basename='avatar')
 
-
-
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("dashboard-data/", views.AdminDashboardDataAPIView.as_view(), name="admin_dashboard_data"),
@@ -25,9 +23,14 @@ urlpatterns = [
     path("user/is-staff/", views.UserIsStaffAPIView.as_view(), name="user_is_staff"),
     path("test/", views.testEndPoint, name="test_endpoint"),
     path("verify-email/<uuid:token>/", views.VerifyEmailView.as_view(), name="verify_email"),
+
+    # --- RUTAS PARA EL JUEGO GODOT (NUEVO) ---
+    path("game/quiz-words/", views.get_quiz_words, name="game_quiz_words"),
+    path("game/submit-results/", views.submit_game_results, name="game_submit_results"),
+    # -----------------------------------------
+
     path("", views.getRoutes),
     path('', include(router.urls)),
 ]
-
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

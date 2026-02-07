@@ -84,7 +84,7 @@ function Navbar() {
                             <LeafIcon className="w-6 h-6 text-primary-foreground" />
                         </div>
                         <span className="font-mono text-xs md:text-sm text-foreground tracking-tight leading-tight">
-                            WORD<br />FARM
+                            MISSPELT
                         </span>
                     </Link>
                 </div>

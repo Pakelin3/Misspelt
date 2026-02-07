@@ -13,6 +13,7 @@ from api.services import award_badge_rewards #
 from api.badge_unlock_logic import check_and_unlock_badges #
 from django.shortcuts import redirect
 from django.conf import settings
+from django.db.models import F
 from api.serializer import (
     myTokenObtainPairSerializer,
     RegisterSerializer,
@@ -320,3 +321,107 @@ def process_game_action(request): #
         'newly_unlocked_badges': [badge.title for badge in newly_unlocked_badges]
     }
     return Response(response_data, status=status.HTTP_200_OK)
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA EL JUEGO (GODOT) ---
+# * --------------------------------------------------------------------------------------------------
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_quiz_words(request):
+    """
+    Entrega un set de 10 palabras aleatorias para una ronda de juego en Godot.
+    Opcional: ?limit=5&type=SLANG
+    """
+    limit = int(request.query_params.get('limit', 10))
+    word_type = request.query_params.get('word_type', None)
+
+    words = Word.objects.all()
+    
+    if word_type:
+        words = words.filter(word_type=word_type)
+    
+    # Obtener aleatorias
+    random_words = words.order_by('?')[:limit]
+    
+    serializer = WordSerializer(random_words, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def submit_game_results(request):
+    """
+    Recibe los resultados de una partida desde Godot y actualiza las estadísticas.
+    JSON Esperado:
+    {
+        "score": 100,
+        "xp_earned": 50,
+        "correct_answers": 5,
+        "total_questions": 10,
+        "word_type": "SLANG" (opcional)
+    }
+    """
+    user = request.user
+    data = request.data
+    
+    # 1. Extraer datos enviados por Godot
+    score = data.get('score', 0)
+    xp_earned = data.get('xp_earned', 0)
+    correct_count = data.get('correct_answers', 0)
+    total_questions = data.get('total_questions', 0)
+    game_word_type = data.get('word_type', 'NONE')
+
+    # 2. Guardar en Historial de Partidas
+    from api.models import GameHistory # Asegúrate de tener importado esto
+    GameHistory.objects.create(
+        user=user,
+        score=score,
+        correct_in_game=correct_count,
+        total_questions_in_game=total_questions
+    )
+
+    # 3. Actualizar UserStats (Usamos F() para evitar condiciones de carrera)
+    stats, _ = UserStats.objects.get_or_create(user=user)
+    
+    stats.experience = F('experience') + xp_earned
+    stats.total_questions_answered = F('total_questions_answered') + total_questions
+    stats.correct_answers_total = F('correct_answers_total') + correct_count
+    
+    # Actualizar contadores específicos
+    if game_word_type == 'SLANG':
+        stats.total_slangs_questions = F('total_slangs_questions') + total_questions
+        stats.correct_slangs = F('correct_slangs') + correct_count
+    elif game_word_type == 'PHRASAL_VERB':
+        stats.total_phrasal_verbs_questions = F('total_phrasal_verbs_questions') + total_questions
+        stats.correct_phrasal_verbs = F('correct_phrasal_verbs') + correct_count
+        
+    # Manejo básico de Racha (Streak) - Simplificado
+    # Godot debería enviar si mantuvo la racha, pero aquí asumimos que si jugó, suma racha.
+    # Para lógica real de racha diaria, se requiere comparar fechas.
+    from django.utils import timezone
+    today = timezone.now().date()
+    
+    if stats.last_login_date != today:
+        stats.current_streak = F('current_streak') + 1
+        stats.last_login_date = today
+    
+    stats.save()
+    
+    # Recargar stats para tener los valores numéricos actualizados (por el uso de F)
+    stats.refresh_from_db()
+
+    # Actualizar Longest Streak si es necesario
+    if stats.current_streak > stats.longest_streak:
+        stats.longest_streak = stats.current_streak
+        stats.save()
+
+    # 4. Verificar Insignias (Badges)
+    newly_unlocked = check_and_unlock_badges(user)
+
+    return Response({
+        'message': 'Partida guardada correctamente',
+        'new_xp': stats.experience,
+        'new_level': stats.get_level(),
+        'badges_unlocked': [b.title for b in newly_unlocked]
+    }, status=status.HTTP_200_OK)

@@ -1,5 +1,5 @@
 import os
-from werkzeug.serving import run_simple
+from werkzeug.serving import run_simple  # pyright: ignore[reportMissingImports]
 from werkzeug.middleware.shared_data import SharedDataMiddleware
 from django.core.wsgi import get_wsgi_application
 from django.conf import settings

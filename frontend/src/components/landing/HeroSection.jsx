@@ -36,7 +36,7 @@ export function HeroSection() {
 
         {/* Título Principal */}
         <h1 className="font-mono text-3xl md:text-5xl lg:text-6xl text-foreground leading-tight mb-6 animate-slide-up">
-          WORD FARM
+          MISSPELT
         </h1>
 
         <p className="font-sans text-2xl md:text-3xl lg:text-4xl text-foreground max-w-2xl mx-auto leading-relaxed mb-4 animate-slide-up stagger-1">
