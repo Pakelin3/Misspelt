@@ -1,22 +1,18 @@
 import os
 from werkzeug.serving import run_simple  # pyright: ignore[reportMissingImports]
-from werkzeug.middleware.shared_data import SharedDataMiddleware
-from django.core.wsgi import get_wsgi_application
-from django.conf import settings
+from werkzeug.middleware.shared_data import SharedDataMiddleware # pyright: ignore[reportMissingImports]
+from django.core.wsgi import get_wsgi_application # pyright: ignore[reportMissingImports]
+from django.conf import settings # pyright: ignore[reportMissingImports]
 
 # Configura los settings de Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 
 application = get_wsgi_application()
 
-# Rutas a tus certificados SSL/TLS
-# Asegúrate que 'localhost+1.pem' y 'localhost+1-key.pem' estén en la misma carpeta que manage.py
-cert_file = os.path.join(settings.BASE_DIR, 'localhost+1.pem') #
-key_file = os.path.join(settings.BASE_DIR, 'localhost+1-key.pem') #
+cert_file = os.path.join(settings.BASE_DIR, 'cert.pem') #
+key_file = os.path.join(settings.BASE_DIR, 'key.pem') #
 
-# SharedDataMiddleware para servir archivos estáticos y de medios
-# Se asume que settings.STATIC_ROOT está definido y que se ha ejecutado `collectstatic`
-# para que los archivos estáticos de Django Admin y Jazzmin estén allí.
+
 application = SharedDataMiddleware(application, {
     settings.STATIC_URL: settings.STATIC_ROOT, #
     settings.MEDIA_URL: settings.MEDIA_ROOT,   #
