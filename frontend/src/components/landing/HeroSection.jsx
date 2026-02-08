@@ -71,6 +71,8 @@ export function HeroSection() {
           <StatItem label="Slangs" value="150+" />
           <div className="h-8 w-1 bg-border hidden sm:block" />
           <StatItem label="Niveles" value="12" />
+          <div className="h-8 w-1 bg-border hidden sm:block" />
+          <StatItem label="Insignias" value="30+" />
         </div>
       </div>
     </section>
