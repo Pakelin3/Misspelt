@@ -425,3 +425,22 @@ def submit_game_results(request):
         'new_level': stats.get_level(),
         'badges_unlocked': [b.title for b in newly_unlocked]
     }, status=status.HTTP_200_OK)
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA EL JUEGO (QUIZ) ---
+# * --------------------------------------------------------------------------------------------------
+def get_quiz_question(word_id):
+    correct_word = Word.objects.get(id=word_id)
+    
+    # 1. Buscar distractores inteligentes (mismo tag)
+    tag_list = correct_word.tags.split(',')
+    distractors = Word.objects.filter(tags__icontains=tag_list[0]).exclude(id=correct_word.id)[:3] 
+    # 2. Si faltan, rellenar con aleatorios
+    if len(distractors) < 3:
+        randoms = Word.objects.exclude(id=correct_word.id).order_by('?')[:3 - len(distractors)]
+    
+    return {
+        "question": f"¿Cómo se dice '{correct_word.translation}'?",
+        "options": [correct_word.text] + [d.text for d in distractors], # (luego se desordena en frontend)
+        "accepted_answers": [correct_word.text] + [s.text for s in correct_word.substitutes.all()]
+    }

@@ -105,24 +105,21 @@ def save_user_profile(sender, instance, **kwargs):
 # ! --- MODELO WORD ---
 # * --------------------------------------------------------------------------------------------------
 class Word(models.Model):
-    text = models.CharField(max_length=255, unique=True, help_text="El slang o phrasal verb en sí")
-    description = models.TextField(help_text="Definición clara y concisa de la palabra o frase")
-    
-    WORD_TYPES = [
-        ('SLANG', 'Jergas'),
-        ('PHRASAL_VERB', 'Verbos Frasales'),
-        ('NONE', 'Ninguno'), 
-    ]
-    word_type = models.CharField(max_length=20, choices=WORD_TYPES, default='NONE', help_text="Define si es un slang o un phrasal verb")
-    examples = models.JSONField(default=list, blank=True, help_text="Lista de ejemplos de uso")
-    substitutes = models.ManyToManyField('self', blank=True, symmetrical=False, related_name='related_to') 
+    class WordType(models.TextChoices):
+        PHRASAL_VERB = 'PHRASAL_VERB', 'Phrasal Verb'
+        SLANG = 'SLANG', 'Slang'
+    text = models.CharField(max_length=200, unique=True, help_text="La palabra o frase en inglés (e.g. 'Give up')")
+    translation = models.CharField(max_length=200, blank=True, null=True, help_text="Traducción directa (e.g. 'Rendirse')")
+    description = models.TextField(help_text="Definición en inglés o explicación de uso")
+    word_type = models.CharField(max_length=50, choices=WordType.choices, default=WordType.SLANG)
+    examples = models.JSONField(default=list, help_text="Lista de objetos con claves 'en' (inglés) y 'es' (español)")
+    substitutes = models.ManyToManyField('self', blank=True, symmetrical=True, help_text="Palabras con significado similar aceptadas como respuesta")
+    difficulty_level = models.IntegerField(default=1, help_text="1: Fácil, 10: Difícil")
+    tags = models.CharField(max_length=200, blank=True, help_text="Etiquetas separadas por coma para agrupar temas")
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True) 
-    difficulty_level = models.IntegerField(default=1, help_text="Nivel de dificultad de la palabra (1-5, por ejemplo)")
-    tags = models.JSONField(default=list, blank=True, help_text="Lista de etiquetas para la palabra")
 
     def __str__(self):
-        return f"{self.text} ({self.get_word_type_display()})"
+        return self.text
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- MODELO USERSTATS ---
@@ -228,21 +225,19 @@ class UserStats(models.Model):
 # * --------------------------------------------------------------------------------------------------
 
 class GameHistory(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='game_history')
-    
-    played_at = models.DateTimeField(auto_now_add=True) 
+    class GameMode(models.TextChoices):
+        SURVIVOR = 'SURVIVOR', 'Survivor RPG (Godot)'
+        QUIZ = 'QUIZ', 'Lección Interactiva (React)'
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='game_history')
+    game_mode = models.CharField(max_length=20, choices=GameMode.choices, default=GameMode.QUIZ)
+    played_at = models.DateTimeField(auto_now_add=True)
     score = models.IntegerField(default=0)
-    correct_in_game = models.IntegerField(default=0)
+    correct_in_game = models.IntegerField(default=0) 
     total_questions_in_game = models.IntegerField(default=0)
-    
-    def get_accuracy_in_game(self):
-        if self.total_questions_in_game == 0:
-            return 0.0
-        return (self.correct_in_game / self.total_questions_in_game) * 100
 
     def __str__(self):
-        return f"Partida de {self.user.username} el {self.played_at.strftime('%Y-%m-%d %H:%M')}"
-
+        return f"{self.user.username} - {self.get_game_mode_display()} - {self.played_at}"
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- MODELO BADGE (INSIGNIA) ---
