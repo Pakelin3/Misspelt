@@ -401,6 +401,16 @@ def submit_game_results(request):
     # Para lógica real de racha diaria, se requiere comparar fechas.
     from django.utils import timezone
     today = timezone.now().date()
+
+    # 4. Actualizar palabras desbloqueadas
+    seen_word_ids = data.get('seen_word_ids', [])
+    
+    if seen_word_ids:
+        stats, _ = UserStats.objects.get_or_create(user=user)
+        words_to_unlock = Word.objects.filter(id__in=seen_word_ids)
+        stats.unlocked_words.add(*words_to_unlock)
+        stats.words_seen_total = stats.unlocked_words.count()
+        stats.save()
     
     if stats.last_login_date != today:
         stats.current_streak = F('current_streak') + 1
@@ -416,7 +426,7 @@ def submit_game_results(request):
         stats.longest_streak = stats.current_streak
         stats.save()
 
-    # 4. Verificar Insignias (Badges)
+    # 5. Verificar Insignias (Badges)
     newly_unlocked = check_and_unlock_badges(user)
 
     return Response({

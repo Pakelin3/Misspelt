@@ -110,15 +110,19 @@ class RegisterSerializer(serializers.ModelSerializer):
 # ! --- MODELO WORD ---
 # * --------------------------------------------------------------------------------------------------
 class WordSerializer(serializers.ModelSerializer):
-    substitutes = serializers.SlugRelatedField(
-        many=True,      
-        read_only=True, 
-        slug_field='text'
-    )
+    is_unlocked = serializers.SerializerMethodField()
+
     class Meta:
         model = Word
-        fields = '__all__' 
+        fields = ['id', 'text', 'translation', 'description', 'word_type', 'examples', 'difficulty_level', 'tags', 'is_unlocked']
 
+    def get_is_unlocked(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            # Verificamos si esta palabra está en la lista de desbloqueadas del usuario
+            # Nota: Para optimizar esto en producción usaremos 'prefetch_related', pero por ahora esto funciona lógica pura.
+            return request.user.stats.unlocked_words.filter(id=obj.id).exists()
+        return False
 # * --------------------------------------------------------------------------------------------------
 # ! --- MODELO BADGE ---
 # * --------------------------------------------------------------------------------------------------

@@ -140,6 +140,7 @@ class UserStats(models.Model):
     last_login_date = models.DateField(null=True, blank=True)
     current_streak = models.IntegerField(default=0)
     longest_streak = models.IntegerField(default=0)
+    unlocked_words = models.ManyToManyField('Word', blank=True, related_name='unlocked_by_users', help_text="Palabras que el usuario ya ha visto en el juego")
     badges = models.ManyToManyField('Badge', blank=True, related_name='unlocked_by_users')
     unlocked_avatars = models.ManyToManyField(
         'Avatar',
