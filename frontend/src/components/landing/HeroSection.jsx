@@ -4,12 +4,12 @@ import { StarIcon, SwordIcon } from "@/components/PixelIcons";
 
 // 1. IMPORTAR LA IMAGEN
 // Asegúrate de que la ruta sea correcta. Si usas el alias '@', esto apunta a 'src'
-import heroBg from "@/img/background.png"; 
+import heroBg from "@/img/background.png";
 
 export function HeroSection() {
   return (
     <section className="relative overflow-hidden pt-24 pb-12 md:pt-32 md:pb-20 bg-background">
-      
+
       {/* 2. FONDO DE IMAGEN (Adaptado al estilo original) */}
       <div className="absolute inset-0 z-0">
         <img
@@ -26,7 +26,7 @@ export function HeroSection() {
       </div>
 
       <div className="relative z-10 mx-auto max-w-5xl px-4 text-center">
-        
+
         {/* Estrellas decorativas */}
         <div className="flex justify-center gap-4 mb-6">
           <StarIcon className="w-8 h-8 animate-sparkle text-accent" />
@@ -57,7 +57,7 @@ export function HeroSection() {
             COMENZAR AVENTURA
           </Link>
           <a
-            href="#como-funciona"
+            href="#quiz-preview"
             className="flex items-center gap-3 bg-card text-foreground px-8 py-4 font-mono text-sm pixel-border pixel-btn no-underline"
           >
             VER DEMO

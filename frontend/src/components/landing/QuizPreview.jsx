@@ -28,7 +28,7 @@ export function QuizPreview() {
   };
 
   return (
-    <section className="py-24 bg-background">
+    <section id="quiz-preview" className="py-24 bg-background">
       <div className="mx-auto max-w-4xl px-4">
         <div className="text-center mb-12">
           <span className="font-mono text-xs text-accent bg-accent/10 px-3 py-1 mb-4 inline-block pixel-border-accent">DEMO JUGABLE</span>
@@ -51,7 +51,7 @@ export function QuizPreview() {
 
           {/* Pregunta */}
           <p className="font-sans text-2xl text-center mb-8">
-            Completa la frase: <br/>
+            Completa la frase: <br />
             <span className="bg-muted/30 px-2 font-mono text-lg mt-2 inline-block">"{demoQuestion.sentence}"</span>
           </p>
 

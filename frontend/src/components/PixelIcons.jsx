@@ -86,13 +86,13 @@ export function GearIcon({ className = "w-6 h-6" }) {
     <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       {/* Cuerpo del engranaje */}
       <circle cx="12" cy="12" r="5" fill="hsl(var(--secondary))" stroke="hsl(var(--foreground))" strokeWidth="2" />
-      
+
       {/* Dientes del engranaje (Estilo cuadrado para look pixel) */}
       <path d="M11 2H13V5H11V2Z" fill="hsl(var(--foreground))" />
       <path d="M11 19H13V22H11V19Z" fill="hsl(var(--foreground))" />
       <path d="M22 11V13H19V11H22Z" fill="hsl(var(--foreground))" />
       <path d="M5 11V13H2V11H5Z" fill="hsl(var(--foreground))" />
-      
+
       {/* Dientes diagonales */}
       <rect x="16.5" y="5.5" width="2" height="3" transform="rotate(45 16.5 5.5)" fill="hsl(var(--foreground))" />
       <rect x="5.5" y="16.5" width="2" height="3" transform="rotate(45 5.5 16.5)" fill="hsl(var(--foreground))" />
