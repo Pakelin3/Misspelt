@@ -1,487 +1,404 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import useAxios from '@/utils/useAxios';
-import { useTheme } from '@/context/ThemeContext';
-import { Plus, Edit, Trash2, Save, XCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, Search, Loader2 } from 'lucide-react';
 import Swal from 'sweetalert2';
-import DataTable from 'react-data-table-component';
-import axios from 'axios';
+
+// Componentes UI Propios
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 function DictionaryAdminPanel() {
     const api = useAxios();
-    const { theme } = useTheme();
+
+    // Estados de datos
     const [words, setWords] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [editingWord, setEditingWord] = useState(null);
+
+    // Paginación y Filtros
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [searchTerm, setSearchTerm] = useState('');
+    const itemsPerPage = 10;
+
+    // Estado del Formulario
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [editingWord, setEditingWord] = useState(null);
+    const [formData, setFormData] = useState({
+        text: '',
+        description: '',
+        word_type: 'SLANG',
+        difficulty_level: 1,
+        examples: '', // String para el textarea, luego se convierte a Array
+        tags: ''      // String para el textarea, luego se convierte a Array
+    });
 
-    const [formText, setFormText] = useState('');
-    const [formDescription, setFormDescription] = useState('');
-    const [formWordType, setFormWordType] = useState('SLANG');
-    const [formExamples, setFormExamples] = useState('');
-    const [formDifficultyLevel, setFormDifficultyLevel] = useState(1);
-    const [formTags, setFormTags] = useState('');
-
-    const [totalRows, setTotalRows] = useState(0);
-    const [perPage, setPerPage] = useState(10);
-    const [currentPage, setCurrentPage] = useState(1);
-
-    const fetchWords = useCallback(async (page, limit) => {
+    // --- FETCH DATA ---
+    const fetchWords = useCallback(async () => {
         setLoading(true);
-        setError(null);
         try {
-            const response = await api.get(`/words/?page=${page}&limit=${limit}`);
-            setWords(response.data.results);
-            setTotalRows(response.data.count);
+            const searchParam = searchTerm ? `&search=${searchTerm}` : '';
+            const response = await api.get(`/words/?page=${page}&limit=${itemsPerPage}${searchParam}`);
+
+            setWords(response.data.results || []);
+            // Calcular total de páginas basado en el count (asumiendo que tu API devuelve 'count')
+            const totalCount = response.data.count || 0;
+            setTotalPages(Math.ceil(totalCount / itemsPerPage));
         } catch (err) {
             console.error("Error fetching words:", err);
-            if (axios.isCancel(err) || err.code === 'ECONNABORTED') {
-                // setError(null);
-            } else {
-                setError("No se pudieron cargar las palabras. Asegúrate de tener permisos de administrador.");
-            }
+            setError("No se pudo cargar el diccionario.");
         } finally {
             setLoading(false);
         }
-    }, [api]);
+    }, [api, page, searchTerm]);
 
     useEffect(() => {
-        fetchWords(currentPage, perPage);
-    }, [fetchWords, currentPage, perPage]);
+        // Debounce para la búsqueda
+        const timer = setTimeout(() => {
+            fetchWords();
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [fetchWords]);
 
-    const handleNewWord = () => {
-        setEditingWord(null);
-        setFormText('');
-        setFormDescription('');
-        setFormWordType('SLANG');
-        setFormExamples('');
-        setFormDifficultyLevel(1);
-        setFormTags('');
-        setIsFormOpen(true);
-    };
-
-    const handleEditWord = (word) => {
-        setEditingWord(word);
-        setFormText(word.text);
-        setFormDescription(word.description);
-        setFormWordType(word.word_type);
-        setFormExamples(JSON.stringify(word.examples, null, 2));
-        setFormDifficultyLevel(word.difficulty_level);
-        setFormTags(JSON.stringify(word.tags, null, 2));
-        setIsFormOpen(true);
-    };
-
-    const handleDeleteWord = async (wordId) => {
-        const result = await Swal.fire({
-            title: '¿Estás seguro?',
-            text: "¡No podrás revertir esto!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: 'var(--color-bg-tertiary)',
-            cancelButtonColor: 'var(--color-bg-secondary)',
-            confirmButtonText: 'Sí, ¡bórralo!',
-            cancelButtonText: 'Cancelar',
-            background: theme === 'light' ? 'var(--color-bg-card)' : 'var(--color-dark-bg-secondary)',
-            color: theme === 'light' ? 'var(--color-text-main)' : 'var(--color-dark-text)',
-        });
-
-        if (result.isConfirmed) {
-            try {
-                await api.delete(`/words/${wordId}/`);
-                Swal.fire({
-                    title: '¡Borrado!',
-                    text: 'La palabra ha sido eliminada.',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false,
-                    background: theme === 'light' ? 'var(--color-bg-card)' : 'var(--color-dark-bg-secondary)',
-                    color: theme === 'light' ? 'var(--color-text-main)' : 'var(--color-dark-text)',
-                });
-                setCurrentPage(1); 
-                fetchWords(1, perPage); 
-            } catch (err) {
-                console.error("Error deleting word:", err);
-                Swal.fire({
-                    title: 'Error',
-                    text: 'No se pudo eliminar la palabra.',
-                    icon: 'error',
-                    background: theme === 'light' ? 'var(--color-bg-card)' : 'var(--color-dark-bg-secondary)',
-                    color: theme === 'light' ? 'var(--color-text-main)' : 'var(--color-dark-text)',
-                });
-            }
+    // --- MANEJADORES DEL FORMULARIO ---
+    const handleOpenForm = (word = null) => {
+        if (word) {
+            setEditingWord(word);
+            setFormData({
+                text: word.text,
+                description: word.description,
+                word_type: word.word_type,
+                difficulty_level: word.difficulty_level,
+                examples: JSON.stringify(word.examples || [], null, 2),
+                tags: JSON.stringify(word.tags || [], null, 2)
+            });
+        } else {
+            setEditingWord(null);
+            setFormData({
+                text: '',
+                description: '',
+                word_type: 'SLANG',
+                difficulty_level: 1,
+                examples: '[]',
+                tags: '[]'
+            });
         }
+        setIsFormOpen(true);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const wordData = {
-                text: formText,
-                description: formDescription,
-                word_type: formWordType,
-                examples: JSON.parse(formExamples || '[]'),
-                difficulty_level: parseInt(formDifficultyLevel),
-                tags: JSON.parse(formTags || '[]'),
+            // Validar JSON
+            let parsedExamples = [];
+            let parsedTags = [];
+            try {
+                parsedExamples = JSON.parse(formData.examples || '[]');
+                parsedTags = JSON.parse(formData.tags || '[]');
+            } catch (jsonError) {
+                Swal.fire('Error de Formato', 'Los campos Ejemplos o Tags deben ser JSON válidos (Arrays).', 'error');
+                return;
+            }
+
+            const payload = {
+                ...formData,
+                examples: parsedExamples,
+                tags: parsedTags,
+                difficulty_level: parseInt(formData.difficulty_level)
             };
 
             if (editingWord) {
-                await api.put(`/words/${editingWord.id}/`, wordData);
+                await api.put(`/words/${editingWord.id}/`, payload);
                 Swal.fire({
                     title: '¡Actualizado!',
-                    text: 'La palabra ha sido modificada.',
                     icon: 'success',
-                    timer: 2000,
+                    toast: true,
+                    position: 'top-end',
                     showConfirmButton: false,
-                    background: theme === 'light' ? 'var(--color-bg-card)' : 'var(--color-dark-bg-secondary)',
-                    color: theme === 'light' ? 'var(--color-text-main)' : 'var(--color-dark-text)',
+                    timer: 3000
                 });
             } else {
-                await api.post('/words/', wordData);
+                await api.post('/words/', payload);
                 Swal.fire({
                     title: '¡Creado!',
-                    text: 'Nueva palabra añadida.',
                     icon: 'success',
-                    timer: 2000,
+                    toast: true,
+                    position: 'top-end',
                     showConfirmButton: false,
-                    background: theme === 'light' ? 'var(--color-bg-card)' : 'var(--color-dark-bg-secondary)',
-                    color: theme === 'light' ? 'var(--color-text-main)' : 'var(--color-dark-text)',
+                    timer: 3000
                 });
             }
             setIsFormOpen(false);
-            setCurrentPage(1); 
-            fetchWords(1, perPage); 
+            fetchWords();
         } catch (err) {
-            console.error("Error saving word:", err.response?.data || err.message);
-            const errorMessage = err.response?.data ? JSON.stringify(err.response.data) : err.message;
-            Swal.fire({
-                title: 'Error al guardar',
-                text: `Hubo un problema: ${errorMessage}`,
-                icon: 'error',
-                background: theme === 'light' ? 'var(--color-bg-card)' : 'var(--color-dark-bg-secondary)',
-                color: theme === 'light' ? 'var(--color-text-main)' : 'var(--color-dark-text)',
-            });
+            console.error(err);
+            Swal.fire('Error', 'No se pudo guardar la palabra.', 'error');
         }
     };
 
-    const getSpanishWordType = (type) => {
+    const handleDelete = async (id) => {
+        const result = await Swal.fire({
+            title: '¿ELIMINAR?',
+            text: "Esta acción es destructiva e irreversible.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            confirmButtonText: 'Sí, borrar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                popup: 'font-mono border-4 border-black rounded-none' // Estilo pixel art básico para swal
+            }
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await api.delete(`/words/${id}/`);
+                fetchWords();
+                Swal.fire({
+                    title: 'Borrado',
+                    icon: 'success',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            } catch (error) {
+                Swal.fire('Error', 'No se pudo eliminar.', 'error');
+            }
+        }
+    };
+
+    // --- HELPER PARA TIPOS ---
+    const getTypeBadgeStyle = (type) => {
         switch (type) {
-            case 'PHRASAL_VERB': return 'Verbo frasal';
-            case 'SLANG': return 'Jerga';
-            case 'NONE': return 'Ninguno';
-            default: return 'Desconocido';
+            case 'SLANG': return 'bg-yellow-100 text-yellow-800 border-yellow-800';
+            case 'PHRASAL_VERB': return 'bg-blue-100 text-blue-800 border-blue-800';
+            default: return 'bg-gray-100 text-gray-800 border-gray-800';
         }
     };
-
-    const columns = [
-        {
-            name: 'Texto',
-            selector: row => row.text,
-            sortable: true,
-            grow: 2,
-            minWidth: '150px',
-            cell: row => (
-                <span className={theme === 'light' ? 'text-[var(--color-text-main)]' : 'text-[var(--color-dark-text)]'}>{row.text}</span>
-            )
-        },
-        {
-            name: 'Tipo',
-            selector: row => getSpanishWordType(row.word_type),
-            sortable: true,
-            grow: 1,
-            minWidth: '120px',
-            cell: row => (
-                <span className={theme === 'light' ? 'text-[var(--color-text-main)]' : 'text-[var(--color-dark-text)]'}>{getSpanishWordType(row.word_type)}</span>
-            )
-        },
-        {
-            name: 'Nivel',
-            selector: row => row.difficulty_level,
-            sortable: true,
-            minWidth: '80px',
-            cell: row => (
-                <span className={theme === 'light' ? 'text-[var(--color-text-main)]' : 'text-[var(--color-dark-text)]'}>{row.difficulty_level}</span>
-            )
-        },
-        {
-            name: 'Acciones',
-            cell: row => (
-                <div className="flex">
-                    <button
-                        onClick={() => handleEditWord(row)}
-                        className={`text-[var(--color-accent-blue)] hover:text-[var(--color-bg-secondary)] mr-3`}
-                        aria-label={`Editar ${row.text}`}
-                    >
-                        <Edit className="w-5 h-5" />
-                    </button>
-                    <button
-                        onClick={() => handleDeleteWord(row.id)}
-                        className={`text-red-500 hover:text-red-700`}
-                        aria-label={`Eliminar ${row.text}`}
-                    >
-                        <Trash2 className="w-5 h-5" />
-                    </button>
-                </div>
-            ),
-            ignoreRowClick: true,
-            allowOverflow: true,
-            button: true,
-            width: '120px',
-        },
-    ];
-
-    const customStyles = {
-        header: {
-            style: {
-                minHeight: '56px',
-                backgroundColor: theme === 'light' ? 'var(--color-bg-card)' : 'var(--color-dark-bg-secondary)',
-                color: theme === 'light' ? 'var(--color-text-main)' : 'var(--color-dark-text)',
-            },
-        },
-        headRow: {
-            style: {
-                backgroundColor: theme === 'light' ? 'var(--color-bg-main)' : 'var(--color-dark-bg-tertiary)',
-                color: theme === 'light' ? 'var(--color-text-main)' : 'var(--color-dark-text)',
-            },
-        },
-        headCells: {
-            style: {
-                color: theme === 'light' ? 'var(--color-text-main)' : 'var(--color-dark-text)',
-                fontSize: '14px',
-                fontWeight: 'bold',
-            },
-        },
-        cells: {
-            style: {
-                backgroundColor: theme === 'light' ? 'var(--color-bg-card)' : 'var(--color-dark-bg-secondary)',
-                color: theme === 'light' ? 'var(--color-text-main)' : 'var(--color-dark-text)',
-                '&:not(:last-of-type)': {
-                    borderRightStyle: 'solid',
-                    borderRightWidth: '1px',
-                    borderRightColor: theme === 'light' ? 'var(--color-text-secondary)' : 'var(--color-dark-border)',
-                },
-            },
-        },
-        pagination: {
-            style: {
-                backgroundColor: theme === 'light' ? 'var(--color-bg-card)' : 'var(--color-dark-bg-secondary)',
-                color: theme === 'light' ? '#000' : '#fff',
-                borderTopStyle: 'solid',
-                borderTopWidth: '1px',
-                borderTopColor: theme === 'light' ? 'var(--color-text-secondary)' : 'var(--color-dark-border)',
-            },
-            pageButtonsStyle: {
-                backgroundColor: theme === 'light' ? '#e0e0e0' : 'var(--color-dark-bg-tertiary)',
-                color: theme === 'light' ? '#000' : '#fff',
-                fill: theme === 'light' ? '#000' : '#bbb',
-                '&:hover': {
-                    backgroundColor: theme === 'light' ? '#9f9f9f' : '#a0a0a0',
-                },
-                '&:disabled': {
-                    opacity: 0.5,
-                },
-                '&:not(:disabled)': {
-                    cursor: 'pointer',
-                },
-            },
-        },
-    };
-
-    const handlePageChange = page => {
-        setCurrentPage(page);
-    };
-
-    const handlePerPageChange = (newPerPage, page) => {
-        setPerPage(newPerPage);
-        setCurrentPage(page);
-    };
-
-    const renderWordList = () => (
-        <div className={`p-4 rounded-lg shadow-md
-            ${theme === 'light' ? 'bg-[var(--color-bg-card)]' : 'bg-[var(--color-dark-bg-secondary)]'}`}>
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-[var(--color-text-main)]">Gestión de Palabras</h2>
-                <button
-                    onClick={handleNewWord}
-                    className={`px-4 py-2 cursor-pointer rounded-full flex items-center gap-2 font-semibold transition-colors whitespace-nowrap
-                        ${theme === 'light'
-                            ? 'bg-[var(--color-bg-secondary)] text-[var(--color-body-bg)] hover:bg-[var(--color-bg-secondary-hover)]'
-                            : 'bg-[var(--color-bg-secondary)] text-white hover:bg-[var(--color-bg-secondary-hover)]'
-                        }`}>
-                    <Plus className="w-5 h-5" />
-                    Nueva Palabra
-                </button>
-            </div>
-            {error ? (
-                <p className="text-red-500 text-center py-4">{error}</p>
-            ) : (
-                <DataTable
-                    columns={columns}
-                    data={words}
-                    pagination
-                    paginationServer
-                    paginationTotalRows={totalRows}
-                    onChangePage={handlePageChange}
-                    onChangeRowsPerPage={handlePerPageChange}
-                    progressPending={loading}
-                    customStyles={customStyles}
-                    noDataComponent={
-                        <p className={theme === 'light' ? 'text-[var(--color-text-secondary)] py-4' : 'text-[var(--color-dark-text-secondary)] py-4'}>
-                            No se encontraron palabras para mostrar.
-                        </p>
-                    }
-                />
-            )}
-        </div>
-    );
-
-    const renderWordForm = () => (
-        // Añadir una clase 'modal-content' o similar para controlar el ancho máximo del modal
-        <div className={`p-4 rounded-lg shadow-md w-full max-w-lg mx-auto ${theme === 'light' ? 'bg-[var(--color-bg-card)]' : 'bg-[var(--color-dark-bg-secondary)]'}`}>
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-[var(--color-text-main)]">{editingWord ? 'Editar Palabra' : 'Crear Nueva Palabra'}</h2>
-                <button
-                    onClick={() => setIsFormOpen(false)}
-                    className={`text-[var(--color-text-secondary)] hover:text-red-500`}
-                >
-                    <XCircle className="w-6 h-6" />
-                </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Campos de la palabra */}
-                <div>
-                    <label htmlFor="text" className="block text-sm font-medium text-[var(--color-text-main)] mb-1">Texto:</label>
-                    <input
-                        type="text"
-                        id="text"
-                        value={formText}
-                        onChange={(e) => setFormText(e.target.value)}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2
-                            ${theme === 'light'
-                                ? 'border-[var(--color-text-secondary)] text-[var(--color-text)] focus:ring-[var(--color-bg-secondary)]'
-                                : 'border-[var(--color-dark-border)] text-[var(--color-dark-text)] focus:ring-[var(--color-accent-blue)]'
-                            }`}
-                        required
-                    />
-                </div>
-                {/* Campos de la descripción */}
-                <div>
-                    <label htmlFor="description" className="block text-sm font-medium text-[var(--color-text-main)] mb-1">Descripción:</label>
-                    <textarea
-                        id="description"
-                        value={formDescription}
-                        onChange={(e) => setFormDescription(e.target.value)}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 h-24 resize-y
-                            ${theme === 'light'
-                                ? 'border-[var(--color-text-secondary)] text-[var(--color-text)] focus:ring-[var(--color-bg-secondary)]'
-                                : 'border-[var(--color-dark-border)] text-[var(--color-dark-text)] focus:ring-[var(--color-accent-blue)]'
-                            }`}
-                        required
-                    ></textarea>
-                </div>
-                {/* Campos de la categoría */}
-                <div>
-                    <label htmlFor="wordType" className="block text-sm font-medium text-[var(--color-text-main)] mb-1">Tipo de Palabra:</label>
-                    <select
-                        id="wordType"
-                        value={formWordType}
-                        onChange={(e) => setFormWordType(e.target.value)}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2
-                            ${theme === 'light'
-                                ? 'border-[var(--color-text-secondary)] text-[var(--color-text)] focus:ring-[var(--color-bg-secondary)] bg-white'
-                                : 'border-[var(--color-dark-border)] text-[var(--color-dark-text)] focus:ring-[var(--color-accent-blue)] bg-[var(--color-dark-bg-tertiary)]'
-                            }`}
-                        required
-                    >
-                        <option value="SLANG">Jerga</option>
-                        <option value="PHRASAL_VERB">Verbo Frasal</option>
-                        <option value="NONE">Ninguno</option>
-                    </select>
-                </div>
-                {/* Campos de la dificultad */}
-                <div>
-                    <label htmlFor="difficultyLevel" className="block text-sm font-medium text-[var(--color-text-main)] mb-1">Nivel de Dificultad (1-5):</label>
-                    <input
-                        type="number"
-                        id="difficultyLevel"
-                        value={formDifficultyLevel}
-                        onChange={(e) => setFormDifficultyLevel(e.target.value)}
-                        min="1"
-                        max="5"
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2
-                            ${theme === 'light'
-                                ? 'border-[var(--color-text-secondary)] text-[var(--color-text)] focus:ring-[var(--color-bg-secondary)]'
-                                : 'border-[var(--color-dark-border)] text-[var(--color-dark-text)] focus:ring-[var(--color-accent-blue)]'
-                            }`}
-                        required
-                    />
-                </div>
-
-                {/* Campos de los ejemplos */}
-                <div>
-                    <label htmlFor="examples" className="block text-sm font-medium text-[var(--color-text-main)] mb-1">Ejemplos (JSON Array):</label>
-                    <textarea
-                        id="examples"
-                        value={formExamples}
-                        onChange={(e) => setFormExamples(e.target.value)}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 h-24 resize-y
-                            ${theme === 'light'
-                                ? 'border-[var(--color-text-secondary)] text-[var(--color-text)] focus:ring-[var(--color-bg-secondary)]'
-                                : 'border-[var(--color-dark-border)] text-[var(--color-dark-text)] focus:ring-[var(--color-accent-blue)]'
-                            }`}
-                        placeholder='Ej: ["Example 1", "Example 2"]'
-                    ></textarea>
-                </div>
-
-                {/* Campos de los tags */}
-                <div>
-                    <label htmlFor="tags" className="block text-sm font-medium text-[var(--color-text-main)] mb-1">Tags (JSON Array):</label>
-                    <textarea
-                        id="tags"
-                        value={formTags}
-                        onChange={(e) => setFormTags(e.target.value)}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2
-                            ${theme === 'light'
-                                ? 'border-[var(--color-text-secondary)] text-[var(--color-text)] focus:ring-[var(--color-bg-secondary)]'
-                                : 'border-[var(--color-dark-border)] text-[var(--color-dark-text)] focus:ring-[var(--color-accent-blue)]'
-                            }`}
-                        placeholder='Ej: ["tag1", "tag2"]'
-                    ></textarea>
-                </div>
-
-                <div className="flex gap-4 mt-6">
-                    <button
-                        type="submit"
-                        className={`flex-1 px-4 py-2 rounded-full flex items-center justify-center gap-2 font-semibold transition-colors
-                            ${theme === 'light'
-                                ? 'bg-[var(--color-bg-secondary)] text-[var(--color-body-bg)] hover:bg-[var(--color-bg-tertiary)]'
-                                : 'bg-[var(--color-accent-blue)] text-white hover:bg-[var(--color-bg-tertiary)]'
-                            }`}>
-                        <Save className="w-5 h-5" />
-                        Guardar
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setIsFormOpen(false)}
-                        className={`flex-1 px-4 py-2 rounded-full flex items-center justify-center gap-2 font-semibold transition-colors
-                            ${theme === 'light'
-                                ? 'bg-gray-300 text-[var(--color-text-main)] hover:bg-gray-400'
-                                : 'bg-[var(--color-dark-bg-tertiary)] text-[var(--color-dark-text)] hover:bg-gray-700'
-                            }`}>
-                        <XCircle className="w-5 h-5" />
-                        Cancelar
-                    </button>
-                </div>
-            </form>
-        </div>
-    );
 
     return (
-        <div className="p-4 sm:p-6 lg:p-8">
-            {renderWordList()}
+        <div className="space-y-6 font-mono">
+            {/* --- TOP BAR --- */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-card p-4 border-4 border-foreground shadow-sm">
+                <div>
+                    <h2 className="text-2xl font-bold uppercase tracking-tighter">
+                        Diccionario
+                    </h2>
+                    <p className="text-xs text-muted-foreground">Gestión de vocabulario del juego</p>
+                </div>
+
+                <div className="flex w-full sm:w-auto gap-2">
+                    <div className="relative w-full sm:w-64">
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Buscar palabra..."
+                            className="pl-8 h-10 border-2 border-foreground rounded-none focus:ring-0 focus:border-primary"
+                            value={searchTerm}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setPage(1);
+                            }}
+                        />
+                    </div>
+                    <Button onClick={() => handleOpenForm()} className="pixel-btn h-10 border-2 border-foreground rounded-none bg-primary text-primary-foreground hover:translate-y-1 transition-transform">
+                        <Plus className="w-4 h-4 mr-2" />
+                        NUEVA
+                    </Button>
+                </div>
+            </div>
+
+            {/* --- TABLA PIXELADA --- */}
+            <div className="bg-card border-4 border-foreground overflow-hidden relative min-h-[400px]">
+                {loading && (
+                    <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
+                        <div className="flex flex-col items-center gap-2">
+                            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                            <span className="text-xs font-bold animate-pulse">CARGANDO DATOS...</span>
+                        </div>
+                    </div>
+                )}
+
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                        <thead className="bg-muted text-muted-foreground border-b-4 border-foreground uppercase tracking-wider">
+                            <tr>
+                                <th className="p-4 font-bold border-r-2 border-foreground/20">Palabra</th>
+                                <th className="p-4 font-bold border-r-2 border-foreground/20 w-32">Tipo</th>
+                                <th className="p-4 font-bold border-r-2 border-foreground/20 w-24 text-center">Nivel</th>
+                                <th className="p-4 font-bold w-32 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y-2 divide-foreground/10">
+                            {words.length === 0 && !loading ? (
+                                <tr>
+                                    <td colSpan="4" className="p-8 text-center text-muted-foreground italic">
+                                        No se encontraron palabras.
+                                    </td>
+                                </tr>
+                            ) : (
+                                words.map((word) => (
+                                    <tr key={word.id} className="hover:bg-muted/50 transition-colors group">
+                                        <td className="p-4 border-r-2 border-foreground/10">
+                                            <div className="font-bold text-base">{word.text}</div>
+                                            <div className="text-xs text-muted-foreground line-clamp-1">{word.description}</div>
+                                        </td>
+                                        <td className="p-4 border-r-2 border-foreground/10">
+                                            <span className={`px-2 py-1 text-[10px] font-bold border-2 rounded-none ${getTypeBadgeStyle(word.word_type)}`}>
+                                                {word.word_type === 'PHRASAL_VERB' ? 'P. VERB' : word.word_type}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 border-r-2 border-foreground/10 text-center">
+                                            <div className="inline-flex gap-0.5">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <div
+                                                        key={i}
+                                                        className={`w-2 h-2 border border-foreground ${i < word.difficulty_level ? 'bg-primary' : 'bg-transparent'}`}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </td>
+                                        <td className="p-4 text-center">
+                                            <div className="flex justify-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                                <button
+                                                    onClick={() => handleOpenForm(word)}
+                                                    className="p-2 hover:bg-blue-100 border-2 border-transparent hover:border-blue-500 transition-all text-blue-600"
+                                                    title="Editar"
+                                                >
+                                                    <Edit className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(word.id)}
+                                                    className="p-2 hover:bg-red-100 border-2 border-transparent hover:border-red-500 transition-all text-red-600"
+                                                    title="Eliminar"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* --- PAGINACIÓN --- */}
+            <div className="flex justify-between items-center bg-card border-4 border-foreground p-2">
+                <Button
+                    variant="outline"
+                    disabled={page <= 1}
+                    onClick={() => setPage(p => p - 1)}
+                    className="h-8 text-xs border-2 border-foreground rounded-none pixel-btn disabled:opacity-50"
+                >
+                    ANTERIOR
+                </Button>
+                <span className="text-xs font-bold">
+                    PÁGINA {page} DE {totalPages || 1}
+                </span>
+                <Button
+                    variant="outline"
+                    disabled={page >= totalPages}
+                    onClick={() => setPage(p => p + 1)}
+                    className="h-8 text-xs border-2 border-foreground rounded-none pixel-btn disabled:opacity-50"
+                >
+                    SIGUIENTE
+                </Button>
+            </div>
+
+            {/* --- MODAL DE FORMULARIO (Pixel Style) --- */}
             {isFormOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-                    {renderWordForm()}
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-card w-full max-w-lg border-4 border-foreground shadow-2xl relative animate-in zoom-in-95 duration-200">
+                        {/* Header del Modal */}
+                        <div className="bg-primary text-primary-foreground p-3 flex justify-between items-center border-b-4 border-foreground">
+                            <h3 className="font-bold text-lg uppercase flex items-center gap-2">
+                                {editingWord ? <Edit className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                                {editingWord ? 'Editar Palabra' : 'Nueva Palabra'}
+                            </h3>
+                            <button onClick={() => setIsFormOpen(false)} className="hover:bg-red-500 hover:text-white p-1 transition-colors border-2 border-transparent hover:border-foreground">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Body del Modal */}
+                        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase">Palabra</label>
+                                    <Input
+                                        required
+                                        value={formData.text}
+                                        onChange={e => setFormData({ ...formData, text: e.target.value })}
+                                        className="border-2 border-foreground rounded-none focus:ring-0 focus:border-primary bg-background"
+                                        placeholder="Ej: Break down"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase">Tipo</label>
+                                    <select
+                                        className="w-full h-10 px-3 bg-background border-2 border-foreground rounded-none focus:outline-none focus:border-primary text-sm"
+                                        value={formData.word_type}
+                                        onChange={e => setFormData({ ...formData, word_type: e.target.value })}
+                                    >
+                                        <option value="SLANG">Slang (Jerga)</option>
+                                        <option value="PHRASAL_VERB">Phrasal Verb</option>
+                                        <option value="NONE">Otro</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold uppercase">Descripción / Significado</label>
+                                <textarea
+                                    required
+                                    className="w-full p-3 bg-background border-2 border-foreground rounded-none focus:outline-none focus:border-primary text-sm min-h-[80px]"
+                                    value={formData.description}
+                                    onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                    placeholder="Explica qué significa..."
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold uppercase">Nivel Dificultad ({formData.difficulty_level})</label>
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="5"
+                                    step="1"
+                                    className="w-full accent-primary h-2 bg-muted rounded-none appearance-none cursor-pointer border border-foreground"
+                                    value={formData.difficulty_level}
+                                    onChange={e => setFormData({ ...formData, difficulty_level: e.target.value })}
+                                />
+                                <div className="flex justify-between text-[10px] text-muted-foreground px-1 font-sans">
+                                    <span>Fácil</span>
+                                    <span>Difícil</span>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold uppercase">Ejemplos (JSON Array)</label>
+                                <textarea
+                                    className="w-full p-3 bg-muted/30 border-2 border-foreground rounded-none focus:outline-none focus:border-primary text-xs font-mono"
+                                    value={formData.examples}
+                                    onChange={e => setFormData({ ...formData, examples: e.target.value })}
+                                    placeholder='["Example sentence 1.", "Example sentence 2."]'
+                                    rows={3}
+                                />
+                            </div>
+
+                            <div className="pt-4 flex gap-3">
+                                <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)} className="flex-1 border-2 border-foreground rounded-none pixel-btn">
+                                    CANCELAR
+                                </Button>
+                                <Button type="submit" className="flex-1 border-2 border-foreground rounded-none pixel-btn bg-primary text-primary-foreground">
+                                    <Save className="w-4 h-4 mr-2" />
+                                    GUARDAR
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             )}
         </div>

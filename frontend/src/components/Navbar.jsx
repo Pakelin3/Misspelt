@@ -95,17 +95,17 @@ function Navbar() {
                             <LeafIcon className="w-5 h-5" /> Inicio
                         </Link> */}
                     <Link to="/dictionary" className={navLinkClass("/dictionary")}>
-                        <BookIcon className="w-5 h-5" /> Diccionario
+                        <BookIcon className="w-5 h-5" /> <p className=" text-2xl" >Diccionario</p>
                     </Link>
                     <Link to="/ia" className={navLinkClass("/ia")}>
-                        <BrainIcon className="w-5 h-5" /> IA
+                        <BrainIcon className="w-5 h-5" /> <p className=" text-2xl" >IA</p>
                     </Link>
                     <Link to="/badges" className={navLinkClass("/badges")}>
-                        <TrophyIcon className="w-5 h-5" /> Insignias
+                        <TrophyIcon className="w-5 h-5" /> <p className=" text-2xl" >Insignias</p>
                     </Link>
                     {user && user.is_staff && (
                         <Link to="/admin-dashboard" className={navLinkClass("/admin-dashboard")}>
-                            <GearIcon className="w-5 h-5" /> Admin {/* <--- Aquí el cambio */}
+                            <GearIcon className="w-5 h-5" /><p className=" text-2xl" >Admin</p>
                         </Link>
                     )}
                 </div>
@@ -202,57 +202,59 @@ function Navbar() {
             </nav>
 
             {/* --- MOBILE MENU --- */}
-            {isMobileMenuOpen && (
-                <div
-                    ref={mobileMenuRef}
-                    className="md:hidden border-t-4 border-foreground bg-card px-4 pb-6 pt-2 animate-accordion-down"
-                >
-                    <ul className="flex flex-col gap-2">
-                        <Link to="/" onClick={toggleMobileMenu} className={navLinkClass("/")}>
-                            <LeafIcon className="w-5 h-5" /> Inicio
-                        </Link>
-                        <Link to="/play" onClick={toggleMobileMenu} className={navLinkClass("/play")}>
-                            <SwordIcon className="w-5 h-5" /> Jugar
-                        </Link>
-                        <Link to="/dictionary" onClick={toggleMobileMenu} className={navLinkClass("/dictionary")}>
-                            <BookIcon className="w-5 h-5" /> Diccionario
-                        </Link>
-                        <Link to="/ia" onClick={toggleMobileMenu} className={navLinkClass("/ia")}>
-                            <BrainIcon className="w-5 h-5" /> IA
-                        </Link>
-                        <Link to="/badges" onClick={toggleMobileMenu} className={navLinkClass("/badges")}>
-                            <TrophyIcon className="w-5 h-5" /> Insignias
-                        </Link>
+            {
+                isMobileMenuOpen && (
+                    <div
+                        ref={mobileMenuRef}
+                        className="md:hidden border-t-4 border-foreground bg-card px-4 pb-6 pt-2 animate-accordion-down"
+                    >
+                        <ul className="flex flex-col gap-2">
+                            <Link to="/" onClick={toggleMobileMenu} className={navLinkClass("/")}>
+                                <LeafIcon className="w-5 h-5" /> Inicio
+                            </Link>
+                            <Link to="/play" onClick={toggleMobileMenu} className={navLinkClass("/play")}>
+                                <SwordIcon className="w-5 h-5" /> Jugar
+                            </Link>
+                            <Link to="/dictionary" onClick={toggleMobileMenu} className={navLinkClass("/dictionary")}>
+                                <BookIcon className="w-5 h-5" /> Diccionario
+                            </Link>
+                            <Link to="/ia" onClick={toggleMobileMenu} className={navLinkClass("/ia")}>
+                                <BrainIcon className="w-5 h-5" /> IA
+                            </Link>
+                            <Link to="/badges" onClick={toggleMobileMenu} className={navLinkClass("/badges")}>
+                                <TrophyIcon className="w-5 h-5" /> Insignias
+                            </Link>
 
-                        <hr className="border-2 border-muted my-2" />
+                            <hr className="border-2 border-muted my-2" />
 
-                        {user ? (
-                            <>
-                                <Link to="/profile" onClick={toggleMobileMenu} className="flex items-center gap-2 px-3 py-2 font-sans text-lg">
-                                    <img src={finalProfileImageSrc} className="w-6 h-6 rounded-sm pixel-border" />
-                                    Mi Perfil
-                                </Link>
-                                <button
-                                    onClick={() => { logoutUser(); toggleMobileMenu(); }}
-                                    className="w-full text-left px-3 py-2 font-sans text-lg text-destructive"
-                                >
-                                    Cerrar Sesión
-                                </button>
-                            </>
-                        ) : (
-                            <div className="flex flex-col gap-2 mt-2">
-                                <Link to="/login" onClick={toggleMobileMenu} className="text-center font-mono text-xs border-2 border-foreground py-2">
-                                    INICIAR SESIÓN
-                                </Link>
-                                <Link to="/register" onClick={toggleMobileMenu} className="text-center font-mono text-xs bg-primary text-primary-foreground py-2 pixel-border-primary">
-                                    REGISTRARSE
-                                </Link>
-                            </div>
-                        )}
-                    </ul>
-                </div>
-            )}
-        </header>
+                            {user ? (
+                                <>
+                                    <Link to="/profile" onClick={toggleMobileMenu} className="flex items-center gap-2 px-3 py-2 font-sans text-lg">
+                                        <img src={finalProfileImageSrc} className="w-6 h-6 rounded-sm pixel-border" />
+                                        Mi Perfil
+                                    </Link>
+                                    <button
+                                        onClick={() => { logoutUser(); toggleMobileMenu(); }}
+                                        className="w-full text-left px-3 py-2 font-sans text-lg text-destructive"
+                                    >
+                                        Cerrar Sesión
+                                    </button>
+                                </>
+                            ) : (
+                                <div className="flex flex-col gap-2 mt-2">
+                                    <Link to="/login" onClick={toggleMobileMenu} className="text-center font-mono text-xs border-2 border-foreground py-2">
+                                        INICIAR SESIÓN
+                                    </Link>
+                                    <Link to="/register" onClick={toggleMobileMenu} className="text-center font-mono text-xs bg-primary text-primary-foreground py-2 pixel-border-primary">
+                                        REGISTRARSE
+                                    </Link>
+                                </div>
+                            )}
+                        </ul>
+                    </div>
+                )
+            }
+        </header >
     );
 }
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes} from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PrivateRoute from '@/utils/PrivatesRoutes';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
@@ -10,7 +10,7 @@ import LoginPage from '@/views/LoginPage';
 import Dashboard from '@/views/Dashboard';
 import ProfilePage from '@/views/ProfilePage';
 import Navbar from '@/components/Navbar';
-import AdminDashboard from '@/views/AdminDashboard';
+import AdminDashboard from '@/components/admin/AdminDashboard';
 import EmailVerificationLandingPage from '@/views/EmailVerificationLandingPage';
 import CheckEmailPage from '@/views/CheckEmailPage';
 import BadgesPage from '@/views/BadgesPage';

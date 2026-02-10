@@ -87,15 +87,15 @@ function SidebarIA({ isOpen, toggleSidebar }) {
                         <span>Ajustes y ayuda</span>
                     </a>
                     <Link
-                        to="/"  
+                        to="/"
                         className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors
                             ${theme === 'light'
                                 ? 'hover:bg-[var(--color-bg-secondary-hover)] text-[var(--color-text-main)]'
                                 : 'hover:bg-[var(--color-dark-border)] text-[var(--color-dark-text)]'
                             }`}
-                            
-                    ><ArrowLeft className={`w-5 h-5 ${theme === 'light' ? 'text-black' : 'text-[var(--color-dark-text-secondary)]'}`}/>
-                    <span>Volver al inicio</span></Link>
+
+                    ><ArrowLeft className={`w-5 h-5 ${theme === 'light' ? 'text-black' : 'text-[var(--color-dark-text-secondary)]'}`} />
+                        <span>Volver al inicio</span></Link>
                 </div>
             </div>
         </div>
