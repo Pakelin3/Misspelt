@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import axios from 'axios';
 import { Search, Volume2, ChevronLeft, ChevronRight, X, BookOpen, Lock } from 'lucide-react';
+import useAxios from "@/utils/useAxios";
 import Navbar from "@/components/Navbar";
 import { BookIcon } from '@/components/PixelIcons';
-
-const baseURL = import.meta.env.VITE_BACKEND_URL_API;
 
 function DictionaryPage() {
     // Estados
@@ -27,7 +25,7 @@ function DictionaryPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const selectedWordRef = useRef(selectedWord);
-
+    const api = useAxios();
     useEffect(() => {
         selectedWordRef.current = selectedWord;
     }, [selectedWord]);
@@ -51,7 +49,7 @@ function DictionaryPage() {
             const typeParam = currentSelectedFilter !== "all" ? `&word_type=${currentSelectedFilter.toUpperCase().replace(' ', '_')}` : '';
             // Usamos el término ya procesado (o el que pasemos por argumento)
             const searchParam = currentSearchTerm ? `&search=${currentSearchTerm}` : '';
-            const response = await axios.get(`${baseURL}/words/?page=${page}&limit=${wordsPerPage}${typeParam}${searchParam}`);
+            const response = await api.get(`/words/?page=${page}&limit=${wordsPerPage}${typeParam}${searchParam}`);
             const fetchedWords = response.data.results || [];
             setWords(fetchedWords);
             setTotalWordsCount(response.data.count || 0);
@@ -68,7 +66,7 @@ function DictionaryPage() {
         } finally {
             setLoading(false);
         }
-    }, [wordsPerPage, baseURL]);
+    }, [wordsPerPage]);
 
     // --- EFECTO DE BÚSQUEDA ---
     // OJO: Ahora dependemos de 'debouncedSearchTerm', NO de 'searchTerm'
@@ -93,6 +91,11 @@ function DictionaryPage() {
             case 'SLANG': return 'Slang';
             default: return 'Palabra';
         }
+    };
+
+    const openModal = (word) => {
+        setSelectedWord(word);
+        setIsModalOpen(true);
     };
 
     // --- COMPONENTE MODAL INTERNO ---
