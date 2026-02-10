@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
-import { Search, Volume2, ChevronLeft, ChevronRight, X, BookOpen } from 'lucide-react';
+import { Search, Volume2, ChevronLeft, ChevronRight, X, BookOpen, Lock } from 'lucide-react';
 import Navbar from "@/components/Navbar";
 import { BookIcon } from '@/components/PixelIcons';
 
@@ -14,18 +14,18 @@ function DictionaryPage() {
     const wordsPerPage = 9;
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    
+
     // Filtros y Búsqueda
     const [selectedFilter, setSelectedFilter] = useState("all");
     const [searchTerm, setSearchTerm] = useState("");
-    
+
     // Este estado solo cambiará cuando el usuario deje de escribir
-    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(""); 
-    
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
     // Modal
     const [selectedWord, setSelectedWord] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    
+
     const selectedWordRef = useRef(selectedWord);
 
     useEffect(() => {
@@ -57,7 +57,7 @@ function DictionaryPage() {
             setTotalWordsCount(response.data.count || 0);
 
             if (shouldResetSelectedWord || !selectedWordRef.current || !fetchedWords.some(word => word.id === selectedWordRef.current.id)) {
-                if (shouldResetSelectedWord) setSelectedWord(null); 
+                if (shouldResetSelectedWord) setSelectedWord(null);
             }
 
         } catch (err) {
@@ -81,7 +81,7 @@ function DictionaryPage() {
         if (currentPage > 0) {
             fetchWords(currentPage, debouncedSearchTerm, selectedFilter, false);
         }
-    }, [currentPage, fetchWords]); 
+    }, [currentPage, fetchWords]);
 
 
     const totalPages = Math.ceil(totalWordsCount / wordsPerPage);
@@ -95,18 +95,13 @@ function DictionaryPage() {
         }
     };
 
-    const handleCardClick = (word) => {
-        setSelectedWord(word);
-        setIsModalOpen(true);
-    };
-
     // --- COMPONENTE MODAL INTERNO ---
     const WordDetailModal = () => {
         if (!selectedWord) return null;
 
         return (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4" onClick={() => setIsModalOpen(false)}>
-                <div 
+                <div
                     className="relative bg-card pixel-border p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200"
                     onClick={e => e.stopPropagation()}
                 >
@@ -171,7 +166,7 @@ function DictionaryPage() {
             <Navbar />
 
             <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-8 md:py-12 mt-16">
-                
+
                 <div className="text-center mb-10">
                     <div className="inline-flex items-center justify-center p-3 bg-card pixel-border mb-4">
                         <BookIcon className="w-8 h-8 text-primary" />
@@ -183,7 +178,7 @@ function DictionaryPage() {
                 </div>
 
                 <div className="flex flex-col md:flex-row gap-4 mb-8 items-center justify-between bg-card/50 p-4 pixel-border">
-                    
+
                     {/* INPUT DE BÚSQUEDA */}
                     <div className="relative w-full md:max-w-md group">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
@@ -213,8 +208,8 @@ function DictionaryPage() {
                                 key={filter.id}
                                 onClick={() => setSelectedFilter(filter.id)}
                                 className={`px-4 py-2 font-mono text-[10px] transition-all
-                                    ${selectedFilter === filter.id 
-                                        ? "bg-primary text-primary-foreground pixel-border-primary" 
+                                    ${selectedFilter === filter.id
+                                        ? "bg-primary text-primary-foreground pixel-border-primary"
                                         : "bg-background text-foreground border-2 border-transparent hover:bg-muted hover:border-muted"
                                     }`}
                             >
@@ -244,27 +239,41 @@ function DictionaryPage() {
                             {words.map((word) => (
                                 <div
                                     key={word.id}
-                                    onClick={() => handleCardClick(word)}
-                                    className="group bg-card pixel-border p-5 cursor-pointer hover:-translate-y-1 transition-transform relative overflow-hidden"
+                                    onClick={() => word.is_unlocked && openModal(word)}
+
+                                    className={`
+            group bg-card pixel-border p-5 transition-transform relative overflow-hidden
+            ${word.is_unlocked
+                                            ? 'cursor-pointer hover:-translate-y-1'
+                                            : 'grayscale opacity-60 cursor-not-allowed'
+                                        }
+        `}
                                 >
                                     <div className="absolute top-0 right-0 p-2">
                                         <span className={`text-[8px] font-mono px-2 py-1 border border-foreground/20 
-                                            ${word.word_type === "PHRASAL_VERB" ? "bg-accent/20 text-accent-foreground" : "bg-secondary/30 text-secondary-foreground"}`}>
+                ${word.word_type === "PHRASAL_VERB" ? "bg-accent/20 text-accent-foreground" : "bg-secondary/30 text-secondary-foreground"}`}>
                                             {word.word_type === "SLANG" ? "SLG" : "VB"}
                                         </span>
                                     </div>
 
-                                    <h3 className="text-2xl font-mono text-foreground mb-2 group-hover:text-primary transition-colors">
+                                    <h3 className={`text-2xl font-mono text-foreground mb-2 transition-colors ${word.is_unlocked ? 'group-hover:text-primary' : ''}`}>
                                         {word.text}
                                     </h3>
-                                    
-                                    <p className="text-lg text-muted-foreground font-sans line-clamp-2 leading-tight mb-4">
+                                    <p className={`text-lg text-muted-foreground font-sans line-clamp-2 leading-tight mb-4 ${!word.is_unlocked ? 'blur-[3px] select-none' : ''}`}>
                                         "{word.description}"
                                     </p>
 
                                     <div className="flex items-center justify-between mt-auto pt-4 border-t-2 border-dashed border-muted">
-                                        <span className="text-xs font-mono text-muted-foreground opacity-50">CLICK PARA VER</span>
-                                        <BookOpen className="w-4 h-4 text-muted-foreground group-hover:text-primary" />
+                                        <span className="text-xs font-mono text-muted-foreground opacity-50">
+                                            {word.is_unlocked ? "CLICK PARA VER" : "BLOQUEADO"}
+                                        </span>
+
+
+                                        {word.is_unlocked ? (
+                                            <BookOpen className="w-4 h-4 text-muted-foreground group-hover:text-primary" />
+                                        ) : (
+                                            <Lock className="w-4 h-4 text-muted-foreground" />
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -281,7 +290,7 @@ function DictionaryPage() {
                         >
                             <ChevronLeft className="w-6 h-6" />
                         </button>
-                        
+
                         <div className="px-6 py-3 bg-card pixel-border font-mono text-xs">
                             PÁGINA {currentPage} DE {totalPages}
                         </div>
