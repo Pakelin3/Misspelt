@@ -45,7 +45,7 @@ function Navbar() {
     }, [location.pathname]);
 
     // Lógica de ocultar Navbar
-    const noNavbarPaths = ['/login', '/register', '/check-email', '/verify-email/:token', '/ia-fullmode']; // Agregué ia-fullmode por si acaso
+    const noNavbarPaths = ['/login', '/register', '/check-email', '/verify-email/:token', '/ia-fullmode'];
     const shouldShowNavbar = !noNavbarPaths.some(path => {
         if (path.includes(':')) {
             const regexPath = new RegExp(`^${path.replace(/:[^/]+/g, '[^/]+')}$`);
