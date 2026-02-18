@@ -30,12 +30,18 @@ const GamePage = () => {
 
     useEffect(() => {
         const navbar = document.getElementById('main-navbar');
-        if (navbar) navbar.style.display = 'none';
+        if (navbar) {
+            if (gameState === 'PLAYING') {
+                navbar.style.display = 'none';
+            } else {
+                navbar.style.display = 'flex'; // Restore visibility for SELECTION and RESULTS
+            }
+        }
 
         return () => {
-            if (navbar) navbar.style.display = 'flex'; // O el display original
+            if (navbar) navbar.style.display = 'flex'; // Ensure visible on unmount
         };
-    }, []);
+    }, [gameState]);
 
     useEffect(() => {
         window.onGodotGameOver = async (xpEarned, wordsIds) => {
@@ -79,7 +85,7 @@ const GamePage = () => {
             {/* VISTA A: MENÚ DE SELECCIÓN */}
             {gameState === 'SELECTION' && (
                 <div className="flex flex-col items-center justify-center h-full gap-8 p-4">
-                    <h1 className="text-4xl md:text-6xl font-black text-primary drop-shadow-pixel">
+                    <h1 className="text-4xl md:text-6xl text-center font-black text-primary drop-shadow-pixel">
                         MISSPELT SURVIVOR
                     </h1>
 
@@ -115,7 +121,7 @@ const GamePage = () => {
                                             />
                                         </div>
                                         <span className={`uppercase font-bold ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}>
-                                            {char.name}
+                                            {char.id === 'mage' ? 'Mago' : char.id === 'farmer' ? 'Campesino' : char.id === 'warlock' ? 'Brujo' : 'Erudito'}
                                         </span>
                                     </div>
                                 );
