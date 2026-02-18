@@ -1,5 +1,6 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import useAxios from "@/utils/useAxios";
 import AuthContext from '@/context/AuthContext';
 import DropdownLenguage from "@/components/DropdownLenguage";
 import ThemeButton from "@/components/ThemeButton";
@@ -13,6 +14,26 @@ function Navbar() {
     const mobileMenuRef = useRef(null);
     const mobileMenuButtonRef = useRef(null);
     const profileDropdownRef = useRef(null);
+
+    const api = useAxios();
+    const [userStats, setUserStats] = useState(null);
+
+    useEffect(() => {
+        const fetchUserStats = async () => {
+            try {
+                if (user && user.user_id) {
+                    const response = await api.get('/user-stats/me/');
+                    setUserStats(response.data);
+                }
+            } catch (error) {
+                console.error("Error fetching user stats in Navbar:", error);
+            }
+        };
+
+        if (user) {
+            fetchUserStats();
+        }
+    }, [user, api]);
 
     // Lógica original de rutas activas
     const isActive = (path) => {
@@ -145,8 +166,9 @@ function Navbar() {
                             {isProfileDropdownOpen && (
                                 <div className="absolute right-0 mt-2 w-48 bg-card pixel-border z-50 p-1 animate-in fade-in zoom-in-95 duration-200">
                                     <div className="px-4 py-2 border-b-2 border-muted mb-1">
-                                        {/* // TODO: Mostrar aqui el nivel real del jugador y agregar apodos por recompensa(si es muy dificil se hace por nivel)  */}
-                                        <p className="font-mono text-[10px] text-muted-foreground">Nivel 5 • Granjero</p>
+                                        <p className="font-mono text-[10px] text-muted-foreground">
+                                            Nivel {userStats?.level || 1} • Granjero
+                                        </p>
                                     </div>
 
                                     <Link

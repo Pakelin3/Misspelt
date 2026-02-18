@@ -7,6 +7,7 @@ import useAxios from '@/utils/useAxios';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Trophy, Clock, Star, Home, Play, RotateCcw, ArrowLeft } from 'lucide-react';
+import SpriteAnimator from '@/components/ui/SpriteAnimator';
 
 const GamePage = () => {
     const navigate = useNavigate();
@@ -17,8 +18,16 @@ const GamePage = () => {
     // 'SELECTION' | 'PLAYING' | 'RESULTS'
     const [gameState, setGameState] = useState('SELECTION');
     const [results, setResults] = useState(null);
+    const [selectedSkin, setSelectedSkin] = useState('mage'); // Default selection
 
-    // 1. Efecto para ocultar el Navbar de la App
+    // Personajes disponibles
+    const CHARACTERS = [
+        { id: 'mage', name: 'Mage', sprite: '/game/skins/mage.png' },
+        { id: 'farmer', name: 'Farmer', sprite: '/game/skins/mage.png' }, // Placeholder
+        { id: 'warlock', name: 'Warlock', sprite: '/game/skins/mage.png' }, // Placeholder
+        { id: 'erudit', name: 'Erudit', sprite: '/game/skins/mage.png' }, // Placeholder
+    ];
+
     useEffect(() => {
         const navbar = document.getElementById('main-navbar');
         if (navbar) navbar.style.display = 'none';
@@ -28,9 +37,7 @@ const GamePage = () => {
         };
     }, []);
 
-    // 2. Escuchar a Godot (Game Over y Exit)
     useEffect(() => {
-        // --- Game OVER ---
         window.onGodotGameOver = async (xpEarned, wordsIds) => {
             try {
                 const response = await api.post('/game/submit-results/', {
@@ -55,7 +62,6 @@ const GamePage = () => {
             }
         };
 
-        // --- Exit Request ---
         window.onGodotExit = () => {
             console.log("🚪 Godot solicitó salir del juego.");
             setGameState('SELECTION');
@@ -77,20 +83,51 @@ const GamePage = () => {
                         MISSPELT SURVIVOR
                     </h1>
 
-                    <Card className="p-6 border-4 border-primary bg-card w-full max-w-md">
-                        <div className="flex flex-col items-center gap-6">
-                            <div className="w-32 h-32 bg-muted rounded-lg border-4 border-dashed border-muted-foreground flex items-center justify-center">
-                                {/* Aquí iría el sprite del mago seleccionado */}
-                                <img src="/frontend/public/game/skins/mage.png" alt="Mago" className="pixel-art scale-150" />
-                            </div>
-                            <h2 className="text-2xl font-bold uppercase">The Word Wizard</h2>
-                            <Button
-                                onClick={() => setGameState('PLAYING')}
-                                className="w-full h-16 text-2xl pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-                            >
-                                <Play className="mr-2 fill-current" /> ¡JUGAR!
-                            </Button>
+                    <Card className=" border-primary bg-background p-6 pixel-border w-full max-w-4xl rounded-none">
+                        <h2 className="text-2xl font-bold uppercase text-center mb-6">Elige tu Héroe</h2>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                            {CHARACTERS.map((char) => {
+                                const isSelected = selectedSkin === char.id;
+                                return (
+                                    <div
+                                        key={char.id}
+                                        onClick={() => setSelectedSkin(char.id)}
+                                        className={`
+                                            cursor-pointer flex flex-col items-center p-4 border-4 transition-all duration-200
+                                            ${isSelected
+                                                ? 'border-primary bg-primary/10 scale-105 shadow-xl'
+                                                : 'border-muted bg-muted/50 hover:border-primary/50 hover:scale-105'
+                                            }
+                                        `}
+                                    >
+                                        <div className="mb-2 overflow-hidden">
+                                            <SpriteAnimator
+                                                src={char.sprite}
+                                                frameWidth={32}
+                                                frameHeight={32}
+                                                frameCount={4}
+                                                fps={isSelected ? 8 : 4}
+                                                scale={3}
+                                                style={{
+                                                    filter: isSelected ? 'none' : 'grayscale(100%) opacity(0.7)'
+                                                }}
+                                            />
+                                        </div>
+                                        <span className={`uppercase font-bold ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}>
+                                            {char.name}
+                                        </span>
+                                    </div>
+                                );
+                            })}
                         </div>
+
+                        <Button
+                            onClick={() => setGameState('PLAYING')}
+                            className="w-full h-16 text-2xl pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                        >
+                            <Play className="mr-2 fill-current" /> ¡JUGAR!
+                        </Button>
                     </Card>
                 </div>
             )}
@@ -99,7 +136,7 @@ const GamePage = () => {
             {gameState === 'PLAYING' && (
                 <div className="relative w-full h-full bg-black">
                     <iframe
-                        src="/game/index.html"
+                        src={`/game/index.html?skin=${selectedSkin}`}
                         className="w-full h-full border-none"
                         title="Godot Game"
                     />
