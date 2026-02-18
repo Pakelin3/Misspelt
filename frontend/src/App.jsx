@@ -16,6 +16,7 @@ import CheckEmailPage from '@/views/CheckEmailPage';
 import BadgesPage from '@/views/BadgesPage';
 import SidebarIA from '@/components/SidebarIA';
 import MainContent from '@/components/MainContent';
+import GamePage from './views/GamePage';
 import { StyleSheetManager } from 'styled-components';
 import isPropValid from '@emotion/is-prop-valid';
 // import "./styles/Globals.css";
@@ -57,7 +58,7 @@ function App() {
                     <MainContent isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
                   </div>
                 } />
-                <Route path="/play" element={<div>Jugar Page</div>} />
+                <Route path="/play" element={<GamePage />} />
                 <Route path="/badges" element={<BadgesPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
               </Route>

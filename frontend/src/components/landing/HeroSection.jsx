@@ -1,27 +1,18 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { StarIcon, SwordIcon } from "@/components/PixelIcons";
-
-// 1. IMPORTAR LA IMAGEN
-// Asegúrate de que la ruta sea correcta. Si usas el alias '@', esto apunta a 'src'
 import heroBg from "@/img/background.png";
 
 export function HeroSection() {
   return (
     <section className="relative overflow-hidden pt-24 pb-12 md:pt-32 md:pb-20 bg-background">
 
-      {/* 2. FONDO DE IMAGEN (Adaptado al estilo original) */}
       <div className="absolute inset-0 z-0">
         <img
           src={heroBg}
           alt="Pixel Art Landscape"
-          // Clases clave:
-          // w-full h-full object-cover -> Para que cubra todo el fondo sin deformarse
-          // pixel-rendering -> Para que no se vea borrosa sino pixelada
-          // opacity-30 -> Para que sea sutil y deje leer el texto
           className="w-full h-full object-cover pixel-rendering opacity-30"
         />
-        {/* Degradado para suavizar la transición hacia el color de fondo (Igual que en Next.js) */}
         <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
       </div>
 
@@ -50,7 +41,7 @@ export function HeroSection() {
         {/* Botones de Acción */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up stagger-3">
           <Link
-            to="/login"
+            to="/play"
             className="flex items-center gap-3 bg-primary text-primary-foreground px-8 py-4 font-mono text-sm pixel-border-primary pixel-btn no-underline hover:text-primary-foreground"
           >
             <SwordIcon className="w-5 h-5" />
