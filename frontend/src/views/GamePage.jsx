@@ -12,7 +12,7 @@ import SpriteAnimator from '@/components/ui/SpriteAnimator';
 const GamePage = () => {
     const navigate = useNavigate();
     const api = useAxios();
-    const { user, fetchUserData } = useContext(AuthContext);
+    const { fetchUserData } = useContext(AuthContext);
 
 
     // --- MÁQUINA DE ESTADOS ---

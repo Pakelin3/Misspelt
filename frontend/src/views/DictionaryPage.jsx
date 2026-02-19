@@ -16,8 +16,6 @@ function DictionaryPage() {
     // Filtros y Búsqueda
     const [selectedFilter, setSelectedFilter] = useState("all");
     const [searchTerm, setSearchTerm] = useState("");
-
-    // Este estado solo cambiará cuando el usuario deje de escribir
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
     // Modal
@@ -30,11 +28,11 @@ function DictionaryPage() {
         selectedWordRef.current = selectedWord;
     }, [selectedWord]);
 
-    // --- EFECTO DEBOUNCE (La Magia) ---
+    // --- EFECTO DEBOUNCE ---
     useEffect(() => {
         const timerId = setTimeout(() => {
             setDebouncedSearchTerm(searchTerm);
-        }, 500); // 500ms de espera (medio segundo)
+        }, 500);
 
         return () => {
             clearTimeout(timerId);
@@ -47,7 +45,6 @@ function DictionaryPage() {
         setError(null);
         try {
             const typeParam = currentSelectedFilter !== "all" ? `&word_type=${currentSelectedFilter.toUpperCase().replace(' ', '_')}` : '';
-            // Usamos el término ya procesado (o el que pasemos por argumento)
             const searchParam = currentSearchTerm ? `&search=${currentSearchTerm}` : '';
             const response = await api.get(`/words/?page=${page}&limit=${wordsPerPage}${typeParam}${searchParam}`);
             const fetchedWords = response.data.results || [];
@@ -69,7 +66,6 @@ function DictionaryPage() {
     }, [wordsPerPage]);
 
     // --- EFECTO DE BÚSQUEDA ---
-    // OJO: Ahora dependemos de 'debouncedSearchTerm', NO de 'searchTerm'
     useEffect(() => {
         setCurrentPage(1);
         fetchWords(1, debouncedSearchTerm, selectedFilter, true);
@@ -84,85 +80,12 @@ function DictionaryPage() {
 
     const totalPages = Math.ceil(totalWordsCount / wordsPerPage);
 
-    // Helpers UI
-    const getSpanishWordType = (type) => {
-        switch (type) {
-            case 'PHRASAL_VERB': return 'Phrasal Verb';
-            case 'SLANG': return 'Slang';
-            default: return 'Palabra';
-        }
-    };
-
     const openModal = (word) => {
         setSelectedWord(word);
         setIsModalOpen(true);
     };
 
-    // --- COMPONENTE MODAL INTERNO ---
-    const WordDetailModal = () => {
-        if (!selectedWord) return null;
 
-        return (
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4" onClick={() => setIsModalOpen(false)}>
-                <div
-                    className="relative bg-card pixel-border p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200"
-                    onClick={e => e.stopPropagation()}
-                >
-                    <button
-                        onClick={() => setIsModalOpen(false)}
-                        className="absolute top-4 right-4 text-muted-foreground hover:text-destructive transition-colors"
-                    >
-                        <X className="w-8 h-8" />
-                    </button>
-
-                    <div className="flex flex-col gap-2 mb-6 border-b-4 border-muted pb-4">
-                        <div className="flex items-center gap-3">
-                            <span className={`px-3 py-1 text-[10px] font-mono text-primary-foreground bg-primary pixel-border-primary rounded-sm uppercase`}>
-                                {getSpanishWordType(selectedWord.word_type)}
-                            </span>
-                        </div>
-                        <h2 className="text-3xl md:text-4xl font-mono text-foreground">{selectedWord.text}</h2>
-                    </div>
-
-                    <div className="space-y-6 font-sans text-xl">
-                        <div className="bg-background p-4 border-2 border-dashed border-muted rounded-sm">
-                            <h3 className="font-mono text-xs text-accent mb-2 uppercase">Definición</h3>
-                            <p className="text-foreground leading-relaxed">
-                                {selectedWord.description}
-                            </p>
-                        </div>
-
-                        <div>
-                            <h3 className="font-mono text-xs text-accent mb-2 uppercase">Ejemplos de Uso</h3>
-                            <div className="space-y-2">
-                                {selectedWord.examples && selectedWord.examples.length > 0 ? (
-                                    selectedWord.examples.map((example, index) => (
-                                        <div key={index} className="flex gap-2 text-muted-foreground italic">
-                                            <span className="not-italic">example {index + 1}:</span>
-                                            <p>"{example}"</p>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p className="text-muted-foreground italic">No hay ejemplos registrados.</p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-4 border-t-4 border-muted">
-                        <button className="flex-1 flex items-center justify-center gap-2 bg-muted text-muted-foreground py-3 font-mono text-xs cursor-not-allowed pixel-border opacity-70">
-                            <Volume2 className="w-4 h-4" />
-                            PRONUNCIACIÓN
-                        </button>
-                        <button className="flex-1 flex items-center justify-center gap-2 bg-accent text-accent-foreground py-3 font-mono text-xs pixel-btn pixel-border-accent hover:brightness-110">
-                            {/* Nota: Asegúrate de importar BrainIcon si lo usas aquí, o usa otro icono */}
-                            CONSULTAR A LA I.A.
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    };
 
     return (
         <div className="min-h-screen bg-background font-sans flex flex-col">
@@ -309,9 +232,140 @@ function DictionaryPage() {
                 )}
             </div>
 
-            {isModalOpen && <WordDetailModal />}
+            {isModalOpen && <WordDetailModal word={selectedWord} onClose={() => setIsModalOpen(false)} />}
         </div>
     );
 }
 
 export default DictionaryPage;
+
+
+const WordDetailModal = ({ word, onClose }) => {
+
+    const [voices, setVoices] = useState([]);
+
+    useEffect(() => {
+        const updateVoices = () => {
+            const availableVoices = window.speechSynthesis.getVoices();
+            setVoices(availableVoices);
+        };
+
+        updateVoices();
+
+        window.speechSynthesis.onvoiceschanged = updateVoices;
+
+        return () => {
+            window.speechSynthesis.onvoiceschanged = null;
+        };
+    }, []);
+
+    if (!word) return null;
+
+    const playPronunciation = async (text) => {
+        console.log("🔊 Solicitando audio a IA (Puter.js):", text);
+
+        try {
+            if (!window.puter) {
+                throw new Error("Puter.js no está disponible globalmente.");
+            }
+            const audio = await window.puter.ai.txt2speech(text, {
+                provider: "openai",
+                model: "gpt-4o-mini-tts",
+                voice: "nova",
+                response_format: "mp3",
+                instructions: "Speak very clearly, articulating each syllable. This is for an English learning dictionary for hispanophones."
+            });
+
+            audio.onplay = () => console.log("▶️ Reproduciendo IA de OpenAI...");
+            audio.onended = () => console.log("⏹️ Audio finalizado.");
+
+            audio.play();
+
+        } catch (error) {
+            console.error("❌ Error en la IA TTS, activando Plan B (Nativo):", error);
+
+            // ==========================================
+            // FALLBACK: API Nativa si Puter falla
+            // ==========================================
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.85;
+
+                const voices = window.speechSynthesis.getVoices();
+                const englishVoice = voices.find(v => v.lang === 'en-US') || voices.find(v => v.lang.includes('en'));
+                if (englishVoice) utterance.voice = englishVoice;
+
+                window.currentUtterance = utterance; // Fix Garbage Collection
+                utterance.onend = () => delete window.currentUtterance;
+
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+    };
+    return (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4" onClick={onClose}>
+            <div
+                className="relative bg-card pixel-border p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200"
+                onClick={e => e.stopPropagation()}
+            >
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 text-muted-foreground hover:text-destructive transition-colors"
+                >
+                    <X className="w-8 h-8" />
+                </button>
+
+                <div className="flex flex-col gap-2 mb-6 border-b-4 border-muted pb-4">
+                    <div className="flex items-center gap-3">
+                        <span className={`px-3 py-1 text-[10px] font-mono text-primary-foreground bg-primary pixel-border-primary rounded-sm uppercase`}>
+                            {word.word_type === 'PHRASAL_VERB' ? 'Phrasal Verb' : word.word_type === 'SLANG' ? 'Slang' : 'Palabra'}
+                        </span>
+                    </div>
+                    <h2 className="text-3xl md:text-4xl font-mono text-foreground">{word.text}</h2>
+                </div>
+
+                <div className="space-y-6 font-sans text-xl">
+                    <div className="bg-background p-4 border-2 border-dashed border-muted rounded-sm">
+                        <h3 className="font-mono text-xs text-accent mb-2 uppercase">Definición</h3>
+                        <p className="text-foreground leading-relaxed">
+                            {word.description}
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 className="font-mono text-xs text-accent mb-2 uppercase">Ejemplos de Uso</h3>
+                        <div className="space-y-2">
+                            {word.examples && word.examples.length > 0 ? (
+                                word.examples.map((example, index) => (
+                                    <div key={index} className="flex gap-2 text-muted-foreground italic">
+                                        <span className="not-italic">example {index + 1}:</span>
+                                        <p>"{example}"</p>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-muted-foreground italic">No hay ejemplos registrados.</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-4 border-t-4 border-muted">
+                    <button
+                        onClick={() => playPronunciation(word.text)}
+                        className="flex items-center gap-2 p-2 bg-muted/50 hover:bg-primary hover:text-primary-foreground border-2 border-foreground transition-colors pixel-btn"
+                        title="Escuchar pronunciación">
+                        <Volume2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                        PRONUNCIACIÓN
+                    </button>
+
+                    <button className="flex-1 flex items-center justify-center gap-2 bg-accent text-accent-foreground py-3 font-mono text-xs pixel-btn pixel-border-accent hover:brightness-110">
+                        {/* Nota: Asegúrate de importar BrainIcon si lo usas aquí, o usa otro icono */}
+                        CONSULTAR A LA I.A.
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
