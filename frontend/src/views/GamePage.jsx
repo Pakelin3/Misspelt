@@ -49,7 +49,7 @@ const GamePage = () => {
         const prepareGame = async () => {
             try {
                 const response = await api.get('/game/quiz-words/');
-                const wordsArray = response.data.map(w => w.english_word);
+                const wordsArray = response.data.map(w => w.text);
                 setGameWords(wordsArray);
             } catch (error) {
                 console.error("Error cargando palabras:", error);
@@ -160,7 +160,7 @@ const GamePage = () => {
             {gameState === 'PLAYING' && (
                 <div className="relative w-full h-full bg-black">
                     <iframe
-                        src={`/game/index.html?skin=${selectedSkin}`}
+                        src={`/game/index.html?skin=${selectedSkin}&words=${gameWords.join(',')}`}
                         className="w-full h-full border-none"
                         title="Godot Game"
                     />
