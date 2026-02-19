@@ -14,11 +14,13 @@ const GamePage = () => {
     const api = useAxios();
     const { user, fetchUserData } = useContext(AuthContext);
 
+
     // --- MÁQUINA DE ESTADOS ---
     // 'SELECTION' | 'PLAYING' | 'RESULTS'
     const [gameState, setGameState] = useState('SELECTION');
     const [results, setResults] = useState(null);
     const [selectedSkin, setSelectedSkin] = useState('mage'); // Default selection
+    const [gameWords, setGameWords] = useState([]);
 
     // Personajes disponibles
     const CHARACTERS = [
@@ -34,14 +36,30 @@ const GamePage = () => {
             if (gameState === 'PLAYING') {
                 navbar.style.display = 'none';
             } else {
-                navbar.style.display = 'flex'; // Restore visibility for SELECTION and RESULTS
+                navbar.style.display = ''; // Remove inline style so CSS classes take effect
             }
         }
 
         return () => {
-            if (navbar) navbar.style.display = 'flex'; // Ensure visible on unmount
+            if (navbar) navbar.style.display = ''; // Ensure visible on unmount
         };
     }, [gameState]);
+
+    useEffect(() => {
+        const prepareGame = async () => {
+            try {
+                const response = await api.get('/game/quiz-words/');
+                const wordsArray = response.data.map(w => w.english_word);
+                setGameWords(wordsArray);
+            } catch (error) {
+                console.error("Error cargando palabras:", error);
+                setGameWords(["ERROR", "CHECK", "API"]);
+            }
+        };
+        prepareGame();
+    }, [api]);
+
+
 
     useEffect(() => {
         window.onGodotGameOver = async (xpEarned, wordsIds) => {
