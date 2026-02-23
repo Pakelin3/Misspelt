@@ -3,6 +3,7 @@ import { Search, Volume2, ChevronLeft, ChevronRight, X, BookOpen, Lock } from 'l
 import useAxios from "@/utils/useAxios";
 import Navbar from "@/components/Navbar";
 import { BookIcon } from '@/components/PixelIcons';
+import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 
 function DictionaryPage() {
     // Estados
@@ -262,30 +263,48 @@ const WordDetailModal = ({ word, onClose }) => {
     if (!word) return null;
 
     const playPronunciation = async (text) => {
-        console.log("🔊 Solicitando audio a IA (Puter.js):", text);
+        console.log("🔊 Solicitando audio a IA (ElevenLabs SDK):", text);
 
         try {
-            if (!window.puter) {
-                throw new Error("Puter.js no está disponible globalmente.");
+            const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
+            if (!apiKey) {
+                throw new Error("API Key no encontrada");
             }
-            const audio = await window.puter.ai.txt2speech(text, {
-                provider: "openai",
-                model: "gpt-4o-mini-tts",
-                voice: "nova",
-                response_format: "mp3",
-                instructions: "Speak very clearly, articulating each syllable. This is for an English learning dictionary for hispanophones."
+
+            const elevenlabs = new ElevenLabsClient({
+                apiKey: apiKey
             });
 
-            audio.onplay = () => console.log("▶️ Reproduciendo IA de OpenAI...");
-            audio.onended = () => console.log("⏹️ Audio finalizado.");
+            // ID de voz por defecto (Rachel), puedes cambiarlo en ElevenLabs
+            const voiceId = "21m00Tcm4TlvDq8ikWAM";
 
-            audio.play();
+            const audioStream = await elevenlabs.textToSpeech.convert(voiceId, {
+                text: text,
+                model_id: "eleven_multilingual_v2", // Actualizado a v2 según el doc
+                output_format: "mp3_44100_128",
+            });
+
+            const chunks = [];
+            for await (const chunk of audioStream) {
+                chunks.push(chunk);
+            }
+            const audioBlob = new Blob(chunks, { type: 'audio/mpeg' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const audio = new Audio(audioUrl);
+            audio.playbackRate = 0.55;
+            audio.onplay = () => console.log("▶️ Reproduciendo IA de ElevenLabs SDK...");
+            audio.onended = () => {
+                console.log("⏹️ Audio finalizado.");
+                URL.revokeObjectURL(audioUrl);
+            };
+
+            await audio.play();
 
         } catch (error) {
-            console.error("❌ Error en la IA TTS, activando Plan B (Nativo):", error);
+            console.error("❌ Error en ElevenLabs TTS, activando Plan B (Nativo):", error);
 
             // ==========================================
-            // FALLBACK: API Nativa si Puter falla
+            // FALLBACK: API Nativa si ElevenLabs falla
             // ==========================================
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
@@ -293,8 +312,8 @@ const WordDetailModal = ({ word, onClose }) => {
                 utterance.lang = 'en-US';
                 utterance.rate = 0.85;
 
-                const voices = window.speechSynthesis.getVoices();
-                const englishVoice = voices.find(v => v.lang === 'en-US') || voices.find(v => v.lang.includes('en'));
+                const availableVoices = voices.length > 0 ? voices : window.speechSynthesis.getVoices();
+                const englishVoice = availableVoices.find(v => v.lang === 'en-US') || availableVoices.find(v => v.lang.includes('en'));
                 if (englishVoice) utterance.voice = englishVoice;
 
                 window.currentUtterance = utterance; // Fix Garbage Collection

@@ -1,13 +1,10 @@
-/* 1. Fuentes */
 @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap");
 
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
 
-/* 2. DEFINICIÓN DE VARIABLES (Esto es lo que faltaba para los Iconos) */
 @layer base {
   :root {
-    /* Formato: H S L (Sin 'hsl()', solo los números) */
     --background: 36 55% 90%;
     --foreground: 20 36% 18%;
 
@@ -43,7 +40,6 @@
     scroll-behavior: smooth;
   }
 
-  /* Configuración global del cuerpo */
   body {
     @apply bg-background text-foreground font-sans text-xl;
   }
@@ -58,9 +54,7 @@
   }
 }
 
-/* 3. CONEXIÓN CON TAILWIND */
 @theme {
-  /* Mapeamos Tailwind a las variables de arriba */
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
 
@@ -94,7 +88,6 @@
   --font-mono: "Press Start 2P", monospace;
   --font-sans: "VT323", monospace;
 
-  /* Compatibilidad extra */
   --color-sidebar: hsl(var(--card));
   --color-sidebar-foreground: hsl(var(--foreground));
   --color-sidebar-primary: hsl(var(--primary));
@@ -105,7 +98,6 @@
   --color-sidebar-ring: hsl(var(--ring));
 }
 
-/* 4. CLASES DE UTILIDAD (Pixel Art) */
 .pixel-rendering {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
@@ -142,7 +134,6 @@
   box-shadow: none;
 }
 
-/* Animaciones */
 @keyframes float {
   0%,
   100% {

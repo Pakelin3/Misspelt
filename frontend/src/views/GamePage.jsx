@@ -25,9 +25,9 @@ const GamePage = () => {
     // Personajes disponibles
     const CHARACTERS = [
         { id: 'mage', name: 'Mage', sprite: '/game/skins/mage.png' },
-        { id: 'farmer', name: 'Farmer', sprite: '/game/skins/mage.png' }, // Placeholder
-        { id: 'warlock', name: 'Warlock', sprite: '/game/skins/mage.png' }, // Placeholder
-        { id: 'erudit', name: 'Erudit', sprite: '/game/skins/mage.png' }, // Placeholder
+        { id: 'farmer', name: 'Farmer', sprite: '/game/skins/mage.png' },
+        { id: 'warlock', name: 'Warlock', sprite: '/game/skins/warlock.png' },
+        { id: 'erudit', name: 'Erudit', sprite: '/game/skins/mage.png' },
     ];
 
     useEffect(() => {
@@ -36,12 +36,12 @@ const GamePage = () => {
             if (gameState === 'PLAYING') {
                 navbar.style.display = 'none';
             } else {
-                navbar.style.display = ''; // Remove inline style so CSS classes take effect
+                navbar.style.display = '';
             }
         }
 
         return () => {
-            if (navbar) navbar.style.display = ''; // Ensure visible on unmount
+            if (navbar) navbar.style.display = '';
         };
     }, [gameState]);
 
@@ -67,9 +67,9 @@ const GamePage = () => {
                 const response = await api.post('/game/submit-results/', {
                     xp_earned: xpEarned,
                     seen_word_ids: wordsIds,
-                    score: xpEarned * 10, // Estimación temporal si Godot no envía el score
-                    correct_answers: Math.floor(xpEarned / 10), // Estimación temporal
-                    total_questions: 10 // Estimación temporal
+                    score: xpEarned * 10,
+                    correct_answers: Math.floor(xpEarned / 10),
+                    total_questions: 10
                 });
 
                 if (fetchUserData) await fetchUserData();
