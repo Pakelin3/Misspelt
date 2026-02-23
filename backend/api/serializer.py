@@ -27,7 +27,7 @@ class myTokenObtainPairSerializer(TokenObtainPairSerializer):
         'user_not_found': 'El usuario no existe.',
         'invalid_password': 'La contraseña es incorrecta.',
     }
-    def get_token(self, user): # <-- Cambia 'cls' por 'self'
+    def get_token(self, user):
         token = super().get_token(user)
         token['full_name'] = user.profile.full_name if hasattr(user, 'profile') else None
         token['username'] = user.username
@@ -36,7 +36,6 @@ class myTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['verified'] = user.profile.verified if hasattr(user, 'profile') else False
         token['is_staff'] = user.is_staff
 
-        # Cambia cls.context.get('request') por self.context.get('request')
         request = self.context.get('request')
 
         profile_image_url = None
@@ -45,7 +44,6 @@ class myTokenObtainPairSerializer(TokenObtainPairSerializer):
                 profile_image_url = request.build_absolute_uri(user.profile.image.url)
         token['profile_image_url'] = profile_image_url
 
-        # serializer.py (dentro de myTokenObtainPairSerializer.get_token)
         current_avatar_url = None
         if hasattr(user, 'profile') and user.profile.current_avatar is not None:
             if request:
@@ -62,7 +60,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True, required=True)
     email = serializers.EmailField(
         max_length=254,
-    ) # Corrected: 'unique' and its error_messages are now handled via Meta.extra_kwargs or model definition.
+    )
 
     class Meta:
         model = User
@@ -87,7 +85,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
 
-        # Usa get_or_create para manejar tokens existentes o crear uno nuevo
         token_obj, created = EmailVerificationToken.objects.get_or_create(
             user=user,
             defaults={'expires_at': timezone.now() + timedelta(hours=24)}
@@ -107,22 +104,38 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 # * --------------------------------------------------------------------------------------------------
-# ! --- MODELO WORD ---
+# ! --- MODELO WORD (ACTUALIZADO) ---
 # * --------------------------------------------------------------------------------------------------
 class WordSerializer(serializers.ModelSerializer):
     is_unlocked = serializers.SerializerMethodField()
+    substitutes = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='text'
+    )
 
     class Meta:
         model = Word
-        fields = ['id', 'text', 'translation', 'description', 'word_type', 'examples', 'difficulty_level', 'tags', 'is_unlocked']
+        fields = [
+            'id', 
+            'text', 
+            'translation', 
+            'definition', 
+            'word_type', 
+            'examples', 
+            'difficulty_level', 
+            'tags', 
+            'substitutes',
+            'is_unlocked'
+        ]
 
     def get_is_unlocked(self, obj):
         request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            # Verificamos si esta palabra está en la lista de desbloqueadas del usuario
-            # Nota: Para optimizar esto en producción usaremos 'prefetch_related', pero por ahora esto funciona lógica pura.
-            return request.user.stats.unlocked_words.filter(id=obj.id).exists()
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            if hasattr(request.user, 'stats'):
+                return request.user.stats.unlocked_words.filter(id=obj.id).exists()
         return False
+
 # * --------------------------------------------------------------------------------------------------
 # ! --- MODELO BADGE ---
 # * --------------------------------------------------------------------------------------------------
@@ -134,7 +147,7 @@ class BadgeSerializer(serializers.ModelSerializer):
 # * --------------------------------------------------------------------------------------------------
 # ! --- MODELO AVATAR ---
 # * --------------------------------------------------------------------------------------------------
-class AvatarSerializer(serializers.ModelSerializer): #
+class AvatarSerializer(serializers.ModelSerializer):
     class Meta:
         model = Avatar
         fields = '__all__'
@@ -149,6 +162,7 @@ class UserStatsSerializer(serializers.ModelSerializer):
     xp_progress_in_current_level = serializers.SerializerMethodField()
     unlocked_badges = BadgeSerializer(many=True, read_only=True, source='badges') 
     unlocked_avatars = AvatarSerializer(many=True, read_only=True)  
+    
     class Meta:
         model = UserStats
         fields = '__all__'
@@ -172,6 +186,4 @@ class AdminUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'is_staff', 'is_superuser', 'date_joined', 'last_login', 'is_online']
-        # 'is_staff' y 'is_superuser' deben poder ser editables si un admin va a cambiar roles.
-        # Otros campos como 'date_joined' y 'last_login' son generalmente de solo lectura.
-        read_only_fields = ['date_joined', 'last_login'] 
+        read_only_fields = ['date_joined', 'last_login']

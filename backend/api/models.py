@@ -108,18 +108,27 @@ class Word(models.Model):
     class WordType(models.TextChoices):
         PHRASAL_VERB = 'PHRASAL_VERB', 'Phrasal Verb'
         SLANG = 'SLANG', 'Slang'
+        IDIOM = 'IDIOM', 'Idiom'
+        VOCABULARY = 'VOCABULARY', 'Vocabulary'
     text = models.CharField(max_length=200, unique=True, help_text="La palabra o frase en inglés (e.g. 'Give up')")
-    translation = models.CharField(max_length=200, blank=True, null=True, help_text="Traducción directa (e.g. 'Rendirse')")
-    description = models.TextField(help_text="Definición en inglés o explicación de uso")
+    translation = models.CharField(max_length=200, blank=True, null=True, help_text="Traducción directa al español (e.g. 'Rendirse')")
+    definition = models.TextField(help_text="Explicación en inglés (e.g. 'To stop trying to do something')")
     word_type = models.CharField(max_length=50, choices=WordType.choices, default=WordType.SLANG)
-    examples = models.JSONField(default=list, help_text="Lista de objetos con claves 'en' (inglés) y 'es' (español)")
-    substitutes = models.ManyToManyField('self', blank=True, symmetrical=True, help_text="Palabras con significado similar aceptadas como respuesta")
-    difficulty_level = models.IntegerField(default=1, help_text="1: Fácil, 10: Difícil")
-    tags = models.CharField(max_length=200, blank=True, help_text="Etiquetas separadas por coma para agrupar temas")
+    examples = models.JSONField(default=list, help_text="Lista de diccionarios. Claves obligatorias: 'en' y 'es'.")
+    substitutes = models.ManyToManyField('self', blank=True, symmetrical=True, help_text="Sinónimos aceptados en los quizzes de escritura.")
+    difficulty_level = models.IntegerField(default=1, help_text="1: Principiante, 10: Experto (Usado para filtrar qué palabras salen según el nivel del usuario)")
+    tags = models.CharField(max_length=200, blank=True, help_text="Etiquetas separadas por comas. Usadas para encontrar distractores del mismo tema.")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.text
+
+    # Helper opcional para obtener un ejemplo aleatorio limpio
+    def get_random_example(self):
+        import random
+        if self.examples and len(self.examples) > 0:
+            return random.choice(self.examples)
+        return None
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- MODELO USERSTATS ---
