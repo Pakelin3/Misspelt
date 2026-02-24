@@ -106,7 +106,6 @@ function DictionaryPage() {
 
                 <div className="flex flex-col md:flex-row gap-4 mb-8 items-center justify-between bg-card/50 p-4 pixel-border">
 
-                    {/* INPUT DE BÚSQUEDA */}
                     <div className="relative w-full md:max-w-md group">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
                         <input
@@ -114,10 +113,8 @@ function DictionaryPage() {
                             placeholder="Buscar palabra..."
                             className="w-full pl-10 pr-4 py-3 bg-background border-2 border-muted focus:border-primary focus:outline-none font-sans text-xl placeholder:text-muted-foreground transition-colors"
                             value={searchTerm}
-                            // Aquí actualizamos el estado inmediato (visual)
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
-                        {/* Indicador visual de carga mientras escribes (opcional) */}
                         {searchTerm !== debouncedSearchTerm && (
                             <div className="absolute right-3 top-1/2 -translate-y-1/2">
                                 <span className="block w-2 h-2 bg-primary rounded-full animate-ping"></span>
@@ -187,7 +184,7 @@ function DictionaryPage() {
                                         {word.text}
                                     </h3>
                                     <p className={`text-lg text-muted-foreground font-sans line-clamp-2 leading-tight mb-4 ${!word.is_unlocked ? 'blur-[3px] select-none' : ''}`}>
-                                        "{word.description}"
+                                        "{word.definition}"
                                     </p>
 
                                     <div className="flex items-center justify-between mt-auto pt-4 border-t-2 border-dashed border-muted">
@@ -336,36 +333,38 @@ const WordDetailModal = ({ word, onClose }) => {
                     <X className="w-8 h-8" />
                 </button>
 
-                <div className="flex flex-col gap-2 mb-6 border-b-4 border-muted pb-4">
+                <div className="flex items-center justify-between gap-2 mb-6 border-b-4 border-muted pb-4">
+                    <h2 className="text-3xl md:text-4xl font-mono text-foreground">{word.text}</h2>
                     <div className="flex items-center gap-3">
-                        <span className={`px-3 py-1 text-[10px] font-mono text-primary-foreground bg-primary pixel-border-primary rounded-sm uppercase`}>
+                        <span className={`px-3 py-1 text-[10px] mr-8 font-mono text-primary-foreground bg-primary pixel-border-primary rounded-sm uppercase`}>
                             {word.word_type === 'PHRASAL_VERB' ? 'Phrasal Verb' : word.word_type === 'SLANG' ? 'Slang' : 'Palabra'}
                         </span>
                     </div>
-                    <h2 className="text-3xl md:text-4xl font-mono text-foreground">{word.text}</h2>
                 </div>
 
                 <div className="space-y-6 font-sans text-xl">
                     <div className="bg-background p-4 border-2 border-dashed border-muted rounded-sm">
                         <h3 className="font-mono text-xs text-accent mb-2 uppercase">Definición</h3>
                         <p className="text-foreground leading-relaxed">
-                            {word.description}
+                            {word.definition}
                         </p>
                     </div>
 
                     <div>
                         <h3 className="font-mono text-xs text-accent mb-2 uppercase">Ejemplos de Uso</h3>
                         <div className="space-y-2">
-                            {word.examples && word.examples.length > 0 ? (
-                                word.examples.map((example, index) => (
-                                    <div key={index} className="flex gap-2 text-muted-foreground italic">
-                                        <span className="not-italic">example {index + 1}:</span>
-                                        <p>"{example}"</p>
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="text-muted-foreground italic">No hay ejemplos registrados.</p>
-                            )}
+                            {word.examples && word.examples.map((example, index) => (
+                                <div key={index} className="mb-2 text-sm">
+                                    {typeof example === 'object' ? (
+                                        <>
+                                            <p className="text-gray-800 font-medium">🇬🇧 {example.en}</p>
+                                            <p className="text-gray-500 italic">🇪🇸 {example.es}</p>
+                                        </>
+                                    ) : (
+                                        <p className="text-gray-600">{example}</p>
+                                    )}
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>

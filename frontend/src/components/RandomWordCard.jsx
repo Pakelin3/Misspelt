@@ -3,13 +3,13 @@ import axios from 'axios';
 // eslint-disable-next-line no-unused-vars
 import { useSpring, animated } from 'react-spring';
 import { ScaleLoader } from 'react-spinners';
-import { useTheme } from '@/context/ThemeContext'; 
+import { useTheme } from '@/context/ThemeContext';
 
 const baseURL = import.meta.env.VITE_BACKEND_URL_API;
 const MINIMUM_LOADING_TIME = 2000;
 
 function RandomWordCard() {
-    const { theme } = useTheme(); 
+    const { theme } = useTheme();
     const [loading, setLoading] = useState(true);
     const [initialLoad, setInitialLoad] = useState(true);
     const [error, setError] = useState(null);
@@ -105,12 +105,12 @@ function RandomWordCard() {
                 <div className="flex flex-col items-center justify-center">
                     <ScaleLoader
                         className="min-w-[398px] justify-center "
-                        color={theme === 'light' ? 'var(--color-bg-tertiary' : 'var(--color-bg-secondary)'} 
+                        color={theme === 'light' ? 'var(--color-bg-tertiary' : 'var(--color-bg-secondary)'}
                         loading={true}
                         size={50}
                         aria-label="Cargando palabra"
                     />
-                    <p className="text-[var(--color-text-secondary)] mt-3 text-lg">Cargando palabra...</p> 
+                    <p className="text-[var(--color-text-secondary)] mt-3 text-lg">Cargando palabra...</p>
                 </div>
             </div>
         );
@@ -139,7 +139,7 @@ function RandomWordCard() {
         return (
             <animated.div
                 style={props}
-                
+
                 className="block max-w-md bg-[var(--color-bg-card)] rounded-lg min-h-[180px]"
             >
                 <div className='flex justify-between items-start min-w-full mb-4'>
@@ -159,7 +159,7 @@ function RandomWordCard() {
                     </span>
                 </div>
                 <p className="font-normal text-[var(--color-text-main)]">
-                    {displayedWord.description}
+                    {displayedWord.definition}
                     {randomExample && (
                         <span className="block mt-10 italic text-[var(--color-text-secondary)]">
                             Ejemplo: "{randomExample}"
