@@ -7,7 +7,7 @@ import SentenceBuilder from './SentenceBuilder';
 import MultiChoice from './MultiChoice';
 import ListeningChallenge from './ListeningChallenge';
 
-const QuizManager = ({ words = [], onComplete, onClose }) => {
+const QuizManager = ({ words = [], allWords = [], onComplete, onClose }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [score, setScore] = useState(0);
     const [lives, setLives] = useState(3);
@@ -80,9 +80,11 @@ const QuizManager = ({ words = [], onComplete, onClose }) => {
                 return <ListeningChallenge {...commonProps} />;
 
             case 'multi':
-            default:
-                const distractors = words.filter(w => w.id !== currentWord.id);
+            default: {
+                const distractorSource = allWords && allWords.length > 0 ? allWords : words;
+                const distractors = distractorSource.filter(w => w.id !== currentWord.id);
                 return <MultiChoice {...commonProps} distractors={distractors} />;
+            }
         }
     };
 

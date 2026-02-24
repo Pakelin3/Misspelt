@@ -4,24 +4,21 @@ import { Volume2, Mic } from 'lucide-react';
 const ListeningChallenge = ({ word, onSuccess, onError }) => {
     const [inputValue, setInputValue] = useState("");
     const [isPlaying, setIsPlaying] = useState(false);
-    const [feedback, setFeedback] = useState(null); // null, 'correct', 'wrong'
+    const [feedback, setFeedback] = useState(null);
     const inputRef = useRef(null);
 
     useEffect(() => {
         setInputValue("");
         setFeedback(null);
-        // Enfocar el input automáticamente al cargar
         setTimeout(() => inputRef.current?.focus(), 100);
-        // Reproducir audio automáticamente (opcional, algunos navegadores lo bloquean sin interacción)
-        // playAudio(); 
     }, [word]);
 
     const playAudio = () => {
         if ('speechSynthesis' in window) {
             setIsPlaying(true);
             const utterance = new SpeechSynthesisUtterance(word.text);
-            utterance.lang = 'en-US'; // Aseguramos acento americano
-            utterance.rate = 0.9; // Un poquito más lento para que se entienda bien
+            utterance.lang = 'en-US';
+            utterance.rate = 0.9;
 
             utterance.onend = () => setIsPlaying(false);
             window.speechSynthesis.speak(utterance);
@@ -37,17 +34,15 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
         const cleanInput = inputValue.trim().toLowerCase();
         const cleanTarget = word.text.trim().toLowerCase();
 
-        // Verificamos si coincide con la palabra o con alguno de sus sinónimos aceptados
         const isSynonym = word.substitutes && word.substitutes.some(s => s.toLowerCase() === cleanInput);
 
         if (cleanInput === cleanTarget || isSynonym) {
             setFeedback('correct');
-            // Sonido de éxito sutil (opcional)
             setTimeout(onSuccess, 1000);
         } else {
             setFeedback('wrong');
             setTimeout(() => {
-                setFeedback(null); // Permitir reintentar sin castigo inmediato, o llamar onError()
+                setFeedback(null);
                 onError();
             }, 1000);
         }

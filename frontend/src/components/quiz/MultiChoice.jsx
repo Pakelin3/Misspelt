@@ -35,10 +35,9 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
     }, [word, distractors]);
 
     const handleSelect = (option) => {
-        if (isChecked) return; // Bloquear si ya contestó
+        if (isChecked) return;
         setSelectedOption(option);
 
-        // Comprobar automáticamente al hacer clic (más rápido) o esperar botón
         checkAnswer(option);
     };
 
@@ -50,7 +49,6 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
         } else {
             setIsCorrect(false);
             setTimeout(() => {
-                // Opcional: Dar oportunidad de intentar de nuevo o pasar error directo
                 onError();
             }, 1000);
         }
@@ -62,7 +60,6 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
                 <HelpCircle size={40} className="mx-auto text-primary mb-2" />
                 <h3 className="text-lg font-pixel text-muted-foreground uppercase">¿Cuál es esta palabra?</h3>
 
-                {/* Mostramos la DEFINICIÓN si existe, si no la TRADUCCIÓN */}
                 <p className="text-xl md:text-2xl font-bold text-foreground leading-relaxed">
                     "{word.definition || word.translation}"
                 </p>
@@ -70,16 +67,15 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                 {options.map((option) => {
-                    // Lógica de colores para el feedback
                     let btnClass = "bg-white border-gray-300 text-gray-700 hover:bg-gray-50";
 
                     if (isChecked) {
                         if (option.isCorrect) {
-                            btnClass = "bg-green-500 border-green-700 text-white"; // Correcta (siempre se muestra verde al final)
+                            btnClass = "bg-green-500 border-green-700 text-white";
                         } else if (selectedOption?.id === option.id && !option.isCorrect) {
-                            btnClass = "bg-red-500 border-red-700 text-white"; // Incorrecta seleccionada
+                            btnClass = "bg-red-500 border-red-700 text-white";
                         } else {
-                            btnClass = "opacity-50 bg-gray-100 border-gray-200"; // Las demás se apagan
+                            btnClass = "opacity-50 bg-gray-100 border-gray-200";
                         }
                     }
 
@@ -96,7 +92,6 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
                         >
                             {option.text}
 
-                            {/* Iconos de feedback */}
                             {isChecked && option.isCorrect && (
                                 <CheckCircle className="absolute top-2 right-2 w-5 h-5 text-white/80" />
                             )}
