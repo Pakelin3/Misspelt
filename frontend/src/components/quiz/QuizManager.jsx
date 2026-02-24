@@ -20,7 +20,6 @@ const QuizManager = ({ words = [], allWords = [], onComplete, onClose }) => {
             const word = words[currentIndex];
             setCurrentWord(word);
 
-            // LÓGICA DE SELECCIÓN DE JUEGO:
             const availableTypes = ['multi', 'listening'];
 
             if (word.examples && word.examples.length > 0) {
@@ -62,8 +61,16 @@ const QuizManager = ({ words = [], allWords = [], onComplete, onClose }) => {
         }
     };
 
+    const getDistractors = () => {
+        if (!currentWord) return [];
+        const source = (allWords && allWords.length > 0) ? allWords : words;
+        return source.filter(w => w.id !== currentWord.id);
+    };
+
     const renderGame = () => {
         if (!currentWord) return <div className="text-center font-pixel animate-pulse text-primary">Cargando desafío...</div>;
+
+        const uniqueKey = currentWord.id + gameType;
 
         const commonProps = {
             word: currentWord,
@@ -73,11 +80,16 @@ const QuizManager = ({ words = [], allWords = [], onComplete, onClose }) => {
 
         switch (gameType) {
             case 'sentence':
-                return <SentenceBuilder key={currentWord.id + gameType} {...commonProps} />;
+                return <SentenceBuilder key={uniqueKey} {...commonProps} />;
+
             case 'listening':
-                return <ListeningChallenge key={currentWord.id + gameType} {...commonProps} />;
-            default:
-                return <MultiChoice key={currentWord.id + gameType} {...commonProps} distractors={distractors} />;
+                return <ListeningChallenge key={uniqueKey} {...commonProps} />;
+
+            case 'multi':
+            default: {
+                const distractors = getDistractors();
+                return <MultiChoice key={uniqueKey} {...commonProps} distractors={distractors} />;
+            }
         }
     };
 

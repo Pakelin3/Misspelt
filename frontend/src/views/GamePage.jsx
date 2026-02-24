@@ -151,37 +151,33 @@ const GamePage = () => {
     };
 
     // 4. MANEJO DEL QUIZ (Respuesta de React -> Godot)
-    const handleQuizComplete = (score) => {
-        setShowQuiz(false);
-        const success = score > 0;
-
-        console.log("React: Quiz completado. Éxito:", success);
-
+    const sendToGodot = (success) => {
         if (iframeRef.current && iframeRef.current.contentWindow) {
             const godotWindow = iframeRef.current.contentWindow;
 
-            // Godot define 'godotQuizCallback' en window cuando carga GameManager.gd
             if (typeof godotWindow.godotQuizCallback === 'function') {
-                console.log("React: Enviando respuesta al Iframe Godot...");
-                godotWindow.godotQuizCallback(success); // [true] o [false]
+                console.log(`React: Enviando respuesta al Iframe Godot (${success})...`);
+                godotWindow.godotQuizCallback(success);
             } else {
-                console.error("React: ⚠️ No encontré 'godotQuizCallback' en el iframe. ¿Godot ya cargó?");
+                console.error("React: ⚠️ No encontré 'godotQuizCallback' en el iframe.");
             }
         } else {
             console.error("React: Referencia al Iframe perdida.");
         }
     };
 
-    const handleQuizClose = () => {
+    const handleQuizComplete = (score) => {
         setShowQuiz(false);
-        if (iframeRef.current && iframeRef.current.contentWindow) {
-            const godotWindow = iframeRef.current.contentWindow;
-            if (typeof godotWindow.godotQuizCallback === 'function') {
-                godotWindow.godotQuizCallback(false);
-            }
-        }
+        const success = score > 0;
+        console.log("React: Quiz completado (Victoria).");
+        sendToGodot(success);
     };
 
+    const handleQuizClose = () => {
+        setShowQuiz(false);
+        console.log("React: Quiz cerrado manualmente o derrota (X).");
+        sendToGodot(false);
+    };
     const startGame = () => {
         setGameState('PLAYING');
     };
@@ -269,7 +265,7 @@ const GamePage = () => {
                                 setGameState('SELECTION');
                             }
                         }}
-                        className="absolute top-4 left-4 p-2 bg-black/50 hover:bg-red-600 text-white rounded-full transition-colors z-20"
+                        className="absolute top-20 left-4 p-2 bg-black/50 hover:bg-red-600 text-white rounded-full transition-colors z-20"
                     >
                         <Home size={20} />
                     </button>
