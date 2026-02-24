@@ -56,26 +56,26 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
 
     return (
         <div className="flex flex-col items-center space-y-8 w-full max-w-lg">
-            <div className="text-center space-y-4 bg-white/50 p-6 rounded-xl border-2 border-dashed border-gray-300 w-full">
-                <HelpCircle size={40} className="mx-auto text-primary mb-2" />
-                <h3 className="text-lg font-pixel text-muted-foreground uppercase">¿Cuál es esta palabra?</h3>
+            <div className="text-center space-y-4 bg-muted p-6 border-4 border-primary pixel-border w-full shadow-[4px_4px_0px_0px_rgba(var(--primary),0.3)]">
+                <HelpCircle size={48} className="mx-auto text-primary mb-2" strokeWidth={2.5} />
+                <h3 className="text-lg font-pixel text-primary uppercase tracking-widest">¿Cuál es la palabra?</h3>
 
-                <p className="text-xl md:text-2xl font-bold text-foreground leading-relaxed">
+                <p className="text-xl md:text-2xl font-bold text-foreground font-sans leading-relaxed">
                     "{word.definition || word.translation}"
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
                 {options.map((option) => {
-                    let btnClass = "bg-white border-gray-300 text-gray-700 hover:bg-gray-50";
+                    let btnClass = "bg-background border-primary text-foreground hover:bg-muted";
 
                     if (isChecked) {
                         if (option.isCorrect) {
-                            btnClass = "bg-green-500 border-green-700 text-white";
+                            btnClass = "bg-green-500 border-green-700 text-white shadow-none translate-y-[4px]";
                         } else if (selectedOption?.id === option.id && !option.isCorrect) {
-                            btnClass = "bg-red-500 border-red-700 text-white";
+                            btnClass = "bg-destructive border-red-800 text-white shadow-none translate-y-[4px]";
                         } else {
-                            btnClass = "opacity-50 bg-gray-100 border-gray-200";
+                            btnClass = "opacity-50 bg-muted border-muted-foreground text-muted-foreground shadow-none translate-y-[4px]";
                         }
                     }
 
@@ -85,18 +85,18 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
                             onClick={() => handleSelect(option)}
                             disabled={isChecked}
                             className={`
-                relative p-4 rounded-xl border-b-4 font-bold text-lg transition-all
-                active:border-b-0 active:translate-y-1
-                ${btnClass}
-              `}
+                                relative p-5 border-4 font-black text-xl font-pixel uppercase transition-all flex justify-center items-center
+                                ${!isChecked && "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-[4px] active:shadow-none"}
+                                ${btnClass}
+                            `}
                         >
-                            {option.text}
+                            <span>{option.text}</span>
 
                             {isChecked && option.isCorrect && (
-                                <CheckCircle className="absolute top-2 right-2 w-5 h-5 text-white/80" />
+                                <CheckCircle className="absolute top-2 right-2 w-6 h-6 text-white drop-shadow-sm" strokeWidth={3} />
                             )}
                             {isChecked && selectedOption?.id === option.id && !option.isCorrect && (
-                                <XCircle className="absolute top-2 right-2 w-5 h-5 text-white/80" />
+                                <XCircle className="absolute top-2 right-2 w-6 h-6 text-white drop-shadow-sm" strokeWidth={3} />
                             )}
                         </button>
                     );

@@ -50,25 +50,25 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
 
     return (
         <div className="flex flex-col items-center space-y-8 w-full max-w-lg">
-            <div className="text-center space-y-4">
-                <h3 className="text-lg font-pixel text-muted-foreground uppercase">Escucha y Escribe</h3>
+            <div className="text-center space-y-4 bg-muted p-8 border-4 border-primary pixel-border shadow-[4px_4px_0px_0px_rgba(var(--primary),0.3)] w-full">
+                <h3 className="text-xl font-pixel text-primary uppercase tracking-widest mb-2">Escucha y Escribe</h3>
 
                 <button
                     onClick={playAudio}
                     className={`
-            w-32 h-32 rounded-full flex items-center justify-center border-4 shadow-xl transition-all
+            mx-auto w-24 h-24 flex items-center justify-center border-4 transition-all pixel-btn
             ${isPlaying
-                            ? 'bg-primary text-white border-green-800 scale-110'
-                            : 'bg-white text-primary border-gray-200 hover:scale-105'
+                            ? 'bg-primary text-primary-foreground border-primary scale-110 shadow-none translate-y-[4px]'
+                            : 'bg-background text-primary border-primary hover:scale-105 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
                         }
           `}
                 >
-                    <Volume2 size={48} className={isPlaying ? 'animate-pulse' : ''} />
+                    <Volume2 size={40} className={isPlaying ? 'animate-pulse' : ''} />
                 </button>
-                <p className="text-sm text-gray-400">Click para escuchar</p>
+                <p className="text-sm font-pixel text-muted-foreground mt-4 uppercase">Click para escuchar</p>
             </div>
 
-            <form onSubmit={checkAnswer} className="w-full relative">
+            <form onSubmit={checkAnswer} className="w-full relative group">
                 <input
                     ref={inputRef}
                     type="text"
@@ -76,26 +76,30 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
                     onChange={(e) => setInputValue(e.target.value)}
                     disabled={feedback === 'correct'}
                     placeholder="Escribe lo que escuchas..."
+                    autoCapitalize="off"
+                    autoComplete="off"
+                    spellCheck="false"
+                    autoCorrect="off"
                     className={`
-            w-full p-4 pl-12 text-xl font-bold text-center rounded-xl border-4 outline-none transition-colors
-            ${feedback === 'correct' ? 'border-green-500 bg-green-50 text-green-700' : ''}
-            ${feedback === 'wrong' ? 'border-red-500 bg-red-50 text-red-700' : ''}
-            ${!feedback ? 'border-gray-300 focus:border-primary' : ''}
+            w-full p-5 pl-16 text-xl md:text-2xl font-bold font-sans text-center border-4 outline-none transition-all pixel-border
+            ${feedback === 'correct' ? 'border-green-500 bg-green-500/10 text-green-500' : ''}
+            ${feedback === 'wrong' ? 'border-destructive bg-destructive/10 text-destructive' : ''}
+            ${!feedback ? 'border-primary bg-background text-foreground focus:border-primary focus:ring-4 focus:ring-primary/20 shadow-[4px_4px_0px_0px_rgba(var(--primary),0.3)]' : ''}
           `}
                 />
-                <Mic className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={24} />
+                <Mic className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors ${!feedback ? 'text-primary' : feedback === 'correct' ? 'text-green-500' : 'text-destructive'}`} size={28} />
             </form>
 
-            <div className="h-8">
+            <div className="h-8 flex items-center justify-center">
                 {feedback === 'wrong' && (
-                    <p className="text-red-500 font-bold animate-bounce">¡Ups! Inténtalo de nuevo.</p>
+                    <p className="text-destructive font-pixel text-sm animate-bounce">❌ ¡Ups! Inténtalo de nuevo.</p>
                 )}
             </div>
 
             <button
                 onClick={checkAnswer}
                 disabled={!inputValue || feedback}
-                className="bg-primary text-primary-foreground px-10 py-3 rounded-xl font-bold text-lg border-b-4 border-green-900 hover:translate-y-1 active:border-b-0 active:translate-y-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full md:w-auto px-10 py-4 font-black text-xl uppercase pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
             >
                 COMPROBAR
             </button>

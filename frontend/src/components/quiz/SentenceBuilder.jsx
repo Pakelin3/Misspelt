@@ -35,14 +35,14 @@ const SortableWord = ({ id, text, isChecked, isCorrect }) => {
     };
 
     // Estilos condicionales según el estado del juego
-    let bgClass = 'bg-white border-gray-300 text-gray-800 hover:bg-gray-50';
+    let bgClass = 'bg-background border-primary text-foreground hover:bg-muted shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]';
     if (isChecked) {
         bgClass = isCorrect
-            ? 'bg-green-500 border-green-700 text-white'
-            : 'bg-red-500 border-red-700 text-white';
+            ? 'bg-green-500 border-green-700 text-white shadow-none translate-y-[2px]'
+            : 'bg-destructive border-red-800 text-white shadow-none translate-y-[2px]';
     }
     if (isDragging) {
-        bgClass = 'bg-primary/20 border-primary border-dashed opacity-50';
+        bgClass = 'bg-primary/20 border-primary border-dashed opacity-80 shadow-[4px_4px_0px_0px_rgba(var(--primary),0.5)] scale-105';
     }
 
     return (
@@ -52,12 +52,12 @@ const SortableWord = ({ id, text, isChecked, isCorrect }) => {
             {...attributes}
             {...listeners}
             className={`
-        flex items-center gap-2 px-4 py-3 rounded-lg border-b-4 font-bold 
+        flex items-center gap-2 px-5 py-3 border-4 font-pixel uppercase font-bold text-sm md:text-base pixel-border
         cursor-grab active:cursor-grabbing select-none touch-none
-        transition-colors duration-200 ${bgClass}
+        transition-all duration-200 ${bgClass}
       `}
         >
-            <GripVertical size={16} className="opacity-30" />
+            <GripVertical size={20} className="opacity-40" strokeWidth={3} />
             {text}
         </div>
     );
@@ -137,12 +137,14 @@ const SentenceBuilder = ({ word, onSuccess, onError }) => {
 
     return (
         <div className="flex flex-col items-center space-y-8 w-full max-w-3xl">
-            <div className="text-center space-y-3">
-                <h3 className="text-lg font-pixel text-muted-foreground uppercase tracking-widest">Ordena la Frase</h3>
-                <p className="text-2xl md:text-3xl font-bold text-foreground">"{translation}"</p>
-                <p className="text-sm text-gray-500 italic">
-                    Usa la palabra: <span className="font-bold text-primary">{word.text}</span>
-                </p>
+            <div className="text-center space-y-4 bg-muted p-6 border-4 border-primary pixel-border w-full md:w-auto shadow-[4px_4px_0px_0px_rgba(var(--primary),0.3)]">
+                <h3 className="text-lg font-pixel text-primary uppercase tracking-widest">Ordena la Frase</h3>
+                <p className="text-2xl md:text-3xl font-bold text-foreground font-sans tracking-wide">"{translation}"</p>
+                <div className="inline-block bg-background px-4 py-2 border-2 border-dashed border-primary mt-2">
+                    <p className="text-sm font-pixel text-muted-foreground uppercase">
+                        Usa la palabra:<br /><span className="text-xl text-primary font-black block mt-1">{word.text}</span>
+                    </p>
+                </div>
             </div>
 
             {/* ÁREA DE JUEGO DND-KIT */}
@@ -151,7 +153,7 @@ const SentenceBuilder = ({ word, onSuccess, onError }) => {
                 collisionDetection={closestCenter}
                 onDragEnd={handleDragEnd}
             >
-                <div className="flex flex-wrap gap-3 justify-center p-6 bg-secondary/30 rounded-xl min-h-[120px] w-full border-2 border-dashed border-secondary">
+                <div className="flex flex-wrap gap-4 justify-center p-8 bg-background min-h-[140px] w-full border-4 border-primary pixel-border shadow-inner">
                     <SortableContext
                         items={items}
                         strategy={horizontalListSortingStrategy}
@@ -169,17 +171,17 @@ const SentenceBuilder = ({ word, onSuccess, onError }) => {
                 </div>
             </DndContext>
 
-            <div className="h-16 flex items-center justify-center">
+            <div className="h-16 flex items-center justify-center w-full mt-4">
                 {!isChecked ? (
                     <button
                         onClick={checkAnswer}
-                        className="bg-primary text-primary-foreground px-10 py-3 rounded-xl font-bold text-lg border-b-4 border-green-900 hover:translate-y-1 active:border-b-0 active:translate-y-2 transition-all shadow-xl"
+                        className="px-10 py-4 font-black text-xl uppercase pixel-btn w-full md:w-auto shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-[4px] active:shadow-none transition-all"
                     >
                         COMPROBAR
                     </button>
                 ) : (
-                    <div className={`text-2xl font-bold animate-bounce ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
-                        {isCorrect ? '✨ ¡EXCELENTE! ✨' : '❌ INTÉNTALO DE NUEVO'}
+                    <div className={`text-2xl font-pixel animate-bounce ${isCorrect ? 'text-green-500' : 'text-destructive'}`}>
+                        {isCorrect ? '✅ ¡EXCELENTE!' : '❌ INCORRECTO'}
                     </div>
                 )}
             </div>

@@ -16,14 +16,16 @@ const GamePage = () => {
     const { fetchUserData } = useContext(AuthContext);
 
     // --- MÁQUINA DE ESTADOS DEL JUEGO ---
-    // 'SELECTION' | 'PLAYING' | 'RESULTS'
     const [gameState, setGameState] = useState('SELECTION');
     const [results, setResults] = useState(null);
     const [selectedSkin, setSelectedSkin] = useState('mage');
 
     // --- ESTADOS DEL QUIZ ---
     const [sessionWords, setSessionWords] = useState([]);
+
+    // [FIX 1] Usamos useRef para que el Iframe siempre lea la lista más actual
     const sessionWordsRef = useRef([]);
+
     const [gameWordsTexts, setGameWordsTexts] = useState([]);
     const [showQuiz, setShowQuiz] = useState(false);
     const [currentQuizWord, setCurrentQuizWord] = useState(null);
@@ -50,13 +52,16 @@ const GamePage = () => {
     useEffect(() => {
         const prepareGame = async () => {
             try {
-                const response = await api.get('/game/quiz-words/');
+                const response = await api.get('/game/quiz-words/'); // Asegúrate que esta ruta sea la correcta en tu backend
                 const data = Array.isArray(response.data) ? response.data : response.data.results || [];
+
                 setSessionWords(data);
+                // [FIX 2] Guardamos la data en la referencia también
                 sessionWordsRef.current = data;
 
                 const wordsArray = data.map(w => w.text || w.id);
                 setGameWordsTexts(wordsArray);
+                console.log("React: Palabras listas para Godot:", wordsArray);
             } catch (error) {
                 console.error("Error cargando palabras:", error);
                 setGameWordsTexts(["ERROR", "CHECK", "API"]);
@@ -75,15 +80,17 @@ const GamePage = () => {
             return;
         }
 
-        // --- INYECCIÓN 1: TRIGGER QUIZ 
+        // --- INYECCIÓN 1: TRIGGER QUIZ ---
         iframeWindow.triggerQuiz = (wordText) => {
             console.log("React (desde Iframe): 🚨 Petición de Quiz recibida:", wordText);
 
             if (!wordText) return;
 
-            const wordsList = sessionWordsRef.current;
-            const foundWord = wordsList.find(w => {
-                const txt = w.text || w.id;
+            // [FIX 3] Leemos desde la REFERENCIA (.current), no desde el estado congelado
+            const currentWords = sessionWordsRef.current;
+
+            const foundWord = currentWords.find(w => {
+                const txt = w.text || w.id; // Ajusta según tu modelo de datos
                 return txt && typeof txt === 'string' && txt.trim().toUpperCase() === wordText.trim().toUpperCase();
             });
 
@@ -92,7 +99,8 @@ const GamePage = () => {
                 setCurrentQuizWord(foundWord);
                 setShowQuiz(true);
             } else {
-                console.warn(`Palabra '${wordText}' no encontrada en memoria.`);
+                console.warn(`Palabra '${wordText}' no encontrada en memoria. Disponibles:`, currentWords);
+                // Fallback
                 setCurrentQuizWord({
                     id: 9999,
                     text: wordText,
@@ -104,18 +112,18 @@ const GamePage = () => {
             }
         };
 
-        // --- INYECCIÓN 2: GAME OVER 
-        const triggerGameOver = async (finalScore, wordsIds = []) => {
+        // --- INYECCIÓN 2: GAME OVER ---
+        iframeWindow.handleGameOver = async (finalScore, wordsIds = []) => {
             console.log("Game Over recibido:", finalScore);
 
-            // Go to Results immediately for UI responsiveness
             setResults({
                 xp_earned: finalScore,
-                level: 1, // Fallback until API responds
+                level: 1,
             });
-            setGameState('RESULTS');
+            setGameState('RESULTS'); // Esto cambiará la vista inmediatamente
 
             try {
+                // Si tienes este endpoint listo, úsalo. Si no, comenta el bloque try/catch para evitar errores.
                 const response = await api.post('/game/submit-results/', {
                     xp_earned: finalScore,
                     seen_word_ids: wordsIds || [],
@@ -132,25 +140,14 @@ const GamePage = () => {
                     level: response.data?.new_level || 1
                 }));
             } catch (error) {
-                console.error("Error al guardar partida:", error);
+                console.warn("Error al guardar partida (API):", error);
             }
         };
 
-        // Asignamos a ambos windows por si Godot usa window.parent o window local
-        iframeWindow.handleGameOver = triggerGameOver;
-        window.handleGameOver = triggerGameOver;
-        iframeWindow.onGodotGameOver = triggerGameOver;
-        window.onGodotGameOver = triggerGameOver;
-
-        const triggerGodotExit = () => {
+        iframeWindow.onGodotExit = () => {
             console.log("🚪 Godot solicitó salir del juego.");
             setGameState('SELECTION');
         };
-
-        iframeWindow.onGodotExit = triggerGodotExit;
-        window.onGodotExit = triggerGodotExit;
-
-        window.triggerQuiz = iframeWindow.triggerQuiz; // Debugging fallback
     };
 
     // 4. MANEJO DEL QUIZ (Respuesta de React -> Godot)
@@ -163,9 +160,10 @@ const GamePage = () => {
         if (iframeRef.current && iframeRef.current.contentWindow) {
             const godotWindow = iframeRef.current.contentWindow;
 
+            // Godot define 'godotQuizCallback' en window cuando carga GameManager.gd
             if (typeof godotWindow.godotQuizCallback === 'function') {
                 console.log("React: Enviando respuesta al Iframe Godot...");
-                godotWindow.godotQuizCallback(success);
+                godotWindow.godotQuizCallback(success); // [true] o [false]
             } else {
                 console.error("React: ⚠️ No encontré 'godotQuizCallback' en el iframe. ¿Godot ya cargó?");
             }
@@ -219,9 +217,9 @@ const GamePage = () => {
                                         <div className="mb-2 overflow-hidden pixel-rendering">
                                             <SpriteAnimator
                                                 src={char.sprite}
-                                                frameWidth={32}
+                                                frameWidth={32} // Ajusta si tu sprite sheet es de 64
                                                 frameHeight={32}
-                                                frameCount={4}
+                                                frameCount={4} // Ajusta frames
                                                 fps={isSelected ? 8 : 4}
                                                 scale={3}
                                                 style={{
@@ -291,6 +289,7 @@ const GamePage = () => {
                             <div className="w-full max-w-4xl relative">
                                 <QuizManager
                                     words={[currentQuizWord]}
+                                    // Pasamos sessionWords.current o sessionWords para los distractores
                                     allWords={sessionWords}
                                     onComplete={handleQuizComplete}
                                     onClose={handleQuizClose}
