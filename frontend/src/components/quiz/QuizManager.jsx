@@ -66,7 +66,6 @@ const QuizManager = ({ words = [], allWords = [], onComplete, onClose }) => {
         if (!currentWord) return <div className="text-center font-pixel animate-pulse text-primary">Cargando desafío...</div>;
 
         const commonProps = {
-            key: currentWord.id + gameType,
             word: currentWord,
             onSuccess: handleCorrect,
             onError: handleWrong
@@ -74,17 +73,11 @@ const QuizManager = ({ words = [], allWords = [], onComplete, onClose }) => {
 
         switch (gameType) {
             case 'sentence':
-                return <SentenceBuilder {...commonProps} />;
-
+                return <SentenceBuilder key={currentWord.id + gameType} {...commonProps} />;
             case 'listening':
-                return <ListeningChallenge {...commonProps} />;
-
-            case 'multi':
-            default: {
-                const distractorSource = allWords && allWords.length > 0 ? allWords : words;
-                const distractors = distractorSource.filter(w => w.id !== currentWord.id);
-                return <MultiChoice {...commonProps} distractors={distractors} />;
-            }
+                return <ListeningChallenge key={currentWord.id + gameType} {...commonProps} />;
+            default:
+                return <MultiChoice key={currentWord.id + gameType} {...commonProps} distractors={distractors} />;
         }
     };
 

@@ -59,7 +59,7 @@ const GamePage = () => {
                 // [FIX 2] Guardamos la data en la referencia también
                 sessionWordsRef.current = data;
 
-                const wordsArray = data.map(w => w.text || w.id);
+                const wordsArray = data.map(w => w.text || "ERROR");
                 setGameWordsTexts(wordsArray);
                 console.log("React: Palabras listas para Godot:", wordsArray);
             } catch (error) {
