@@ -5,27 +5,23 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
     const [options, setOptions] = useState([]);
     const [selectedOption, setSelectedOption] = useState(null);
     const [isChecked, setIsChecked] = useState(false);
-    const [isCorrect, setIsCorrect] = useState(false);
 
     useEffect(() => {
-        // 1. Preparamos la respuesta correcta
         const correctOption = {
             id: word.id,
             text: word.text,
             isCorrect: true
         };
 
-        // 2. Preparamos las incorrectas (tomamos 3 al azar de los distractores)
         const wrongOptions = distractors
-            .sort(() => 0.5 - Math.random()) // Mezclar distractores
-            .slice(0, 3) // Tomar solo 3
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 3)
             .map(w => ({
                 id: w.id,
                 text: w.text,
                 isCorrect: false
             }));
 
-        // 3. Unimos y mezclamos todo para que la correcta no esté siempre en el mismo lugar
         const allOptions = [correctOption, ...wrongOptions]
             .sort(() => 0.5 - Math.random());
 
@@ -44,10 +40,8 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
     const checkAnswer = (option) => {
         setIsChecked(true);
         if (option.isCorrect) {
-            setIsCorrect(true);
             setTimeout(onSuccess, 1000);
         } else {
-            setIsCorrect(false);
             setTimeout(() => {
                 onError();
             }, 1000);
@@ -55,7 +49,7 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
     };
 
     return (
-        <div className="flex flex-col items-center space-y-8 w-full max-w-lg">
+        <div className="flex flex-col items-center space-y-8 w-full max-w-3xl">
             <div className="text-center space-y-4 bg-muted p-6 border-4 border-primary pixel-border w-full shadow-[4px_4px_0px_0px_rgba(var(--primary),0.3)]">
                 <HelpCircle size={48} className="mx-auto text-primary mb-2" strokeWidth={2.5} />
                 <h3 className="text-lg font-pixel text-primary uppercase tracking-widest">¿Cuál es la palabra?</h3>

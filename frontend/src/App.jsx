@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PrivateRoute from '@/utils/PrivatesRoutes';
 import { AuthProvider } from '@/context/AuthContext';
@@ -14,21 +13,14 @@ import AdminDashboard from '@/components/admin/AdminDashboard';
 import EmailVerificationLandingPage from '@/views/EmailVerificationLandingPage';
 import CheckEmailPage from '@/views/CheckEmailPage';
 import BadgesPage from '@/views/BadgesPage';
-import SidebarIA from '@/components/SidebarIA';
-import MainContent from '@/components/MainContent';
+import QuizPage from '@/views/QuizPage';
 import GamePage from './views/GamePage';
 import { StyleSheetManager } from 'styled-components';
 import isPropValid from '@emotion/is-prop-valid';
-// import "./styles/Globals.css";
 import "./index.css";
 
 
 function App() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
 
   return (
     <StyleSheetManager shouldForwardProp={isPropValid}>
@@ -52,12 +44,7 @@ function App() {
               <Route element={<PrivateRoute requiredVerified={true} requiredStaff={false} />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/dictionary" element={<DictionaryPage />} />
-                <Route path="/ia" element={
-                  <div className="flex h-[100dvh] relative bg-[#1e1e1e] text-gray-100">
-                    <SidebarIA isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-                    <MainContent isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-                  </div>
-                } />
+                <Route path="/quizz" element={<QuizPage />} />
                 <Route path="/play" element={<GamePage />} />
                 <Route path="/badges" element={<BadgesPage />} />
                 <Route path="/profile" element={<ProfilePage />} />

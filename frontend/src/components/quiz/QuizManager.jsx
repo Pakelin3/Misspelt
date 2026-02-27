@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { X, Trophy, AlertCircle, Heart } from 'lucide-react';
-
-// Importamos los 3 minijuegos
 import SentenceBuilder from './SentenceBuilder';
 import MultiChoice from './MultiChoice';
 import ListeningChallenge from './ListeningChallenge';
@@ -125,7 +123,7 @@ const QuizManager = ({ words = [], allWords = [], onComplete, onClose }) => {
     }
 
     return (
-        <div className="w-full max-w-2xl mx-auto bg-background p-6 rounded-none border-4 border-primary pixel-border relative shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+        <div className="w-full max-w-5xl mx-auto bg-background p-6 rounded-none border-4 border-primary pixel-border relative shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
             {/* Header */}
             <div className="flex justify-between items-center mb-8 border-b-4 border-primary pb-4">
                 <div className="flex items-center gap-3">

@@ -136,7 +136,7 @@ const SentenceBuilder = ({ word, onSuccess, onError }) => {
     };
 
     return (
-        <div className="flex flex-col items-center space-y-8 w-full max-w-3xl">
+        <div className="flex flex-col items-center space-y-8 w-full max-w-4xl">
             <div className="text-center space-y-4 bg-muted p-6 border-4 border-primary pixel-border w-full md:w-auto shadow-[4px_4px_0px_0px_rgba(var(--primary),0.3)]">
                 <h3 className="text-lg font-pixel text-primary uppercase tracking-widest">Ordena la Frase</h3>
                 <p className="text-2xl md:text-3xl font-bold text-foreground font-sans tracking-wide">"{translation}"</p>
@@ -175,7 +175,7 @@ const SentenceBuilder = ({ word, onSuccess, onError }) => {
                 {!isChecked ? (
                     <button
                         onClick={checkAnswer}
-                        className="px-10 py-4 font-black text-xl uppercase pixel-btn w-full md:w-auto shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-[4px] active:shadow-none transition-all"
+                        className="px-10 py-4 font-black bg-accent text-xl uppercase pixel-btn w-full md:w-auto shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-[4px] active:shadow-none transition-all"
                     >
                         COMPROBAR
                     </button>

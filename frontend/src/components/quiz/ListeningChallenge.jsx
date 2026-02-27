@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { Volume2, Mic } from 'lucide-react';
+import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 
 const ListeningChallenge = ({ word, onSuccess, onError }) => {
     const [inputValue, setInputValue] = useState("");
     const [isPlaying, setIsPlaying] = useState(false);
     const [feedback, setFeedback] = useState(null);
+    const [voices, setVoices] = useState([]);
     const inputRef = useRef(null);
 
     useEffect(() => {
@@ -13,17 +15,78 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
         setTimeout(() => inputRef.current?.focus(), 100);
     }, [word]);
 
-    const playAudio = () => {
-        if ('speechSynthesis' in window) {
-            setIsPlaying(true);
-            const utterance = new SpeechSynthesisUtterance(word.text);
-            utterance.lang = 'en-US';
-            utterance.rate = 0.9;
+    useEffect(() => {
+        const updateVoices = () => {
+            const availableVoices = window.speechSynthesis.getVoices();
+            setVoices(availableVoices);
+        };
+        updateVoices();
+        window.speechSynthesis.onvoiceschanged = updateVoices;
+        return () => {
+            window.speechSynthesis.onvoiceschanged = null;
+        };
+    }, []);
 
-            utterance.onend = () => setIsPlaying(false);
-            window.speechSynthesis.speak(utterance);
-        } else {
-            alert("Tu navegador no soporta audio :(");
+    const playAudio = async () => {
+        if (isPlaying) return;
+        setIsPlaying(true);
+        console.log("🔊 Solicitando audio a IA (ElevenLabs SDK):", word.text);
+
+        try {
+            const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
+            if (!apiKey) throw new Error("API Key no encontrada");
+
+            const elevenlabs = new ElevenLabsClient({ apiKey });
+            const voiceId = "21m00Tcm4TlvDq8ikWAM"; // Rachel
+
+            const audioStream = await elevenlabs.textToSpeech.convert(voiceId, {
+                text: word.text,
+                model_id: "eleven_multilingual_v2",
+                output_format: "mp3_44100_128",
+            });
+
+            const chunks = [];
+            for await (const chunk of audioStream) {
+                chunks.push(chunk);
+            }
+            const audioBlob = new Blob(chunks, { type: 'audio/mpeg' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const audio = new Audio(audioUrl);
+            audio.playbackRate = 0.55;
+
+            audio.onplay = () => console.log("▶️ Reproduciendo IA de ElevenLabs SDK...");
+            audio.onended = () => {
+                console.log("⏹️ Audio finalizado.");
+                setIsPlaying(false);
+                URL.revokeObjectURL(audioUrl);
+            };
+
+            await audio.play();
+
+        } catch (error) {
+            console.error("❌ Error en ElevenLabs TTS, activando Plan B (Nativo):", error);
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(word.text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.85;
+
+                const availableVoices = voices.length > 0 ? voices : window.speechSynthesis.getVoices();
+                const englishVoice = availableVoices.find(v => v.lang === 'en-US') || availableVoices.find(v => v.lang.includes('en'));
+                if (englishVoice) utterance.voice = englishVoice;
+
+                window.currentUtterance = utterance;
+                utterance.onend = () => {
+                    setIsPlaying(false);
+                    delete window.currentUtterance;
+                };
+
+                window.speechSynthesis.speak(utterance);
+            } else {
+                setIsPlaying(false);
+                alert("Tu navegador no soporta audio :(");
+            }
         }
     };
 
@@ -49,7 +112,7 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
     };
 
     return (
-        <div className="flex flex-col items-center space-y-8 w-full max-w-lg">
+        <div className="flex flex-col items-center space-y-8 w-full max-w-3xl">
             <div className="text-center space-y-4 bg-muted p-8 border-4 border-primary pixel-border shadow-[4px_4px_0px_0px_rgba(var(--primary),0.3)] w-full">
                 <h3 className="text-xl font-pixel text-primary uppercase tracking-widest mb-2">Escucha y Escribe</h3>
 

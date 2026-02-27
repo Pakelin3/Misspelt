@@ -313,7 +313,7 @@ const WordDetailModal = ({ word, onClose }) => {
                 const englishVoice = availableVoices.find(v => v.lang === 'en-US') || availableVoices.find(v => v.lang.includes('en'));
                 if (englishVoice) utterance.voice = englishVoice;
 
-                window.currentUtterance = utterance; // Fix Garbage Collection
+                window.currentUtterance = utterance;
                 utterance.onend = () => delete window.currentUtterance;
 
                 window.speechSynthesis.speak(utterance);

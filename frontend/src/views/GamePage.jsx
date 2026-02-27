@@ -213,9 +213,9 @@ const GamePage = () => {
                                         <div className="mb-2 overflow-hidden pixel-rendering">
                                             <SpriteAnimator
                                                 src={char.sprite}
-                                                frameWidth={32} // Ajusta si tu sprite sheet es de 64
+                                                frameWidth={32}
                                                 frameHeight={32}
-                                                frameCount={4} // Ajusta frames
+                                                frameCount={4}
                                                 fps={isSelected ? 8 : 4}
                                                 scale={3}
                                                 style={{
@@ -258,7 +258,6 @@ const GamePage = () => {
             {/* VISTA B: GAME RUNNING */}
             {gameState === 'PLAYING' && (
                 <div className="relative w-full h-full bg-black flex flex-col">
-                    {/* Botón de pánico/salida rápida */}
                     <button
                         onClick={() => {
                             if (window.confirm("¿Salir de la partida? Perderás el progreso.")) {
@@ -281,11 +280,10 @@ const GamePage = () => {
 
                     {/* MODAL DEL QUIZ */}
                     {showQuiz && currentQuizWord && (
-                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
-                            <div className="w-full max-w-4xl relative">
+                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+                            <div className="w-full max-w-5xl relative">
                                 <QuizManager
                                     words={[currentQuizWord]}
-                                    // Pasamos sessionWords.current o sessionWords para los distractores
                                     allWords={sessionWords}
                                     onComplete={handleQuizComplete}
                                     onClose={handleQuizClose}
@@ -319,14 +317,14 @@ const GamePage = () => {
                         <div className="flex flex-col gap-4">
                             <Button
                                 onClick={() => setGameState('SELECTION')}
-                                className="h-14 text-xl pixel-btn"
+                                className="h-14 text-xl pixel-btn rounded-none"
                             >
                                 <RotateCcw className="mr-2" /> VOLVER AL MENÚ
                             </Button>
                             <Button
                                 variant="outline"
                                 onClick={() => navigate('/')}
-                                className="h-14 text-xl pixel-btn"
+                                className="h-14 text-xl pixel-btn rounded-none"
                             >
                                 <Home className="mr-2" /> IR AL HOME
                             </Button>

@@ -66,10 +66,10 @@ function Navbar() {
     }, [location.pathname]);
 
     // Lógica de ocultar Navbar
-    const noNavbarPaths = ['/login', '/register', '/check-email', '/verify-email/:token', '/ia-fullmode'];
+    const noNavbarPaths = ['/login', '/register', '/check-email', '/verify-email/:token'];
     const shouldShowNavbar = !noNavbarPaths.some(path => {
         if (path.includes(':')) {
-            const regexPath = new RegExp(`^${path.replace(/:[^/]+/g, '[^/]+')}$`);
+            const regexPath = new RegExp(`^ ${path.replace(/:[^/]+/g, '[^/]+')} $`);
             return regexPath.test(location.pathname);
         }
         return location.pathname === path;
@@ -118,8 +118,8 @@ function Navbar() {
                     <Link to="/dictionary" className={navLinkClass("/dictionary")}>
                         <BookIcon className="w-5 h-5" /> <p className=" text-2xl" >Diccionario</p>
                     </Link>
-                    <Link to="/ia" className={navLinkClass("/ia")}>
-                        <BrainIcon className="w-5 h-5" /> <p className=" text-2xl" >IA</p>
+                    <Link to="/quizz" className={navLinkClass("/quizz")}>
+                        <BrainIcon className="w-5 h-5" /> <p className=" text-2xl" >Quizz</p>
                     </Link>
                     <Link to="/badges" className={navLinkClass("/badges")}>
                         <TrophyIcon className="w-5 h-5" /> <p className=" text-2xl" >Insignias</p>
@@ -240,8 +240,8 @@ function Navbar() {
                             <Link to="/dictionary" onClick={toggleMobileMenu} className={navLinkClass("/dictionary")}>
                                 <BookIcon className="w-5 h-5" /> Diccionario
                             </Link>
-                            <Link to="/ia" onClick={toggleMobileMenu} className={navLinkClass("/ia")}>
-                                <BrainIcon className="w-5 h-5" /> IA
+                            <Link to="/quizz" onClick={toggleMobileMenu} className={navLinkClass("/quizz")}>
+                                <BrainIcon className="w-5 h-5" /> Quizz
                             </Link>
                             <Link to="/badges" onClick={toggleMobileMenu} className={navLinkClass("/badges")}>
                                 <TrophyIcon className="w-5 h-5" /> Insignias
