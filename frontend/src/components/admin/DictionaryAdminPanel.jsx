@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import useAxios from '@/utils/useAxios';
 import { Plus, Edit, Trash2, Save, X, Search, Loader2 } from 'lucide-react';
-import Swal from 'sweetalert2';
+import { toast } from 'sonner';
 
 // Componentes UI Propios
 import { Button } from '@/components/ui/Button';
@@ -96,7 +96,7 @@ function DictionaryAdminPanel() {
                 parsedExamples = JSON.parse(formData.examples || '[]');
                 parsedTags = JSON.parse(formData.tags || '[]');
             } catch (jsonError) {
-                Swal.fire('Error de Formato', 'Los campos Ejemplos o Tags deben ser JSON válidos (Arrays).', 'error');
+                toast.error('Error de Formato', { description: 'Los campos Ejemplos o Tags deben ser JSON válidos (Arrays).' });
                 return;
             }
 
@@ -109,63 +109,39 @@ function DictionaryAdminPanel() {
 
             if (editingWord) {
                 await api.put(`/words/${editingWord.id}/`, payload);
-                Swal.fire({
-                    title: '¡Actualizado!',
-                    icon: 'success',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
+                toast.success('¡Actualizado!');
             } else {
                 await api.post('/words/', payload);
-                Swal.fire({
-                    title: '¡Creado!',
-                    icon: 'success',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
+                toast.success('¡Creado!');
             }
             setIsFormOpen(false);
             fetchWords();
         } catch (err) {
             console.error(err);
-            Swal.fire('Error', 'No se pudo guardar la palabra.', 'error');
+            toast.error('Error', { description: 'No se pudo guardar la palabra.' });
         }
     };
 
     const handleDelete = async (id) => {
-        const result = await Swal.fire({
-            title: '¿ELIMINAR?',
-            text: "Esta acción es destructiva e irreversible.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            confirmButtonText: 'Sí, borrar',
-            cancelButtonText: 'Cancelar',
-            customClass: {
-                popup: 'font-mono border-4 border-black rounded-none' // Estilo pixel art básico para swal
-            }
+        toast('¿ELIMINAR?', {
+            description: "Esta acción es destructiva e irreversible.",
+            action: {
+                label: 'Sí, borrar',
+                onClick: async () => {
+                    try {
+                        await api.delete(`/words/${id}/`);
+                        fetchWords();
+                        toast.success('Borrado');
+                    } catch (error) {
+                        toast.error('Error', { description: 'No se pudo eliminar.' });
+                    }
+                }
+            },
+            cancel: {
+                label: 'Cancelar',
+            },
+            duration: 10000,
         });
-
-        if (result.isConfirmed) {
-            try {
-                await api.delete(`/words/${id}/`);
-                fetchWords();
-                Swal.fire({
-                    title: 'Borrado',
-                    icon: 'success',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 2000
-                });
-            } catch (error) {
-                Swal.fire('Error', 'No se pudo eliminar.', 'error');
-            }
-        }
     };
 
     // --- HELPER PARA TIPOS ---

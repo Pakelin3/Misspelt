@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import useAxios from '@/utils/useAxios';
 import { Plus, Edit, Trash2, Save, X, Search, Loader2, Upload, Image as ImageIcon } from 'lucide-react';
-import Swal from 'sweetalert2';
+import { toast } from 'sonner';
 
 // Componentes UI Propios
 import { Button } from '@/components/ui/Button';
@@ -16,7 +16,6 @@ function BadgesAdminPanel() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Paginación y Filtros (Simplificado para Badges que suelen ser menos)
     const [page, setPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -136,66 +135,42 @@ function BadgesAdminPanel() {
                 await api.patch(`/badges/${editingBadge.id}/`, dataToSend, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
-                Swal.fire({
-                    title: '¡Actualizado!',
-                    icon: 'success',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
+                toast.success('¡Actualizado!');
             } else {
                 await api.post('/badges/', dataToSend, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
-                Swal.fire({
-                    title: '¡Creado!',
-                    icon: 'success',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
+                toast.success('¡Creado!');
             }
             setIsFormOpen(false);
             fetchBadges();
         } catch (err) {
             console.error(err);
             const msg = err.response?.data ? JSON.stringify(err.response.data) : 'No se pudo guardar.';
-            Swal.fire('Error', msg, 'error');
+            toast.error('Error', { description: msg });
         }
     };
 
     const handleDelete = async (id) => {
-        const result = await Swal.fire({
-            title: '¿ELIMINAR MEDALLA?',
-            text: "Esta acción no se puede deshacer.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            confirmButtonText: 'Sí, borrar',
-            cancelButtonText: 'Cancelar',
-            customClass: {
-                popup: 'font-mono border-4 border-black rounded-none'
-            }
+        toast('¿ELIMINAR MEDALLA?', {
+            description: "Esta acción no se puede deshacer.",
+            action: {
+                label: 'Sí, borrar',
+                onClick: async () => {
+                    try {
+                        await api.delete(`/badges/${id}/`);
+                        fetchBadges();
+                        toast.success('Borrado');
+                    } catch (error) {
+                        toast.error('Error', { description: 'No se pudo eliminar.' });
+                    }
+                }
+            },
+            cancel: {
+                label: 'Cancelar',
+            },
+            duration: 10000,
         });
-
-        if (result.isConfirmed) {
-            try {
-                await api.delete(`/badges/${id}/`);
-                fetchBadges();
-                Swal.fire({
-                    title: 'Borrado',
-                    icon: 'success',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 2000
-                });
-            } catch (error) {
-                Swal.fire('Error', 'No se pudo eliminar.', 'error');
-            }
-        }
     };
 
     // Filter by title

@@ -2,8 +2,8 @@ import { createContext, useState, useEffect, useCallback, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import Swal from 'sweetalert2';
 import ScaleLoader from "react-spinners/ScaleLoader";
+import { toast } from "sonner";
 
 
 const baseURL = import.meta.env.VITE_BACKEND_URL_API;
@@ -31,32 +31,26 @@ export const AuthProvider = ({ children }) => {
 
     const loadingTimeoutRef = useRef(null);
 
-    const showSwal = useCallback(async (options) => {
-        await Swal.fire(options);
+    const showAlert = useCallback(async (title, text, icon, showConfirmButton = true, timer = null) => {
+        const toastFn = icon === 'error' ? toast.error :
+            icon === 'success' ? toast.success :
+                icon === 'warning' ? toast.warning :
+                    icon === 'info' ? toast.info : toast;
+        toastFn(title, {
+            description: text,
+            duration: timer || 4000,
+        });
     }, []);
 
-    const showAlert = useCallback(async (title, text, icon, showConfirmButton = true, timer = null) => {
-        await showSwal({
-            title: title,
-            text: text,
-            icon: icon,
-            showConfirmButton: showConfirmButton,
-            timer: timer,
-            timerProgressBar: timer ? true : false,
+    const showToast = useCallback(async (title, icon = 'success', timer = 4000) => {
+        const toastFn = icon === 'error' ? toast.error :
+            icon === 'success' ? toast.success :
+                icon === 'warning' ? toast.warning :
+                    icon === 'info' ? toast.info : toast;
+        toastFn(title, {
+            duration: timer,
         });
-    }, [showSwal]);
-
-    const showToast = useCallback((title, icon = 'success', timer = 6000) => {
-        showSwal({
-            title: title,
-            icon: icon,
-            timer: timer,
-            timerProgressBar: timer ? true : false,
-            showConfirmButton: false,
-            toast: true,
-            position: 'top-end',
-        });
-    }, [showSwal]);
+    }, []);
 
     const translateError = useCallback((errorKey, defaultMessage = '') => {
         const translations = {
@@ -167,7 +161,7 @@ export const AuthProvider = ({ children }) => {
         return { general_error: 'Hubo un error inesperado.' };
     };
 
-    const logoutUser = useCallback(async () => { 
+    const logoutUser = useCallback(async () => {
         try {
             await axios.post(`${baseURL}/logout/`, {}, {
                 headers: {

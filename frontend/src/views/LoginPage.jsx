@@ -2,14 +2,10 @@ import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import AuthContext from '@/context/AuthContext';
 import googleIcon from '@/assets/google.svg';
-// Eliminamos useTheme porque el estilo Pixel Art tiene su propio tema fijo (por ahora)
-// import { useTheme } from '@/context/ThemeContext'; 
-import { LeafIcon } from '@/components/PixelIcons'; // Usamos el icono de la granja
+import { LeafIcon } from '@/components/PixelIcons';
 
 function LoginPage({ onScreenChange }) {
     const { loginUser } = useContext(AuthContext);
-    
-    // Estados originales
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
@@ -40,7 +36,7 @@ function LoginPage({ onScreenChange }) {
         <div className="flex justify-center items-center min-h-screen bg-background p-4 font-sans">
             {/* Contenedor Pixel Art */}
             <div className="bg-card pixel-border p-6 sm:p-8 w-full max-w-md relative shadow-none">
-                
+
                 {/* Botón de cerrar (X) estilo pixel */}
                 <Link
                     to="/"
@@ -49,7 +45,7 @@ function LoginPage({ onScreenChange }) {
                         onScreenChange ? onScreenChange('login') : navigate('/');
                     }}
                     className="absolute top-4 right-4 text-muted-foreground hover:text-destructive font-mono text-xl transition-colors"
-                > 
+                >
                     X
                 </Link>
 
@@ -64,7 +60,7 @@ function LoginPage({ onScreenChange }) {
                 </div>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-                    
+
                     {/* Botón Google Pixelado */}
                     <button type="button" className="flex cursor-not-allowed items-center justify-center gap-3 px-4 py-3 border-2 border-foreground bg-white text-foreground font-sans text-xl hover:bg-muted transition-colors opacity-70">
                         <img src={googleIcon} alt="Google Icon" className="w-5 h-5 pixel-rendering" />
@@ -107,7 +103,7 @@ function LoginPage({ onScreenChange }) {
                             />
                             <button
                                 type="button"
-                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground" 
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground"
                                 onClick={() => setShowPassword(!showPassword)}
                             >
                                 <span className="font-mono text-xs">{showPassword ? 'OCULTAR' : 'VER'}</span>
@@ -123,7 +119,7 @@ function LoginPage({ onScreenChange }) {
                     )}
 
                     <div className="flex justify-between items-center text-lg">
-                        <label className="flex items-center text-foreground cursor-pointer select-none"> 
+                        <label className="flex items-center text-foreground cursor-pointer select-none">
                             <div className={`w-5 h-5 border-2 border-foreground mr-2 flex items-center justify-center ${rememberMe ? 'bg-primary' : 'bg-background'}`}>
                                 {rememberMe && <span className="text-primary-foreground font-bold text-sm">✓</span>}
                             </div>
@@ -131,24 +127,24 @@ function LoginPage({ onScreenChange }) {
                                 type="checkbox"
                                 checked={rememberMe}
                                 onChange={(e) => setRememberMe(e.target.checked)}
-                                className="hidden" 
+                                className="hidden"
                             />
                             Recordarme
                         </label>
                         <Link to="/forgot-password" className="text-accent text-lg hover:text-accent-foreground hover:underline decoration-2 underline-offset-2">
                             ¿Olvidaste la contraseña?
-                        </Link> 
+                        </Link>
                     </div>
 
                     {/* Botón Submit Pixel Art */}
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         className="w-full py-4 mt-2 bg-primary text-primary-foreground font-mono text-sm pixel-border-primary pixel-btn cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]"
-                    > 
+                    >
                         ENTRAR A JUGAR
                     </button>
 
-                    <div className="text-center text-muted-foreground text-lg mt-4"> 
+                    <div className="text-center text-muted-foreground text-lg mt-4">
                         ¿No tienes granja?
                         <Link
                             to="/register"
@@ -157,7 +153,7 @@ function LoginPage({ onScreenChange }) {
                                 onScreenChange ? onScreenChange('register') : navigate('/register');
                             }}
                             className="ml-2 text-accent hover:text-accent-foreground hover:underline decoration-2 underline-offset-4 font-bold"
-                        > 
+                        >
                             CREAR CUENTA
                         </Link>
                     </div>
