@@ -1,31 +1,15 @@
 import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-//import { useTheme } from '@/context/ThemeContext';
-
-// Iconos Pixelados (Importados de tus componentes existentes)
-import {
-    BookIcon,
-    SwordIcon
-} from '@/components/PixelIcons';
-
-import {
-    VillagerIcon,
-    SignalIcon,
-    MedalRibbonIcon
-} from '@/components/AdminPixelIcons';
-
-import { LogOut, Menu, X, ChevronRight } from 'lucide-react'; // Mantenemos utilitarios simples
-
-// Componentes Admin
+import { BookIcon, SwordIcon } from '@/components/PixelIcons';
+import { VillagerIcon, SignalIcon, MedalRibbonIcon } from '@/components/AdminPixelIcons';
+import { LogOut, Menu, X, ChevronRight } from 'lucide-react';
 import DashboardStatsCards from '@/components/admin/DashboardStatsCards';
 import DictionaryAdminPanel from '@/components/admin/DictionaryAdminPanel';
 import BadgesAdminPanel from '@/components/admin/BadgesAdminPanel';
 import AvatarAdminPanel from '@/components/admin/AvatarAdminPanel';
-
-// Componentes UI
 import { Button } from '@/components/ui/Button';
 
-// --- CONFIGURACIÓN DEL MENÚ ADMIN (Pixel Icons) ---
+
 const ADMIN_MENU = [
     {
         title: 'Dashboard',

@@ -13,7 +13,6 @@ function DictionaryAdminPanel() {
     // Estados de datos
     const [words, setWords] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
 
     // Paginación y Filtros
     const [page, setPage] = useState(1);
@@ -26,11 +25,12 @@ function DictionaryAdminPanel() {
     const [editingWord, setEditingWord] = useState(null);
     const [formData, setFormData] = useState({
         text: '',
-        description: '',
+        translation: '',
+        definition: '',
         word_type: 'SLANG',
         difficulty_level: 1,
-        examples: '', // String para el textarea, luego se convierte a Array
-        tags: ''      // String para el textarea, luego se convierte a Array
+        examples: [{ en: '', es: '' }],
+        tags: ''
     });
 
     // --- FETCH DATA ---
@@ -46,7 +46,7 @@ function DictionaryAdminPanel() {
             setTotalPages(Math.ceil(totalCount / itemsPerPage));
         } catch (err) {
             console.error("Error fetching words:", err);
-            setError("No se pudo cargar el diccionario.");
+            toast.error("Error", { description: "No se pudo cargar el diccionario." });
         } finally {
             setLoading(false);
         }
@@ -65,22 +65,24 @@ function DictionaryAdminPanel() {
         if (word) {
             setEditingWord(word);
             setFormData({
-                text: word.text,
-                description: word.description,
-                word_type: word.word_type,
-                difficulty_level: word.difficulty_level,
-                examples: JSON.stringify(word.examples || [], null, 2),
-                tags: JSON.stringify(word.tags || [], null, 2)
+                text: word.text || '',
+                translation: word.translation || '',
+                definition: word.definition || '',
+                word_type: word.word_type || 'SLANG',
+                difficulty_level: word.difficulty_level || 1,
+                examples: word.examples && word.examples.length > 0 ? word.examples : [{ en: '', es: '' }],
+                tags: word.tags || ''
             });
         } else {
             setEditingWord(null);
             setFormData({
                 text: '',
-                description: '',
+                translation: '',
+                definition: '',
                 word_type: 'SLANG',
                 difficulty_level: 1,
-                examples: '[]',
-                tags: '[]'
+                examples: [{ en: '', es: '' }],
+                tags: ''
             });
         }
         setIsFormOpen(true);
@@ -89,21 +91,13 @@ function DictionaryAdminPanel() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // Validar JSON
-            let parsedExamples = [];
-            let parsedTags = [];
-            try {
-                parsedExamples = JSON.parse(formData.examples || '[]');
-                parsedTags = JSON.parse(formData.tags || '[]');
-            } catch (jsonError) {
-                toast.error('Error de Formato', { description: 'Los campos Ejemplos o Tags deben ser JSON válidos (Arrays).' });
-                return;
-            }
+            // Filtrar ejemplos vacíos
+            const validExamples = formData.examples.filter(ex => ex.en.trim() !== '' || ex.es.trim() !== '');
 
             const payload = {
                 ...formData,
-                examples: parsedExamples,
-                tags: parsedTags,
+                examples: validExamples,
+                tags: formData.tags, // String directamente al CharField
                 difficulty_level: parseInt(formData.difficulty_level)
             };
 
@@ -132,7 +126,7 @@ function DictionaryAdminPanel() {
                         await api.delete(`/words/${id}/`);
                         fetchWords();
                         toast.success('Borrado');
-                    } catch (error) {
+                    } catch {
                         toast.error('Error', { description: 'No se pudo eliminar.' });
                     }
                 }
@@ -144,11 +138,35 @@ function DictionaryAdminPanel() {
         });
     };
 
+    // --- MANEJADORES DE EJEMPLOS DINÁMICOS ---
+    const handleAddExample = () => {
+        setFormData({
+            ...formData,
+            examples: [...formData.examples, { en: '', es: '' }]
+        });
+    };
+
+    const handleRemoveExample = (index) => {
+        const newExamples = formData.examples.filter((_, i) => i !== index);
+        setFormData({
+            ...formData,
+            examples: newExamples.length > 0 ? newExamples : [{ en: '', es: '' }]
+        });
+    };
+
+    const handleExampleChange = (index, field, value) => {
+        const newExamples = [...formData.examples];
+        newExamples[index][field] = value;
+        setFormData({ ...formData, examples: newExamples });
+    };
+
     // --- HELPER PARA TIPOS ---
     const getTypeBadgeStyle = (type) => {
         switch (type) {
             case 'SLANG': return 'bg-yellow-100 text-yellow-800 border-yellow-800';
             case 'PHRASAL_VERB': return 'bg-blue-100 text-blue-800 border-blue-800';
+            case 'IDIOM': return 'bg-purple-100 text-purple-800 border-purple-800';
+            case 'VOCABULARY': return 'bg-emerald-100 text-emerald-800 border-emerald-800';
             default: return 'bg-gray-100 text-gray-800 border-gray-800';
         }
     };
@@ -216,8 +234,11 @@ function DictionaryAdminPanel() {
                                 words.map((word) => (
                                     <tr key={word.id} className="hover:bg-muted/50 transition-colors group">
                                         <td className="p-4 border-r-2 border-foreground/10">
-                                            <div className="font-bold text-base">{word.text}</div>
-                                            <div className="text-xs text-muted-foreground line-clamp-1">{word.description}</div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-bold text-base">{word.text}</span>
+                                                {word.translation && <span className="text-xs bg-muted px-1 py-0.5 border border-foreground/20">{word.translation}</span>}
+                                            </div>
+                                            <div className="text-xs text-muted-foreground line-clamp-1">{word.definition}</div>
                                         </td>
                                         <td className="p-4 border-r-2 border-foreground/10">
                                             <span className={`px-2 py-1 text-[10px] font-bold border-2 rounded-none ${getTypeBadgeStyle(word.word_type)}`}>
@@ -225,11 +246,11 @@ function DictionaryAdminPanel() {
                                             </span>
                                         </td>
                                         <td className="p-4 border-r-2 border-foreground/10 text-center">
-                                            <div className="inline-flex gap-0.5">
-                                                {[...Array(5)].map((_, i) => (
+                                            <div className="inline-flex gap-0.5 flex-wrap w-20 justify-center">
+                                                {[...Array(10)].map((_, i) => (
                                                     <div
                                                         key={i}
-                                                        className={`w-2 h-2 border border-foreground ${i < word.difficulty_level ? 'bg-primary' : 'bg-transparent'}`}
+                                                        className={`w-1.5 h-1.5 border border-foreground ${i < word.difficulty_level ? 'bg-primary' : 'bg-transparent'}`}
                                                     />
                                                 ))}
                                             </div>
@@ -300,7 +321,7 @@ function DictionaryAdminPanel() {
 
                         {/* Body del Modal */}
                         <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-4">
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold uppercase">Palabra</label>
                                     <Input
@@ -312,6 +333,18 @@ function DictionaryAdminPanel() {
                                     />
                                 </div>
                                 <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase">Traducción</label>
+                                    <Input
+                                        value={formData.translation}
+                                        onChange={e => setFormData({ ...formData, translation: e.target.value })}
+                                        className="border-2 border-foreground rounded-none focus:ring-0 focus:border-primary bg-background"
+                                        placeholder="Ej: Descomponerse"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="space-y-2">
                                     <label className="text-xs font-bold uppercase">Tipo</label>
                                     <select
                                         className="w-full h-10 px-3 bg-background border-2 border-foreground rounded-none focus:outline-none focus:border-primary text-sm"
@@ -320,19 +353,29 @@ function DictionaryAdminPanel() {
                                     >
                                         <option value="SLANG">Slang (Jerga)</option>
                                         <option value="PHRASAL_VERB">Phrasal Verb</option>
-                                        <option value="NONE">Otro</option>
+                                        <option value="IDIOM">Idiom (Modismo)</option>
+                                        <option value="VOCABULARY">Vocabulary</option>
                                     </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase">Tags (Separados por coma)</label>
+                                    <Input
+                                        value={formData.tags}
+                                        onChange={e => setFormData({ ...formData, tags: e.target.value })}
+                                        className="border-2 border-foreground rounded-none focus:ring-0 focus:border-primary bg-background"
+                                        placeholder="Ej: travel, emergency"
+                                    />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-xs font-bold uppercase">Descripción / Significado</label>
+                                <label className="text-xs font-bold uppercase">Definición (En inglés)</label>
                                 <textarea
                                     required
                                     className="w-full p-3 bg-background border-2 border-foreground rounded-none focus:outline-none focus:border-primary text-sm min-h-[80px]"
-                                    value={formData.description}
-                                    onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                    placeholder="Explica qué significa..."
+                                    value={formData.definition}
+                                    onChange={e => setFormData({ ...formData, definition: e.target.value })}
+                                    placeholder="Ej: To stop functioning (for a machine or vehicle)."
                                 />
                             </div>
 
@@ -341,27 +384,61 @@ function DictionaryAdminPanel() {
                                 <input
                                     type="range"
                                     min="1"
-                                    max="5"
+                                    max="10"
                                     step="1"
                                     className="w-full accent-primary h-2 bg-muted rounded-none appearance-none cursor-pointer border border-foreground"
                                     value={formData.difficulty_level}
                                     onChange={e => setFormData({ ...formData, difficulty_level: e.target.value })}
                                 />
                                 <div className="flex justify-between text-[10px] text-muted-foreground px-1 font-sans">
-                                    <span>Fácil</span>
-                                    <span>Difícil</span>
+                                    <span>Principiante (1)</span>
+                                    <span>Experto (10)</span>
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold uppercase">Ejemplos (JSON Array)</label>
-                                <textarea
-                                    className="w-full p-3 bg-muted/30 border-2 border-foreground rounded-none focus:outline-none focus:border-primary text-xs font-mono"
-                                    value={formData.examples}
-                                    onChange={e => setFormData({ ...formData, examples: e.target.value })}
-                                    placeholder='["Example sentence 1.", "Example sentence 2."]'
-                                    rows={3}
-                                />
+                            <div className="space-y-3 p-4 bg-muted/20 border-2 border-foreground">
+                                <div className="flex justify-between items-center">
+                                    <label className="text-xs font-bold uppercase">Ejemplos de Uso</label>
+                                    <Button
+                                        type="button"
+                                        onClick={handleAddExample}
+                                        className="h-6 px-2 py-0 text-[10px] rounded-none bg-primary text-primary-foreground pixel-btn border-2 border-primary"
+                                    >
+                                        <Plus className="w-3 h-3 mr-1" /> OTRO EJEMPLO
+                                    </Button>
+                                </div>
+
+                                {formData.examples.map((example, index) => (
+                                    <div key={index} className="flex gap-2 items-start relative bg-background p-3 border-2 border-foreground/30">
+                                        <div className="flex-1 space-y-2">
+                                            <input
+                                                type="text"
+                                                className="w-full p-2 bg-transparent border-b-2 border-foreground/20 focus:outline-none focus:border-primary text-sm font-sans placeholder:italic"
+                                                placeholder="Ejemplo en inglés (e.g. The car broke down.)"
+                                                value={example.en}
+                                                onChange={(e) => handleExampleChange(index, 'en', e.target.value)}
+                                            />
+                                            <input
+                                                type="text"
+                                                className="w-full p-2 bg-transparent border-b-2 border-foreground/20 focus:outline-none focus:border-primary text-sm font-sans placeholder:italic text-muted-foreground"
+                                                placeholder="Traducción en español (e.g. El coche se descompuso.)"
+                                                value={example.es}
+                                                onChange={(e) => handleExampleChange(index, 'es', e.target.value)}
+                                            />
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveExample(index)}
+                                            className="p-2 text-destructive hover:bg-destructive/10 border-2 border-transparent hover:border-destructive transition-colors shrink-0 mt-2"
+                                            title="Eliminar Ejemplo"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                ))}
+                                <p className="text-[10px] text-muted-foreground italic">
+                                    * Los ejemplos que dejes en blanco serán ignorados.
+                                </p>
                             </div>
 
                             <div className="pt-4 flex gap-3">
