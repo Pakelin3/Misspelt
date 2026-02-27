@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
 
     const loadingTimeoutRef = useRef(null);
 
-    const showAlert = useCallback(async (title, text, icon, showConfirmButton = true, timer = null) => {
+    const showAlert = useCallback(async (title, text, icon = true, timer = null) => {
         const toastFn = icon === 'error' ? toast.error :
             icon === 'success' ? toast.success :
                 icon === 'warning' ? toast.warning :

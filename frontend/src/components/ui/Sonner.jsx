@@ -27,14 +27,23 @@ const Toaster = (props) => {
                 ),
             }}
             style={{
-                "--normal-bg": "var(--popover)",
-                "--normal-text": "var(--popover-foreground)",
-                "--normal-border": "var(--border)",
-                "--border-radius": "var(--radius)",
+                "--normal-bg": "hsl(var(--card))",
+                "--normal-text": "hsl(var(--foreground))",
+                "--normal-border": "hsl(var(--foreground))",
+                "--border-radius": "0px",
             }}
             toastOptions={{
                 classNames: {
-                    toast: "cn-toast",
+                    toast: "group toast bg-card text-foreground pixel-border rounded-none font-mono p-4 flex gap-3 w-full",
+                    title: "font-bold text-md tracking-tight uppercase text-foreground",
+                    description: "text-sm font-mono tracking-wide text-foreground font-medium opacity-90",
+                    actionButton: "bg-primary text-primary-foreground font-mono text-[10px] pixel-border-primary pixel-btn px-4 py-2",
+                    cancelButton: "bg-muted text-muted-foreground font-mono text-[10px] pixel-border pixel-btn px-4 py-2",
+                    icon: "group-data-[type=error]:text-destructive group-data-[type=success]:text-primary group-data-[type=warning]:text-accent group-data-[type=info]:text-blue-500",
+                    success: "!border-primary",
+                    error: "!border-destructive",
+                    warning: "!border-accent",
+                    info: "!border-blue-500",
                 },
             }}
             {...props}

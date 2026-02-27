@@ -77,6 +77,11 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"confirm_password": ["Las contraseñas no coinciden."]})
         return attrs
 
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Correo electrónico ya existe.")
+        return value
+
     def create(self, validated_data):
         user = User.objects.create_user(
             username=validated_data['username'],

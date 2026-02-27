@@ -50,11 +50,7 @@ function App() {
               <Route path="/admin-dashboard/*" element={<AdminDashboard />} />
             </Route>
           </Routes>
-          <Toaster
-            toastOptions={{
-              className: 'bg-card text-foreground pixel-border rounded-none font-mono border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
-            }}
-          />
+          <Toaster />
         </AuthProvider>
       </ThemeProvider>
     </Router>
