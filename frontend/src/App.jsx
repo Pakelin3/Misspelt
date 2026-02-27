@@ -44,7 +44,7 @@ function App() {
               <Route element={<PrivateRoute requiredVerified={true} requiredStaff={false} />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/dictionary" element={<DictionaryPage />} />
-                <Route path="/quizz" element={<QuizPage />} />
+                <Route path="/quiz" element={<QuizPage />} />
                 <Route path="/play" element={<GamePage />} />
                 <Route path="/badges" element={<BadgesPage />} />
                 <Route path="/profile" element={<ProfilePage />} />

@@ -241,6 +241,7 @@ export default DictionaryPage;
 const WordDetailModal = ({ word, onClose }) => {
 
     const [voices, setVoices] = useState([]);
+    const [currentExampleIndex, setCurrentExampleIndex] = useState(0);
 
     useEffect(() => {
         const updateVoices = () => {
@@ -351,22 +352,52 @@ const WordDetailModal = ({ word, onClose }) => {
                     </div>
 
                     <div>
-                        <h3 className="font-mono text-xs text-accent mb-2 uppercase">Ejemplos de Uso</h3>
-                        <div className="space-y-2">
-                            {word.examples && word.examples.map((example, index) => (
-                                <div key={index} className="mb-2 text-sm">
-                                    {typeof example === 'object' ? (
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-mono text-xs text-accent uppercase">Ejemplos de Uso</h3>
+                            {word.examples && word.examples.length > 1 && (
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => setCurrentExampleIndex(prev => prev > 0 ? prev - 1 : word.examples.length - 1)}
+                                        className="p-1 bg-muted hover:bg-primary hover:text-primary-foreground pixel-border transition-colors cursor-pointer"
+                                    >
+                                        <ChevronLeft className="w-4 h-4" />
+                                    </button>
+                                    <span className="font-mono text-xs text-muted-foreground w-8 text-center">
+                                        {currentExampleIndex + 1}/{word.examples.length}
+                                    </span>
+                                    <button
+                                        onClick={() => setCurrentExampleIndex(prev => prev < word.examples.length - 1 ? prev + 1 : 0)}
+                                        className="p-1 bg-muted hover:bg-primary hover:text-primary-foreground pixel-border transition-colors cursor-pointer"
+                                    >
+                                        <ChevronRight className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                        <div className="space-y-2 min-h-[80px] flex items-center justify-center bg-muted/20 p-4 border-2 border-dashed border-muted rounded-sm">
+                            {word.examples && word.examples.length > 0 ? (
+                                <div className="text-sm w-full animate-in fade-in zoom-in-95 duration-300" key={currentExampleIndex}>
+                                    {typeof word.examples[currentExampleIndex] === 'object' ? (
                                         <>
-                                            <p className="text-gray-800 font-medium">🇬🇧 {example.en}</p>
-                                            <p className="text-gray-500 italic">🇪🇸 {example.es}</p>
+                                            <div className="flex items-center gap-2">
+                                                🇺🇸
+                                                <p className="text-gray-800 text-base leading-relaxed"> {word.examples[currentExampleIndex].en}</p>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                🇻🇪
+                                                <p className="text-gray-500 italic text-base leading-relaxed"> {word.examples[currentExampleIndex].es}</p>
+                                            </div>
                                         </>
                                     ) : (
-                                        <p className="text-gray-600">{example}</p>
+                                        <p className="text-gray-600 text-lg leading-relaxed">{word.examples[currentExampleIndex]}</p>
                                     )}
                                 </div>
-                            ))}
+                            ) : (
+                                <p className="text-sm text-gray-500 italic">No hay ejemplos disponibles para esta palabra.</p>
+                            )}
                         </div>
                     </div>
+
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-4 border-t-4 border-muted">
@@ -379,7 +410,6 @@ const WordDetailModal = ({ word, onClose }) => {
                     </button>
 
                     <button className="flex-1 flex items-center justify-center gap-2 bg-accent text-accent-foreground py-3 font-mono text-xs pixel-btn pixel-border-accent hover:brightness-110">
-                        {/* Nota: Asegúrate de importar BrainIcon si lo usas aquí, o usa otro icono */}
                         CONSULTAR A LA I.A.
                     </button>
                 </div>

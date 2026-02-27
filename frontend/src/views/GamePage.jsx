@@ -48,27 +48,7 @@ const GamePage = () => {
         };
     }, []);
 
-    // 2. CARGA DE PALABRAS PARA LA SESIÓN
-    useEffect(() => {
-        const prepareGame = async () => {
-            try {
-                const response = await api.get('/game/quiz-words/'); // Asegúrate que esta ruta sea la correcta en tu backend
-                const data = Array.isArray(response.data) ? response.data : response.data.results || [];
-
-                setSessionWords(data);
-                // [FIX 2] Guardamos la data en la referencia también
-                sessionWordsRef.current = data;
-
-                const wordsArray = data.map(w => w.text || "ERROR");
-                setGameWordsTexts(wordsArray);
-                console.log("React: Palabras listas para Godot:", wordsArray);
-            } catch (error) {
-                console.error("Error cargando palabras:", error);
-                setGameWordsTexts(["ERROR", "CHECK", "API"]);
-            }
-        };
-        prepareGame();
-    }, [api]);
+    const [isPreparing, setIsPreparing] = useState(false);
 
     // 3. INYECCIÓN DEL PUENTE (GODOT <-> REACT)
     const handleIframeLoad = (e) => {
@@ -178,8 +158,31 @@ const GamePage = () => {
         console.log("React: Quiz cerrado manualmente o derrota (X).");
         sendToGodot(false);
     };
-    const startGame = () => {
-        setGameState('PLAYING');
+    const startGame = async () => {
+        if (isPreparing) return;
+        setIsPreparing(true);
+
+        try {
+            console.log("React: Solicitando palabras para la partida...");
+            const response = await api.get('/game/quiz-words/');
+            const data = Array.isArray(response.data) ? response.data : response.data.results || [];
+
+            setSessionWords(data);
+            sessionWordsRef.current = data;
+
+            const wordsArray = data.map(w => w.text || "ERROR");
+            setGameWordsTexts(wordsArray);
+            console.log("React: Palabras listas para Godot:", wordsArray);
+
+            setGameState('PLAYING');
+        } catch (error) {
+            console.error("Error cargando palabras antes de iniciar:", error);
+            // Fallback simple por si falla el API para no bloquear el juego
+            setGameWordsTexts(["ERROR", "FALLBACK"]);
+            setGameState('PLAYING');
+        } finally {
+            setIsPreparing(false);
+        }
     };
 
     return (
@@ -246,9 +249,19 @@ const GamePage = () => {
                             </Button>
                             <Button
                                 onClick={startGame}
-                                className="w-full md:w-2/3 rounded-none h-16 text-2xl pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                                disabled={isPreparing}
+                                className={`w-full md:w-2/3 rounded-none h-16 text-2xl pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all ${isPreparing ? 'opacity-70 cursor-not-allowed' : ''}`}
                             >
-                                <Play className="mr-2 fill-current" /> ¡JUGAR!
+                                {isPreparing ? (
+                                    <>
+                                        <div className="w-6 h-6 border-4 border-white border-t-transparent animate-spin rounded-full mr-2"></div>
+                                        CARGANDO...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Play className="mr-2 fill-current" /> ¡JUGAR!
+                                    </>
+                                )}
                             </Button>
                         </div>
                     </Card>

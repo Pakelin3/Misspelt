@@ -118,8 +118,8 @@ function Navbar() {
                     <Link to="/dictionary" className={navLinkClass("/dictionary")}>
                         <BookIcon className="w-5 h-5" /> <p className=" text-2xl" >Diccionario</p>
                     </Link>
-                    <Link to="/quizz" className={navLinkClass("/quizz")}>
-                        <BrainIcon className="w-5 h-5" /> <p className=" text-2xl" >Quizz</p>
+                    <Link to="/quiz" className={navLinkClass("/quiz")}>
+                        <BrainIcon className="w-5 h-5" /> <p className=" text-2xl" >Quiz</p>
                     </Link>
                     <Link to="/badges" className={navLinkClass("/badges")}>
                         <TrophyIcon className="w-5 h-5" /> <p className=" text-2xl" >Insignias</p>
@@ -240,8 +240,8 @@ function Navbar() {
                             <Link to="/dictionary" onClick={toggleMobileMenu} className={navLinkClass("/dictionary")}>
                                 <BookIcon className="w-5 h-5" /> Diccionario
                             </Link>
-                            <Link to="/quizz" onClick={toggleMobileMenu} className={navLinkClass("/quizz")}>
-                                <BrainIcon className="w-5 h-5" /> Quizz
+                            <Link to="/quiz" onClick={toggleMobileMenu} className={navLinkClass("/quiz")}>
+                                <BrainIcon className="w-5 h-5" /> Quiz
                             </Link>
                             <Link to="/badges" onClick={toggleMobileMenu} className={navLinkClass("/badges")}>
                                 <TrophyIcon className="w-5 h-5" /> Insignias

@@ -26,15 +26,13 @@ export function HeroSection() {
         </div>
 
         {/* Título Principal */}
-        <h1 className="font-mono text-3xl md:text-5xl lg:text-6xl text-foreground leading-tight mb-6 animate-slide-up">
-          MISSPELT
-        </h1>
+        <h1 className="font-mono text-4xl md:text-5xl lg:text-6xl text-foreground leading-tight mb-6 animate-slide-up">MISSPELT</h1>
 
-        <p className="font-sans text-2xl md:text-3xl lg:text-4xl text-foreground max-w-2xl mx-auto leading-relaxed mb-4 animate-slide-up stagger-1">
+        <p className="font-sans text-3xl md:text-3xl lg:text-4xl text-foreground max-w-2xl mx-auto leading-relaxed mb-4 animate-slide-up stagger-1">
           Cultiva tu inglés mientras juegas
         </p>
 
-        <p className="font-sans text-xl text-muted-foreground max-w-lg mx-auto leading-relaxed mb-10 animate-slide-up stagger-2">
+        <p className="font-sans text-2xl text-muted-foreground max-w-lg mx-auto leading-relaxed mb-10 animate-slide-up stagger-2">
           Un juego RPG educativo donde cada palabra aprendida hace crecer tu granja.
         </p>
 
@@ -61,7 +59,7 @@ export function HeroSection() {
           <div className="h-8 w-1 bg-border hidden sm:block" />
           <StatItem label="Slangs" value="150+" />
           <div className="h-8 w-1 bg-border hidden sm:block" />
-          <StatItem label="Niveles" value="12" />
+          <StatItem label="Idioms" value="100+" />
           <div className="h-8 w-1 bg-border hidden sm:block" />
           <StatItem label="Insignias" value="30+" />
         </div>
