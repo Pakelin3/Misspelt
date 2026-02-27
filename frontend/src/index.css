@@ -39,6 +39,10 @@
   html {
     scroll-behavior: smooth;
   }
+  ::selection {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
 
   body {
     @apply bg-background text-foreground font-sans text-xl;

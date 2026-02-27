@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { StarIcon, SwordIcon } from "@/components/PixelIcons";
 import heroBg from "@/img/background.png";
+import TextType from "@/components/ui/TextType";
 
 export function HeroSection() {
   return (
@@ -26,7 +27,19 @@ export function HeroSection() {
         </div>
 
         {/* Título Principal */}
-        <h1 className="font-mono text-4xl md:text-5xl lg:text-6xl text-foreground leading-tight mb-6 animate-slide-up">MISSPELT</h1>
+        <h1 className="font-mono text-4xl md:text-5xl lg:text-6xl text-foreground leading-tight mb-6 animate-slide-up">
+          <TextType
+            text="MISSPELT"
+            typingSpeed={200}
+            pauseDuration={1500}
+            showCursor
+            cursorCharacter=""
+            deletingSpeed={100}
+            variableSpeedEnabled={false}
+            variableSpeedMin={60}
+            variableSpeedMax={120}
+            cursorBlinkDuration={0.5} />
+        </h1>
 
         <p className="font-sans text-3xl md:text-3xl lg:text-4xl text-foreground max-w-2xl mx-auto leading-relaxed mb-4 animate-slide-up stagger-1">
           Cultiva tu inglés mientras juegas

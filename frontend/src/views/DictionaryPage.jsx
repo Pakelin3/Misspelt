@@ -358,7 +358,7 @@ const WordDetailModal = ({ word, onClose }) => {
                                 <div className="flex items-center gap-3">
                                     <button
                                         onClick={() => setCurrentExampleIndex(prev => prev > 0 ? prev - 1 : word.examples.length - 1)}
-                                        className="p-1 bg-muted hover:bg-primary hover:text-primary-foreground pixel-border transition-colors cursor-pointer"
+                                        className="flex items-center gap-3 bg-card text-foreground p-1 hover:bg-primary hover:text-primary-foreground font-mono text-sm pixel-border pixel-btn no-underline"
                                     >
                                         <ChevronLeft className="w-4 h-4" />
                                     </button>
@@ -367,7 +367,7 @@ const WordDetailModal = ({ word, onClose }) => {
                                     </span>
                                     <button
                                         onClick={() => setCurrentExampleIndex(prev => prev < word.examples.length - 1 ? prev + 1 : 0)}
-                                        className="p-1 bg-muted hover:bg-primary hover:text-primary-foreground pixel-border transition-colors cursor-pointer"
+                                        className="flex items-center gap-3 bg-card text-foreground p-1 hover:bg-primary hover:text-primary-foreground font-mono text-sm pixel-border pixel-btn no-underline"
                                     >
                                         <ChevronRight className="w-4 h-4" />
                                     </button>
