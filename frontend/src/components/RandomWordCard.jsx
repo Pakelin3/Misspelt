@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
-// eslint-disable-next-line no-unused-vars
-import { useSpring, animated } from 'react-spring';
+import gsap from 'gsap';
 import { ScaleLoader } from 'react-spinners';
 import { useTheme } from '@/context/ThemeContext';
 
@@ -17,14 +16,11 @@ function RandomWordCard() {
     const [randomExample, setRandomExample] = useState(null);
 
     const displayedWordRef = useRef(displayedWord);
+    const cardRef = useRef(null);
+
     useEffect(() => {
         displayedWordRef.current = displayedWord;
     }, [displayedWord]);
-
-    const [props, api] = useSpring(() => ({
-        from: { opacity: 0, transform: 'translateY(20px)' },
-        config: { duration: 500 }
-    }));
 
     const fetchRandomWord = useCallback(async () => {
         setLoading(true);
@@ -58,14 +54,19 @@ function RandomWordCard() {
             await new Promise(resolve => setTimeout(resolve, remainingTime));
         }
 
+        // --- ANIMACIÓN DE SALIDA (Fade out hacia arriba) ---
         if (displayedWordRef.current && !specificFetchError) {
             await new Promise(resolve => {
-                api.start({
-                    opacity: 0,
-                    transform: 'translateY(-20px)',
-                    onRest: () => resolve(),
-                    config: { duration: 500 }
-                });
+                if (cardRef.current) {
+                    gsap.to(cardRef.current, {
+                        opacity: 0,
+                        y: -20,
+                        duration: 0.5,
+                        onComplete: resolve
+                    });
+                } else {
+                    resolve();
+                }
             });
         }
 
@@ -81,15 +82,20 @@ function RandomWordCard() {
         setLoading(false);
         setInitialLoad(false);
 
+        // --- ANIMACIÓN DE ENTRADA (Fade in desde abajo) ---
         if (!specificFetchError && fetchedWordData) {
-            api.start({
-                from: { opacity: 0, transform: 'translateY(20px)' },
-                to: { opacity: 1, transform: 'translateY(0px)' },
-                reset: true,
-                config: { duration: 500 }
-            });
+            // Usamos setTimeout(0) para asegurar que React ya renderizó la nueva información 
+            // y la referencia cardRef.current existe en el DOM antes de animar.
+            setTimeout(() => {
+                if (cardRef.current) {
+                    gsap.fromTo(cardRef.current,
+                        { opacity: 0, y: 20 },
+                        { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }
+                    );
+                }
+            }, 0);
         }
-    }, [api]);
+    }, []);
 
     useEffect(() => {
         fetchRandomWord();
@@ -137,9 +143,9 @@ function RandomWordCard() {
         };
 
         return (
-            <animated.div
-                style={props}
-
+            // Cambiamos <animated.div> por un simple <div> y le pasamos el ref
+            <div
+                ref={cardRef}
                 className="block max-w-md bg-[var(--color-bg-card)] rounded-lg min-h-[180px]"
             >
                 <div className='flex justify-between items-start min-w-full mb-4'>
@@ -166,7 +172,7 @@ function RandomWordCard() {
                         </span>
                     )}
                 </p>
-            </animated.div>
+            </div>
         );
     }
 
