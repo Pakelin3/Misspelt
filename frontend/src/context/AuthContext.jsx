@@ -102,9 +102,9 @@ export const AuthProvider = ({ children }) => {
                     }
                 }
                 if (translatedErrors.detail && translatedErrors.detail.length > 0) {
-                    showAlert('Error al iniciar sesión', translatedErrors.detail[0], 'error');
+                    showAlert('Error al iniciar sesión', '', 'error');
                 } else if (translatedErrors.non_field_errors && translatedErrors.non_field_errors.length > 0) {
-                    showAlert('Error al iniciar sesión', translatedErrors.non_field_errors[0], 'error');
+                    showAlert('Error al iniciar sesión', '', 'error');
                 } else {
                     showAlert('Error al iniciar sesión', 'Correo electrónico o contraseña incorrectos.', 'error');
                 }
