@@ -22,9 +22,9 @@ const GamePage = () => {
 
     // --- ESTADOS DEL QUIZ ---
     const [sessionWords, setSessionWords] = useState([]);
-
-    // [FIX 1] Usamos useRef para que el Iframe siempre lea la lista más actual
     const sessionWordsRef = useRef([]);
+    const seenWordsRef = useRef(new Set());
+    const correctWordsRef = useRef(new Set());
 
     const [gameWordsTexts, setGameWordsTexts] = useState([]);
     const [showQuiz, setShowQuiz] = useState(false);
@@ -49,8 +49,6 @@ const GamePage = () => {
     }, []);
 
     const [isPreparing, setIsPreparing] = useState(false);
-
-    // 3. INYECCIÓN DEL PUENTE (GODOT <-> REACT)
     const handleIframeLoad = (e) => {
         console.log("React: Iframe cargado. Inyectando puente de comunicación...");
 
@@ -60,27 +58,25 @@ const GamePage = () => {
             return;
         }
 
-        // --- INYECCIÓN 1: TRIGGER QUIZ ---
         iframeWindow.triggerQuiz = (wordText) => {
             console.log("React (desde Iframe): 🚨 Petición de Quiz recibida:", wordText);
 
             if (!wordText) return;
 
-            // [FIX 3] Leemos desde la REFERENCIA (.current), no desde el estado congelado
             const currentWords = sessionWordsRef.current;
 
             const foundWord = currentWords.find(w => {
-                const txt = w.text || w.id; // Ajusta según tu modelo de datos
+                const txt = w.text || w.id;
                 return txt && typeof txt === 'string' && txt.trim().toUpperCase() === wordText.trim().toUpperCase();
             });
 
             if (foundWord) {
                 console.log("React: Palabra encontrada:", foundWord);
+                seenWordsRef.current.add(foundWord.id);
                 setCurrentQuizWord(foundWord);
                 setShowQuiz(true);
             } else {
                 console.warn(`Palabra '${wordText}' no encontrada en memoria. Disponibles:`, currentWords);
-                // Fallback
                 setCurrentQuizWord({
                     id: 9999,
                     text: wordText,
@@ -92,24 +88,22 @@ const GamePage = () => {
             }
         };
 
-        // --- INYECCIÓN 2: GAME OVER ---
-        iframeWindow.handleGameOver = async (finalScore, wordsIds = []) => {
-            console.log("Game Over recibido:", finalScore);
+        iframeWindow.handleGameOver = async (finalScore, timeSpentSeconds = 0) => {
+            console.log("Game Over recibido:", finalScore, "Tiempo:", timeSpentSeconds);
 
-            setResults({
-                xp_earned: finalScore,
-                level: 1,
-            });
-            setGameState('RESULTS'); // Esto cambiará la vista inmediatamente
+            setResults({ xp_earned: finalScore, level: 1 });
+            setGameState('RESULTS');
 
             try {
-                // Si tienes este endpoint listo, úsalo. Si no, comenta el bloque try/catch para evitar errores.
                 const response = await api.post('/game/submit-results/', {
                     xp_earned: finalScore,
-                    seen_word_ids: wordsIds || [],
+                    time_spent: timeSpentSeconds,
+                    seen_word_ids: Array.from(seenWordsRef.current),
+                    correct_word_ids: Array.from(correctWordsRef.current),
                     score: finalScore * 10,
-                    correct_answers: Math.floor(finalScore / 10),
-                    total_questions: 10
+                    correct_answers: Array.from(correctWordsRef.current).length,
+                    total_questions: Array.from(seenWordsRef.current).length,
+                    game_mode: 'SURVIVOR'
                 });
 
                 if (fetchUserData) await fetchUserData();
@@ -117,10 +111,12 @@ const GamePage = () => {
                 setResults((prev) => ({
                     ...prev,
                     new_total_xp: response.data?.new_xp || 0,
-                    level: response.data?.new_level || 1
+                    level: response.data?.new_level || 1,
+                    time_spent: response.data?.time_spent || timeSpentSeconds,
+                    breakdown: response.data?.match_breakdown
                 }));
             } catch (error) {
-                console.warn("Error al guardar partida (API):", error);
+                console.error("Error al guardar partida (API):", error);
             }
         };
 
@@ -130,7 +126,6 @@ const GamePage = () => {
         };
     };
 
-    // 4. MANEJO DEL QUIZ (Respuesta de React -> Godot)
     const sendToGodot = (success) => {
         if (iframeRef.current && iframeRef.current.contentWindow) {
             const godotWindow = iframeRef.current.contentWindow;
@@ -149,6 +144,9 @@ const GamePage = () => {
     const handleQuizComplete = (score) => {
         setShowQuiz(false);
         const success = score > 0;
+        if (success && currentQuizWord) {
+            correctWordsRef.current.add(currentQuizWord.id);
+        }
         console.log("React: Quiz completado (Victoria).");
         sendToGodot(success);
     };
@@ -158,6 +156,7 @@ const GamePage = () => {
         console.log("React: Quiz cerrado manualmente o derrota (X).");
         sendToGodot(false);
     };
+
     const startGame = async () => {
         if (isPreparing) return;
         setIsPreparing(true);
@@ -177,7 +176,6 @@ const GamePage = () => {
             setGameState('PLAYING');
         } catch (error) {
             console.error("Error cargando palabras antes de iniciar:", error);
-            // Fallback simple por si falla el API para no bloquear el juego
             setGameWordsTexts(["ERROR", "FALLBACK"]);
             setGameState('PLAYING');
         } finally {

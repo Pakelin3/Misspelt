@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
-from api.models import User, Word, Badge, UserStats, EmailVerificationToken, Avatar #
+from api.models import User, Word, Badge, UserStats, EmailVerificationToken, Avatar, GameHistory
 from api.services import award_badge_rewards #
 from api.badge_unlock_logic import check_and_unlock_badges #
 from django.shortcuts import redirect
@@ -73,19 +73,19 @@ class VerifyEmailView(APIView): #
             user = verification_token.user
 
             if user.profile.verified:
-                return redirect(f"{settings.FRONTEND_URL}/verify-email?status=already_verified") #
+                return redirect(f"{settings.FRONTEND_URL}/verify-email?status=already_verified")
 
-            if verification_token.is_valid(): #
-                user.profile.verified = True #
-                user.profile.save() #
+            if verification_token.is_valid():
+                user.profile.verified = True
+                user.profile.save()
                 verification_token.delete()
 
                 return redirect(f"{settings.FRONTEND_URL}/verify-email?status=success")
             else:
-                verification_token.delete() 
+                verification_token.delete()
                 return redirect(f"{settings.FRONTEND_URL}/verify-email?status=expired_or_invalid")
 
-        except EmailVerificationToken.DoesNotExist: #
+        except EmailVerificationToken.DoesNotExist:
             return redirect(f"{settings.FRONTEND_URL}/verify-email?status=token_not_found")
         except Exception as e:
             print(f"Error durante la verificación del email: {e}")
@@ -340,8 +340,6 @@ def get_quiz_words(request):
     
     if word_type:
         words = words.filter(word_type=word_type)
-    
-    # Obtener aleatorias
     random_words = words.order_by('?')[:limit]
     
     serializer = WordSerializer(random_words, many=True)
@@ -351,89 +349,97 @@ def get_quiz_words(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def submit_game_results(request):
-    """
-    Recibe los resultados de una partida desde Godot y actualiza las estadísticas.
-    JSON Esperado:
-    {
-        "score": 100,
-        "xp_earned": 50,
-        "correct_answers": 5,
-        "total_questions": 10,
-        "word_type": "SLANG" (opcional)
-    }
-    """
-    user = request.user
     data = request.data
+    user = request.user
     
-    # 1. Extraer datos enviados por Godot
     score = data.get('score', 0)
     xp_earned = data.get('xp_earned', 0)
-    correct_count = data.get('correct_answers', 0)
+    correct_answers = data.get('correct_answers', 0)
     total_questions = data.get('total_questions', 0)
-    game_word_type = data.get('word_type', 'NONE')
-
-    # 2. Guardar en Historial de Partidas
-    from api.models import GameHistory # Asegúrate de tener importado esto
-    GameHistory.objects.create(
-        user=user,
-        score=score,
-        correct_in_game=correct_count,
-        total_questions_in_game=total_questions
-    )
-
-    # 3. Actualizar UserStats (Usamos F() para evitar condiciones de carrera)
-    stats, _ = UserStats.objects.get_or_create(user=user)
+    game_mode = data.get('game_mode', 'SURVIVOR')
     
+    time_spent = data.get('time_spent', 0)
+    seen_word_ids = data.get('seen_word_ids', [])
+    correct_word_ids = data.get('correct_word_ids', [])
+
+    try:
+        stats = UserStats.objects.get(user=user)
+    except UserStats.DoesNotExist:
+        return Response({'error': 'UserStats no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+    seen_words = Word.objects.filter(id__in=seen_word_ids)
+    correct_words = Word.objects.filter(id__in=correct_word_ids)
+
+    match_breakdown = {
+        "seen": {"SLANG": 0, "IDIOM": 0, "PHRASAL_VERB": 0, "VOCABULARY": 0},
+        "correct": {"SLANG": 0, "IDIOM": 0, "PHRASAL_VERB": 0, "VOCABULARY": 0}
+    }
+
+    for w in seen_words:
+        if w.word_type in match_breakdown["seen"]:
+            match_breakdown["seen"][w.word_type] += 1
+        stats.words_seen_total = F('words_seen_total') + 1
+        if w.word_type == "SLANG": stats.slangs_seen = F('slangs_seen') + 1
+        elif w.word_type == "PHRASAL_VERB": stats.phrasal_verbs_seen = F('phrasal_verbs_seen') + 1
+
+    for w in correct_words:
+        if w.word_type in match_breakdown["correct"]:
+            match_breakdown["correct"][w.word_type] += 1
+            
+            if w.word_type == "SLANG": 
+                stats.slangs_learned = F('slangs_learned') + 1
+                stats.correct_slangs = F('correct_slangs') + 1
+            elif w.word_type == "IDIOM": 
+                stats.idioms_learned = F('idioms_learned') + 1
+            elif w.word_type == "PHRASAL_VERB": 
+                stats.phrasal_verbs_learned = F('phrasal_verbs_learned') + 1
+                stats.correct_phrasal_verbs = F('correct_phrasal_verbs') + 1
+            elif w.word_type == "VOCABULARY": 
+                stats.vocabulary_learned = F('vocabulary_learned') + 1
+                
+    stats.save()
+    
+    if correct_words.exists():
+        stats.unlocked_words.add(*correct_words)
+
     stats.experience = F('experience') + xp_earned
     stats.total_questions_answered = F('total_questions_answered') + total_questions
-    stats.correct_answers_total = F('correct_answers_total') + correct_count
+    stats.correct_answers_total = F('correct_answers_total') + correct_answers
     
-    # Actualizar contadores específicos
-    if game_word_type == 'SLANG':
-        stats.total_slangs_questions = F('total_slangs_questions') + total_questions
-        stats.correct_slangs = F('correct_slangs') + correct_count
-    elif game_word_type == 'PHRASAL_VERB':
-        stats.total_phrasal_verbs_questions = F('total_phrasal_verbs_questions') + total_questions
-        stats.correct_phrasal_verbs = F('correct_phrasal_verbs') + correct_count
-        
-    # Manejo básico de Racha (Streak) - Simplificado
-    # Godot debería enviar si mantuvo la racha, pero aquí asumimos que si jugó, suma racha.
-    # Para lógica real de racha diaria, se requiere comparar fechas.
     from django.utils import timezone
     today = timezone.now().date()
-
-    # 4. Actualizar palabras desbloqueadas
-    seen_word_ids = data.get('seen_word_ids', [])
-    
-    if seen_word_ids:
-        stats, _ = UserStats.objects.get_or_create(user=user)
-        words_to_unlock = Word.objects.filter(id__in=seen_word_ids)
-        stats.unlocked_words.add(*words_to_unlock)
-        stats.words_seen_total = stats.unlocked_words.count()
-        stats.save()
-    
     if stats.last_login_date != today:
         stats.current_streak = F('current_streak') + 1
         stats.last_login_date = today
-    
+        
     stats.save()
-    
-    # Recargar stats para tener los valores numéricos actualizados (por el uso de F)
     stats.refresh_from_db()
 
-    # Actualizar Longest Streak si es necesario
     if stats.current_streak > stats.longest_streak:
         stats.longest_streak = stats.current_streak
         stats.save()
 
-    # 5. Verificar Insignias (Badges)
+    # 4. Crear el Historial
+    from api.models import GameHistory
+    GameHistory.objects.create(
+        user=user,
+        score=score,
+        correct_in_game=correct_answers,
+        total_questions_in_game=total_questions,
+        game_mode=game_mode,
+        time_spent_seconds=time_spent,
+        match_breakdown=match_breakdown
+    )
+
     newly_unlocked = check_and_unlock_badges(user)
 
     return Response({
         'message': 'Partida guardada correctamente',
         'new_xp': stats.experience,
         'new_level': stats.get_level(),
-        'badges_unlocked': [b.title for b in newly_unlocked]
+        'badges_unlocked': [b.title for b in newly_unlocked],
+        'match_breakdown': match_breakdown,
+        'time_spent': time_spent
     }, status=status.HTTP_200_OK)
 
 # * --------------------------------------------------------------------------------------------------

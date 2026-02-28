@@ -14,9 +14,7 @@ function BadgesAdminPanel() {
     // Estados de datos
     const [badges, setBadges] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
 
-    const [page, setPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
 
     // Estado del Formulario
@@ -27,9 +25,12 @@ function BadgesAdminPanel() {
     const [formData, setFormData] = useState({
         title: '',
         description: '',
+        category: 'BASIC',
         xp_reward: 50,
-        condition_type: 'WORDS_UNLOCKED',
+        condition_type: 'correct_slangs',
         condition_value: 10,
+        condition_description: '',
+        reward_description: '',
         image: null // File object
     });
     const [previewUrl, setPreviewUrl] = useState(null);
@@ -43,7 +44,7 @@ function BadgesAdminPanel() {
             setBadges(data);
         } catch (err) {
             console.error("Error fetching badges:", err);
-            setError("No se pudieron cargar las insignias.");
+            toast.error("Error", { description: "No se pudieron cargar las insignias." });
         } finally {
             setLoading(false);
         }
@@ -59,10 +60,10 @@ function BadgesAdminPanel() {
             setEditingBadge(badge);
 
             // Extract condition data safely
-            let condType = 'WORDS_UNLOCKED';
+            let condType = 'correct_slangs';
             let condValue = 10;
             if (badge.unlock_condition_data && badge.unlock_condition_data.length > 0) {
-                condType = badge.unlock_condition_data[0].type || 'WORDS_UNLOCKED';
+                condType = badge.unlock_condition_data[0].type || 'correct_slangs';
                 condValue = badge.unlock_condition_data[0].value || 0;
             }
 
@@ -75,9 +76,12 @@ function BadgesAdminPanel() {
             setFormData({
                 title: badge.title || '',
                 description: badge.description || '',
+                category: badge.category || 'BASIC',
                 xp_reward: xp,
                 condition_type: condType,
                 condition_value: condValue,
+                condition_description: badge.condition_description || '',
+                reward_description: badge.reward_description || '',
                 image: null
             });
             setPreviewUrl(badge.image);
@@ -86,9 +90,12 @@ function BadgesAdminPanel() {
             setFormData({
                 title: '',
                 description: '',
+                category: 'BASIC',
                 xp_reward: 50,
-                condition_type: 'WORDS_UNLOCKED',
+                condition_type: 'correct_slangs',
                 condition_value: 10,
+                condition_description: '',
+                reward_description: '',
                 image: null
             });
             setPreviewUrl(null);
@@ -118,13 +125,13 @@ function BadgesAdminPanel() {
             value: Number(formData.condition_value)
         }];
         dataToSend.append('unlock_condition_data', JSON.stringify(conditionData));
-        dataToSend.append('condition_description', `${formData.condition_type}: ${formData.condition_value}`); // Simple generation
+        dataToSend.append('condition_description', formData.condition_description || `${formData.condition_type}: ${formData.condition_value}`);
 
         const rewardData = { exp: Number(formData.xp_reward) };
         dataToSend.append('reward_data', JSON.stringify(rewardData));
-        dataToSend.append('reward_description', `+${formData.xp_reward} XP`); // Simple generation
+        dataToSend.append('reward_description', formData.reward_description || `+${formData.xp_reward} XP`);
 
-        dataToSend.append('category', 'BASIC'); // Default category
+        dataToSend.append('category', formData.category);
 
         if (formData.image instanceof File) {
             dataToSend.append('image', formData.image);
@@ -161,7 +168,7 @@ function BadgesAdminPanel() {
                         await api.delete(`/badges/${id}/`);
                         fetchBadges();
                         toast.success('Borrado');
-                    } catch (error) {
+                    } catch {
                         toast.error('Error', { description: 'No se pudo eliminar.' });
                     }
                 }
@@ -251,8 +258,17 @@ function BadgesAdminPanel() {
                                         {badge.description}
                                     </p>
 
-                                    <div className="text-[10px] font-bold bg-secondary/50 px-2 py-1 rounded-none border border-foreground/30 mb-4 w-full truncate">
-                                        {conditionDisplay}
+                                    {/* Category */}
+                                    <div className="text-[9px] font-bold px-2 py-0.5 mb-2 border border-foreground uppercase">
+                                        {badge.category || 'BASIC'}
+                                    </div>
+
+                                    {/* Action info */}
+                                    <div className="text-[10px] font-bold bg-secondary/30 px-2 py-1 border border-foreground/30 mb-1 w-full truncate">
+                                        Desafío: {badge.condition_description || conditionDisplay}
+                                    </div>
+                                    <div className="text-[10px] font-bold bg-primary/20 px-2 py-1 mb-4 border border-foreground/30 w-full truncate text-primary">
+                                        Premio: {badge.reward_description || `+${xpDisplay} XP`}
                                     </div>
 
                                     {/* Actions */}
@@ -331,70 +347,127 @@ function BadgesAdminPanel() {
 
                                 {/* Columna Derecha: Datos */}
                                 <div className="md:col-span-2 space-y-4">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold uppercase">Nombre de la Medalla</label>
-                                        <Input
-                                            required
-                                            value={formData.title}
-                                            onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                            className="border-2 border-foreground rounded-none focus:ring-0 focus:border-primary bg-background"
-                                            placeholder="Ej: Cazador de Verbos"
-                                        />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold uppercase">Nombre de la Medalla</label>
+                                            <Input
+                                                required
+                                                value={formData.title}
+                                                onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                                className="border-2 border-foreground rounded-none focus:ring-0 focus:border-primary bg-background"
+                                                placeholder="Ej: Cazador de Verbos"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold uppercase">Categoría</label>
+                                            <select
+                                                className="w-full h-10 px-3 bg-background border-2 border-foreground rounded-none focus:outline-none focus:border-primary text-sm font-mono"
+                                                value={formData.category}
+                                                onChange={e => setFormData({ ...formData, category: e.target.value })}
+                                            >
+                                                <option value="BASIC">Básica</option>
+                                                <option value="RARE">Rara</option>
+                                                <option value="EPIC">Épica</option>
+                                                <option value="LEGENDARY">Legendaria</option>
+                                            </select>
+                                        </div>
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold uppercase">Descripción</label>
+                                        <label className="text-xs font-bold uppercase">Descripción General</label>
                                         <textarea
                                             required
-                                            className="w-full p-3 bg-background border-2 border-foreground rounded-none focus:outline-none focus:border-primary text-sm min-h-[80px]"
+                                            className="w-full p-2 bg-background border-2 border-foreground rounded-none focus:outline-none focus:border-primary text-sm min-h-[60px]"
                                             value={formData.description}
                                             onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                            placeholder="Descripción que verá el usuario..."
+                                            placeholder="Descripción que verá el usuario en su perfil..."
                                         />
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-bold uppercase text-primary">Recompensa XP</label>
-                                            <Input
-                                                type="number"
-                                                min="0"
-                                                value={formData.xp_reward}
-                                                onChange={e => setFormData({ ...formData, xp_reward: e.target.value })}
-                                                className="border-2 border-foreground rounded-none focus:ring-0 focus:border-primary text-right font-bold"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-bold uppercase">Valor Objetivo</label>
-                                            <Input
-                                                type="number"
-                                                min="1"
-                                                value={formData.condition_value}
-                                                onChange={e => setFormData({ ...formData, condition_value: e.target.value })}
-                                                className="border-2 border-foreground rounded-none focus:ring-0 focus:border-primary text-right"
-                                            />
-                                        </div>
-                                    </div>
+                                        <div className="space-y-4 border-2 border-foreground p-3 bg-muted/10 relative mt-2 pt-4">
+                                            <div className="absolute -top-3 left-2 bg-card px-1 text-[10px] font-bold border border-foreground">CONDICIÓN DE DESBLOQUEO</div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] uppercase">Tipo de Métrica</label>
+                                                <select
+                                                    className="w-full h-8 px-2 bg-background border border-foreground rounded-none focus:outline-none focus:border-primary text-xs font-mono"
+                                                    value={formData.condition_type}
+                                                    onChange={e => setFormData({ ...formData, condition_type: e.target.value })}
+                                                >
+                                                    <option value="correct_slangs">Slangs Acertados</option>
+                                                    <option value="slangs_learned">Slangs Dominados</option>
+                                                    <option value="idioms_learned">Idioms Dominados</option>
+                                                    <option value="phrasal_verbs_learned">Phrasal Verbs Dominados</option>
+                                                    <option value="vocabulary_learned">Vocabulario Dominado</option>
 
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold uppercase">Tipo de Condición</label>
-                                        <select
-                                            className="w-full h-10 px-3 bg-background border-2 border-foreground rounded-none focus:outline-none focus:border-primary text-sm font-mono"
-                                            value={formData.condition_type}
-                                            onChange={e => setFormData({ ...formData, condition_type: e.target.value })}
-                                        >
-                                            <option value="correct_slangs">Slangs Acertados</option>
-                                            <option value="total_exp_achieved">Experiencia Total</option>
-                                            <option value="answered_total_questions">Preguntas Respondidas</option>
-                                            <option value="words_seen_total">Palabras Vistas</option>
-                                            <option value="phrasal_verbs_seen">Phrasal Verbs Vistos</option>
-                                            <option value="correct_answers_total">Respuestas Correctas</option>
-                                            <option value="total_slangs_questions">Preguntas de Slangs</option>
-                                            <option value="correct_phrasal_verbs">Phrasal Verbs Correctos</option>
-                                            <option value="total_phrasal_verbs_questions">Preguntas de Phrasal Verbs</option>
-                                            <option value="current_streak">Racha Actual</option>
-                                            <option value="longest_streak">Racha Más Larga</option>
-                                        </select>
+                                                    <option value="words_seen_total">Descubrimientos Totales</option>
+                                                    <option value="unique_words_unlocked">Palabras Únicas en Colección</option>
+                                                    <option value="avatars_unlocked">Avatares Desbloqueados</option>
+
+                                                    <option value="level_reached">Nivel de Jugador</option>
+                                                    <option value="total_exp_achieved">Experiencia Total</option>
+
+                                                    <option value="general_accuracy">Precisión General (%)</option>
+                                                    <option value="slang_accuracy">Precisión Slang (%)</option>
+                                                    <option value="phrasal_verb_accuracy">Precisión Phrasal Verbs (%)</option>
+
+                                                    <option value="answered_total_questions">Preguntas Respondidas</option>
+                                                    <option value="correct_answers_total">Respuestas Correctas</option>
+
+                                                    <option value="phrasal_verbs_seen">Phrasal Verbs Vistos</option>
+                                                    <option value="slangs_seen">Slangs Vistos</option>
+                                                    <option value="total_slangs_questions">Preguntas de Slangs</option>
+                                                    <option value="correct_phrasal_verbs">Phrasal Verbs Correctos</option>
+                                                    <option value="total_phrasal_verbs_questions">Preguntas de Phrasal Verbs</option>
+                                                    <option value="current_streak">Racha Actual (Días)</option>
+                                                    <option value="longest_streak">Racha Más Larga (Días)</option>
+                                                </select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] uppercase">Valor Necesario</label>
+                                                <Input
+                                                    type="number"
+                                                    min="1"
+                                                    value={formData.condition_value}
+                                                    onChange={e => setFormData({ ...formData, condition_value: e.target.value })}
+                                                    className="h-8 border border-foreground rounded-none focus:ring-0 focus:border-primary text-right text-xs"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] uppercase block underline decoration-dashed">Texto Público Misión</label>
+                                                <Input
+                                                    required
+                                                    value={formData.condition_description}
+                                                    onChange={e => setFormData({ ...formData, condition_description: e.target.value })}
+                                                    className="h-8 border border-foreground rounded-none focus:ring-0 focus:border-primary text-xs"
+                                                    placeholder="Ej: Acertar 10 Slangs"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4 border-2 border-foreground p-3 bg-muted/10 relative mt-2 pt-4">
+                                            <div className="absolute -top-3 left-2 bg-card px-1 text-[10px] font-bold border border-foreground text-primary">RECOMPENSAS AL JUGADOR</div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] uppercase text-primary">Premios Base (XP)</label>
+                                                <Input
+                                                    type="number"
+                                                    min="0"
+                                                    value={formData.xp_reward}
+                                                    onChange={e => setFormData({ ...formData, xp_reward: e.target.value })}
+                                                    className="h-8 border border-foreground rounded-none focus:ring-0 focus:border-primary text-right font-bold text-xs"
+                                                />
+                                            </div>
+                                            <div className="space-y-2 mt-auto">
+                                                <label className="text-[10px] uppercase block underline decoration-dashed mt-4">Texto Público Premio</label>
+                                                <Input
+                                                    required
+                                                    value={formData.reward_description}
+                                                    onChange={e => setFormData({ ...formData, reward_description: e.target.value })}
+                                                    className="h-8 border border-foreground rounded-none focus:ring-0 focus:border-primary text-xs"
+                                                    placeholder="Ej: +50 XP"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

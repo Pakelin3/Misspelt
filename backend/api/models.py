@@ -85,11 +85,9 @@ def create_user_profile(sender, instance, created, **kwargs):
         user_stats.unlocked_avatars.set(all_default_avatars)
 
         try:
-            # Busca el avatar por un nombre específico (ej. 'default') y que sea is_default=True
             specific_default_avatar = Avatar.objects.get(name='default', is_default=True)
             profile.current_avatar = specific_default_avatar
         except Avatar.DoesNotExist:
-            # Si ese específico no existe, asigna el primero que sea default
             if all_default_avatars.exists():
                 profile.current_avatar = all_default_avatars.first()
             else:
@@ -149,6 +147,10 @@ class UserStats(models.Model):
     last_login_date = models.DateField(null=True, blank=True)
     current_streak = models.IntegerField(default=0)
     longest_streak = models.IntegerField(default=0)
+    slangs_learned = models.IntegerField(default=0)
+    idioms_learned = models.IntegerField(default=0)
+    phrasal_verbs_learned = models.IntegerField(default=0)
+    vocabulary_learned = models.IntegerField(default=0)
     unlocked_words = models.ManyToManyField('Word', blank=True, related_name='unlocked_by_users', help_text="Palabras que el usuario ya ha visto en el juego")
     badges = models.ManyToManyField('Badge', blank=True, related_name='unlocked_by_users')
     unlocked_avatars = models.ManyToManyField(
@@ -245,6 +247,8 @@ class GameHistory(models.Model):
     score = models.IntegerField(default=0)
     correct_in_game = models.IntegerField(default=0) 
     total_questions_in_game = models.IntegerField(default=0)
+    time_spent_seconds = models.IntegerField(default=0)
+    match_breakdown = models.JSONField(default=dict, blank=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.get_game_mode_display()} - {self.played_at}"

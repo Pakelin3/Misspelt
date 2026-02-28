@@ -40,9 +40,6 @@ const QuizManager = ({ words = [], allWords = [], onComplete, onClose }) => {
             spread: 80,
             origin: { y: 0.6 }
         });
-        setTimeout(() => {
-            if (onComplete) onComplete(score);
-        }, 3000);
     };
 
     const handleCorrect = () => {
@@ -115,7 +112,7 @@ const QuizManager = ({ words = [], allWords = [], onComplete, onClose }) => {
                 <div className="bg-muted px-8 py-4 border-4 border-primary mb-8 pixel-border shadow-[4px_4px_0px_0px_rgba(var(--primary),0.3)]">
                     <p className="text-3xl font-black text-primary font-pixel">+{score} XP</p>
                 </div>
-                <button onClick={onClose} className="w-full md:w-auto px-10 py-4 uppercase font-bold text-xl pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
+                <button onClick={() => onComplete(score)} className="w-full md:w-auto px-10 py-4 uppercase font-bold text-xl pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
                     Continuar
                 </button>
             </div>
