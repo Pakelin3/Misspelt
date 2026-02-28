@@ -164,6 +164,85 @@ class WordViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         return Response({'detail': 'No words found'}, status=404)
 
+    @action(detail=False, methods=['post'])
+    def import_csv(self, request):
+        import csv
+        import io
+        from django.db import transaction
+
+        file = request.FILES.get('file')
+        if not file:
+            return Response({'error': 'No file was provided.'}, status=400)
+            
+        if not file.name.endswith('.csv'):
+            return Response({'error': 'The file must be a .csv file.'}, status=400)
+
+        decoded_file = file.read().decode('utf-8')
+        io_string = io.StringIO(decoded_file)
+        # Assuming the CSV has a header row like:
+        # word,translation,word_type,difficulty_level,definition,tags,ex1_en,ex1_es,ex2_en,ex2_es
+        reader = csv.DictReader(io_string)
+
+        words_to_create = []
+        errors = []
+
+        try:
+            with transaction.atomic():
+                for index, row in enumerate(reader, start=2): 
+                    text = row.get('word', '').strip()
+                    definition = row.get('definition', '').strip()
+                    
+                    if not text or not definition:
+                        errors.append(f"Row {index}: 'word' and 'definition' are required.")
+                        continue
+                        
+                    if Word.objects.filter(text__iexact=text).exists():
+                        errors.append(f"Row {index}: Word '{text}' already exists.")
+                        continue
+
+                    examples = []
+                    
+                    if row.get('ex1_en') and row.get('ex1_es'):
+                        examples.append({'en': row.get('ex1_en').strip(), 'es': row.get('ex1_es').strip()})
+                    if row.get('ex2_en') and row.get('ex2_es'):
+                        examples.append({'en': row.get('ex2_en').strip(), 'es': row.get('ex2_es').strip()})
+                        
+                    word_type = row.get('word_type', '').strip().upper()
+                    valid_types = [choice[0] for choice in Word.WordType.choices]
+                    if word_type not in valid_types:
+                        word_type = Word.WordType.SLANG
+
+                    try:
+                        difficulty_level = int(row.get('difficulty_level', 1))
+                    except ValueError:
+                        difficulty_level = 1
+
+                    word_instance = Word(
+                        text=text,
+                        translation=row.get('translation', '').strip(),
+                        definition=definition,
+                        word_type=word_type,
+                        difficulty_level=difficulty_level,
+                        tags=row.get('tags', '').strip(),
+                        examples=examples
+                    )
+                    words_to_create.append(word_instance)
+                
+                if errors:
+                    raise ValueError("Validation failed")
+                    
+                Word.objects.bulk_create(words_to_create)
+                
+        except ValueError:
+            return Response({'errors': errors}, status=400)
+        except Exception as e:
+            return Response({'error': f"Uncaught error processing CSV: {str(e)}"}, status=500)
+
+        return Response({
+            'message': f"Successfully imported {len(words_to_create)} words.",
+            'count': len(words_to_create)
+        }, status=201)
+
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA INSIGNIAS (CRUD) ---

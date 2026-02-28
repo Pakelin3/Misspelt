@@ -182,7 +182,7 @@ function AdminDashboard() {
                         <Button
                             variant="outline"
                             size="sm"
-                            className="hidden sm:flex gap-2 font-mono text-xs pixel-btn"
+                            className="hidden sm:flex gap-2 font-mono text-xs pixel-btn rounded-none border-2 border-foreground"
                             onClick={() => navigate('/')}
                         >
                             <SwordIcon className="w-4 h-4" />

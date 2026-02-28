@@ -2,7 +2,9 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { StarIcon, SwordIcon } from "@/components/PixelIcons";
 import heroBg from "@/img/background.png";
-import TextType from "@/components/ui/TextType";
+// import TextType from "@/components/ui/TextType";
+// import ASCIIText from "@/components/ui/TextASCII";
+import TextShuffle from "@/components/ui/TextShuffle";
 
 export function HeroSection() {
   return (
@@ -28,17 +30,21 @@ export function HeroSection() {
 
         {/* Título Principal */}
         <h1 className="font-mono text-4xl md:text-5xl lg:text-6xl text-foreground leading-tight mb-6 animate-slide-up">
-          <TextType
+          <TextShuffle
             text="MISSPELT"
-            typingSpeed={200}
-            pauseDuration={1500}
-            showCursor
-            cursorCharacter=""
-            deletingSpeed={100}
-            variableSpeedEnabled={false}
-            variableSpeedMin={60}
-            variableSpeedMax={120}
-            cursorBlinkDuration={0.5} />
+            shuffleDirection="up"
+            duration={1}
+            animationMode="evenodd"
+            shuffleTimes={1}
+            ease="back.out(1.1)"
+            stagger={0.2}
+            threshold={0.1}
+            triggerOnce={true}
+            triggerOnHover
+            respectReducedMotion={true}
+            loop
+            loopDelay={1}
+          />
         </h1>
 
         <p className="font-sans text-3xl md:text-3xl lg:text-4xl text-foreground max-w-2xl mx-auto leading-relaxed mb-4 animate-slide-up stagger-1">

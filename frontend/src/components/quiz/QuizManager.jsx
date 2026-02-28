@@ -5,7 +5,7 @@ import SentenceBuilder from './SentenceBuilder';
 import MultiChoice from './MultiChoice';
 import ListeningChallenge from './ListeningChallenge';
 
-const QuizManager = ({ words = [], allWords = [], onComplete, onClose }) => {
+const QuizManager = ({ words = [], allWords = [], onComplete, onClose, mode = 'practice' }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [score, setScore] = useState(0);
     const [lives, setLives] = useState(3);
@@ -93,11 +93,27 @@ const QuizManager = ({ words = [], allWords = [], onComplete, onClose }) => {
         return (
             <div className="flex flex-col items-center justify-center p-8 text-center bg-background rounded-none border-4 border-primary pixel-border animate-in zoom-in duration-300 shadow-[8px_8px_0px_0px_rgba(var(--primary),0.5)]">
                 <AlertCircle size={80} className="text-destructive mb-6 drop-shadow-md" />
-                <h2 className="text-4xl font-black text-destructive mb-4 font-pixel tracking-wider drop-shadow-sm">GAME OVER</h2>
-                <p className="mb-8 text-foreground text-xl font-sans font-bold">¡La temible <span className="text-3xl text-destructive font-black">Ñ</span> ha despertado!</p>
-                <button onClick={onClose} className="w-full md:w-auto px-10 py-4 uppercase font-bold text-xl pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
-                    Aceptar Destino
-                </button>
+                <h2 className="text-4xl font-black text-destructive mb-4 font-pixel tracking-wider drop-shadow-sm">
+                    {mode === 'game' ? 'GAME OVER' : '¡INTÉNTALO DE NUEVO!'}
+                </h2>
+                <p className="mb-8 text-foreground text-xl font-sans font-bold">
+                    {mode === 'game' ? (
+                        <>¡La temible <span className="text-3xl text-destructive font-black">Ñ</span> ha despertado!</>
+                    ) : (
+                        'Se te han acabado las vidas. ¡La práctica hace al maestro!'
+                    )}
+                </p>
+
+                <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+                    <button onClick={onClose} className="w-full md:w-auto px-8 md:px-10 py-4 uppercase bg-accent font-bold text-lg md:text-xl pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
+                        {mode === 'game' ? 'Aceptar Destino' : 'Volver'}
+                    </button>
+                    {mode === 'practice' && (
+                        <button onClick={() => { setLives(3); setScore(0); setCurrentIndex(0); setGameStatus('playing'); }} className="w-full md:w-auto px-8 md:px-10 py-4 uppercase font-bold text-lg md:text-xl bg-primary text-primary-foreground pixel-btn pixel-border-primary shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
+                            Reintentar
+                        </button>
+                    )}
+                </div>
             </div>
         );
     }
@@ -107,7 +123,9 @@ const QuizManager = ({ words = [], allWords = [], onComplete, onClose }) => {
         return (
             <div className="flex flex-col items-center justify-center p-8 text-center bg-background rounded-none border-4 border-primary pixel-border animate-in zoom-in duration-300 shadow-[8px_8px_0px_0px_rgba(var(--primary),0.5)]">
                 <Trophy size={80} className="text-yellow-500 mb-6 animate-bounce drop-shadow-md" />
-                <h2 className="text-4xl font-black text-primary mb-4 font-pixel tracking-wider drop-shadow-sm">¡VICTORIA!</h2>
+                <h2 className="text-4xl font-black text-primary mb-4 font-pixel tracking-wider drop-shadow-sm">
+                    {mode === 'game' ? '¡VICTORIA!' : '¡COMPLETADO!'}
+                </h2>
                 <p className="mb-8 text-foreground text-xl font-sans font-bold">Has dominado estas palabras.</p>
                 <div className="bg-muted px-8 py-4 border-4 border-primary mb-8 pixel-border shadow-[4px_4px_0px_0px_rgba(var(--primary),0.3)]">
                     <p className="text-3xl font-black text-primary font-pixel">+{score} XP</p>
@@ -120,7 +138,7 @@ const QuizManager = ({ words = [], allWords = [], onComplete, onClose }) => {
     }
 
     return (
-        <div className="w-full max-w-5xl mx-auto bg-background p-6 rounded-none border-4 border-primary pixel-border relative shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+        <div className="w-full max-w-3xl mx-auto bg-background p-4 md:p-6 rounded-none border-4 border-primary pixel-border relative shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
             {/* Header */}
             <div className="flex justify-between items-center mb-8 border-b-4 border-primary pb-4">
                 <div className="flex items-center gap-3">
@@ -156,7 +174,7 @@ const QuizManager = ({ words = [], allWords = [], onComplete, onClose }) => {
             </div>
 
             {/* Barra de Progreso */}
-            <div className="mt-8 relative h-6 bg-muted border-4 border-primary overflow-hidden pixel-border">
+            {/* <div className="mt-8 relative h-6 bg-muted border-4 border-primary overflow-hidden pixel-border">
                 <div
                     className="h-full bg-primary transition-all duration-500 ease-out"
                     style={{ width: `${((currentIndex) / words.length) * 100}%` }}
@@ -164,7 +182,7 @@ const QuizManager = ({ words = [], allWords = [], onComplete, onClose }) => {
             </div>
             <p className="text-center text-sm font-bold text-muted-foreground mt-3 font-pixel">
                 {currentIndex + 1} / {words.length}
-            </p>
+            </p> */}
         </div>
     );
 };

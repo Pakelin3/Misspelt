@@ -153,8 +153,25 @@ function BadgesAdminPanel() {
             fetchBadges();
         } catch (err) {
             console.error(err);
-            const msg = err.response?.data ? JSON.stringify(err.response.data) : 'No se pudo guardar.';
-            toast.error('Error', { description: msg });
+            let errorMessage = 'No se pudo guardar la insignia.';
+
+            if (err.response?.data) {
+                const data = err.response.data;
+                const errorMessages = [];
+                for (const key in data) {
+                    if (Array.isArray(data[key])) {
+                        errorMessages.push(`${key}: ${data[key].join(', ')}`);
+                    } else if (typeof data[key] === 'string') {
+                        errorMessages.push(data[key]);
+                    }
+                }
+
+                if (errorMessages.length > 0) {
+                    errorMessage = errorMessages.join(' | ');
+                }
+            }
+
+            toast.error('Error de Validación', { description: errorMessage });
         }
     };
 
@@ -341,7 +358,7 @@ function BadgesAdminPanel() {
                                         onChange={handleFileChange}
                                     />
                                     <p className="text-[10px] text-muted-foreground text-center">
-                                        Recomendado: PNG/WebP 512x512px (thiings.co)
+                                        Recomendado: PNG/WebP 512x512px <a href="https://thiings.co/" target="_blank" rel="noopener noreferrer" className="underline">thiings.co</a>
                                     </p>
                                 </div>
 

@@ -136,8 +136,8 @@ const SentenceBuilder = ({ word, onSuccess, onError }) => {
     };
 
     return (
-        <div className="flex flex-col items-center space-y-8 w-full max-w-4xl">
-            <div className="text-center space-y-4 bg-muted p-6 border-4 border-primary pixel-border w-full md:w-auto shadow-[4px_4px_0px_0px_rgba(var(--primary),0.3)]">
+        <div className="flex flex-col items-center space-y-8 w-full">
+            <div className="text-center space-y-4 bg-muted p-6 border-4 border-primary pixel-border w-full shadow-[4px_4px_0px_0px_rgba(var(--primary),0.3)]">
                 <h3 className="text-lg font-pixel text-primary uppercase tracking-widest">Ordena la Frase</h3>
                 <p className="text-2xl md:text-3xl font-bold text-foreground font-sans tracking-wide">"{translation}"</p>
                 <div className="inline-block bg-background px-4 py-2 border-2 border-dashed border-primary mt-2">

@@ -112,7 +112,7 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
     };
 
     return (
-        <div className="flex flex-col items-center space-y-8 w-full max-w-3xl">
+        <div className="flex flex-col items-center space-y-8 w-full">
             <div className="text-center space-y-4 bg-muted p-8 border-4 border-primary pixel-border shadow-[4px_4px_0px_0px_rgba(var(--primary),0.3)] w-full">
                 <h3 className="text-xl font-pixel text-primary uppercase tracking-widest mb-2">Escucha y Escribe</h3>
 

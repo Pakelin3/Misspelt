@@ -22,6 +22,8 @@ function DictionaryAdminPanel() {
 
     // Estado del Formulario
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isUploadOpen, setIsUploadOpen] = useState(false);
+    const [uploadFile, setUploadFile] = useState(null);
     const [editingWord, setEditingWord] = useState(null);
     const [formData, setFormData] = useState({
         text: '',
@@ -138,6 +140,35 @@ function DictionaryAdminPanel() {
         });
     };
 
+    const handleFileUpload = async (e) => {
+        e.preventDefault();
+        if (!uploadFile) return;
+
+        const formData = new FormData();
+        formData.append('file', uploadFile);
+
+        try {
+            const response = await api.post('/words/import_csv/', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            toast.success('¡Importación Exitosa!', { description: response.data.message });
+            setIsUploadOpen(false);
+            setUploadFile(null);
+            fetchWords();
+        } catch (err) {
+            console.error(err);
+            let errorMessage = 'Error al subir el archivo.';
+            if (err.response && err.response.data) {
+                if (err.response.data.errors && Array.isArray(err.response.data.errors)) {
+                    errorMessage = err.response.data.errors.join(' | ');
+                } else if (err.response.data.error) {
+                    errorMessage = err.response.data.error;
+                }
+            }
+            toast.error('Error de Importación', { description: errorMessage });
+        }
+    };
+
     // --- MANEJADORES DE EJEMPLOS DINÁMICOS ---
     const handleAddExample = () => {
         setFormData({
@@ -195,9 +226,16 @@ function DictionaryAdminPanel() {
                             }}
                         />
                     </div>
-                    <Button onClick={() => handleOpenForm()} className="pixel-btn h-10 border-2 border-foreground rounded-none bg-primary text-primary-foreground hover:translate-y-1 transition-transform">
+                    <Button onClick={() => handleOpenForm()} className="pixel-btn h-10 border-2 border-foreground rounded-none bg-primary text-primary-foreground transition-transform">
                         <Plus className="w-4 h-4 mr-2" />
                         NUEVA
+                    </Button>
+                    <Button
+                        onClick={() => setIsUploadOpen(true)}
+                        className="pixel-btn h-10 border-2 border-foreground hover:bg-a rounded-none bg-accent text-accent-foreground transition-transform"
+                    >
+                        <Plus className="w-4 h-4 mr-2" />
+                        IMPORTAR CSV
                     </Button>
                 </div>
             </div>

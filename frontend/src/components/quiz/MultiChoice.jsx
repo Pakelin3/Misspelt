@@ -49,7 +49,7 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
     };
 
     return (
-        <div className="flex flex-col items-center space-y-8 w-full max-w-3xl">
+        <div className="flex flex-col items-center space-y-8 w-full">
             <div className="text-center space-y-4 bg-muted p-6 border-4 border-primary pixel-border w-full shadow-[4px_4px_0px_0px_rgba(var(--primary),0.3)]">
                 <HelpCircle size={48} className="mx-auto text-primary mb-2" strokeWidth={2.5} />
                 <h3 className="text-lg font-pixel text-primary uppercase tracking-widest">¿Cuál es la palabra?</h3>

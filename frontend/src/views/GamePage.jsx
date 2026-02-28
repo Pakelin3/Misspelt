@@ -241,7 +241,7 @@ const GamePage = () => {
                             <Button
                                 variant="outline"
                                 onClick={() => navigate('/')}
-                                className="w-full md:w-1/3 rounded-none h-16 text-xl pixel-btn border-2"
+                                className="w-full md:w-1/3 rounded-none h-16 text-xl pixel-btn border-2 border-foreground "
                             >
                                 <ArrowLeft className="mr-2" /> VOLVER
                             </Button>
@@ -294,6 +294,7 @@ const GamePage = () => {
                         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
                             <div className="w-full max-w-5xl relative">
                                 <QuizManager
+                                    mode="game"
                                     words={[currentQuizWord]}
                                     allWords={sessionWords}
                                     onComplete={handleQuizComplete}

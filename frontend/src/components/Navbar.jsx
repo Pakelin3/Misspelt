@@ -87,7 +87,7 @@ function Navbar() {
 
     // Clases comunes para links de navegación
     const navLinkClass = (path) => `
-        flex items-center gap-2 px-3 py-2 font-sans text-lg rounded-sm transition-colors
+        flex items-center gap-1.5 lg:gap-2 px-2 lg:px-3 py-2 font-sans rounded-sm transition-colors whitespace-nowrap
         ${isActive(path)
             ? "bg-primary text-primary-foreground"
             : "text-foreground hover:bg-primary/20 hover:text-foreground"
@@ -96,51 +96,48 @@ function Navbar() {
 
     return (
         <header id="main-navbar" className="fixed top-0 left-0 right-0 z-50 border-b-4 border-foreground bg-card shadow-sm">
-            <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
+            <nav className="mx-auto flex max-w-7xl items-center justify-between px-3 sm:px-4 py-2 sm:py-3 gap-2 lg:gap-4">
 
                 {/* --- LOGO --- */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center shrink-0">
                     <Link to="/" className="flex items-center gap-2 group text-decoration-none">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-primary pixel-border-primary group-hover:scale-105 transition-transform">
-                            <LeafIcon className="w-6 h-6 text-primary-foreground" />
+                        <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-sm bg-primary pixel-border-primary group-hover:scale-105 transition-transform">
+                            <LeafIcon className="w-4 h-4 md:w-6 md:h-6 text-primary-foreground" />
                         </div>
-                        <span className="font-mono text-xs md:text-sm text-foreground tracking-tight leading-tight">
+                        <span className="font-mono text-xs md:text-sm text-foreground tracking-tight leading-tight hidden xs:block sm:block">
                             MISSPELT
                         </span>
                     </Link>
                 </div>
 
                 {/* --- DESKTOP NAV --- */}
-                <div className="hidden md:flex items-center ml-6 gap-1">
-                    {/* <Link to="/" className={navLinkClass("/")}>
-                            <LeafIcon className="w-5 h-5" /> Inicio
-                        </Link> */}
-                    <Link to="/dictionary" className={navLinkClass("/dictionary")}>
-                        <BookIcon className="w-5 h-5" /> <p className=" text-2xl" >Diccionario</p>
+                <div className="hidden md:flex items-center justify-center gap-1 lg:gap-2 flex-grow">
+                    <Link to="/dictionary" className={navLinkClass("/dictionary")} >
+                        <BookIcon className="w-4 h-4 lg:w-5 lg:h-5 shrink-0" /> <span className="text-base lg:text-xl xl:text-2xl">Diccionario</span>
                     </Link>
                     <Link to="/quiz" className={navLinkClass("/quiz")}>
-                        <BrainIcon className="w-5 h-5" /> <p className=" text-2xl" >Quiz</p>
+                        <BrainIcon className="w-4 h-4 lg:w-5 lg:h-5 shrink-0" /> <span className="text-base lg:text-xl xl:text-2xl">Quiz</span>
                     </Link>
                     <Link to="/badges" className={navLinkClass("/badges")}>
-                        <TrophyIcon className="w-5 h-5" /> <p className=" text-2xl" >Insignias</p>
+                        <TrophyIcon className="w-4 h-4 lg:w-5 lg:h-5 shrink-0" /> <span className="text-base lg:text-xl xl:text-2xl">Insignias</span>
                     </Link>
                     {user && user.is_staff && (
                         <Link to="/admin-dashboard" className={navLinkClass("/admin-dashboard")}>
-                            <GearIcon className="w-5 h-5" /><p className=" text-2xl" >Admin</p>
+                            <GearIcon className="w-4 h-4 lg:w-5 lg:h-5 shrink-0" /><span className="text-base lg:text-xl xl:text-2xl">Admin</span>
                         </Link>
                     )}
                 </div>
 
                 {/* --- RIGHT SECTION (Botones + User) --- */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 lg:gap-3 shrink-0">
 
                     {/* Botón JUGAR destacado */}
-                    {/* <Link 
-                        to="/play" 
-                        className="hidden md:flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 font-mono text-[10px] pixel-border-primary pixel-btn text-decoration-none"
+                    <Link
+                        to="/play"
+                        className="hidden md:flex items-center gap-2 bg-primary text-primary-foreground px-3 lg:px-4 py-2 font-mono text-[10px] sm:text-xs pixel-border-primary pixel-btn text-decoration-none"
                     >
-                        <SwordIcon className="w-4 h-4" /> JUGAR
-                    </Link> */}
+                        <SwordIcon className="w-4 h-4 shrink-0" /> <span className="hidden lg:inline">JUGAR</span>
+                    </Link>
 
                     {/* <div className="hidden md:block">
                         <ThemeButton /> 
@@ -156,9 +153,9 @@ function Navbar() {
                                 <img
                                     src={finalProfileImageSrc}
                                     alt="Profile"
-                                    className="w-10 h-10 pixel-border rounded-fulls bg-background object-cover"
+                                    className="w-8 h-8 md:w-10 md:h-10 pixel-border rounded-none bg-background object-cover shrink-0"
                                 />
-                                <span className="hidden md:block font-mono text-xs truncate max-w-[100px]">
+                                <span className="hidden xl:block font-mono text-xs truncate max-w-[100px]">
                                     {user.username}
                                 </span>
                             </button>
