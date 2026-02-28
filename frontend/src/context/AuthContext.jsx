@@ -36,10 +36,11 @@ export const AuthProvider = ({ children }) => {
             icon === 'success' ? toast.success :
                 icon === 'warning' ? toast.warning :
                     icon === 'info' ? toast.info : toast;
-        toastFn(title, {
-            description: text,
-            duration: timer || 4000,
-        });
+
+        const options = { duration: timer || 4000 };
+        if (text) options.description = text;
+
+        toastFn(title, options);
     }, []);
 
     const showToast = useCallback(async (title, icon = 'success', timer = 4000) => {
