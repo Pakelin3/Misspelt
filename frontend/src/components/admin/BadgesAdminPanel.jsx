@@ -176,7 +176,7 @@ function BadgesAdminPanel() {
     };
 
     const handleDelete = async (id) => {
-        toast('¿ELIMINAR MEDALLA?', {
+        toast('¿ELIMINAR INSIGNIA?', {
             description: "Esta acción no se puede deshacer.",
             action: {
                 label: 'Sí, borrar',
@@ -217,7 +217,7 @@ function BadgesAdminPanel() {
                     <div className="relative w-full sm:w-64">
                         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
-                            placeholder="Buscar medalla..."
+                            placeholder="Buscar insignia..."
                             className="pl-8 h-10 border-2 border-foreground rounded-none focus:ring-0 focus:border-primary"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -240,7 +240,7 @@ function BadgesAdminPanel() {
 
                 {filteredBadges.length === 0 && !loading ? (
                     <div className="text-center p-12 text-muted-foreground italic border-2 border-dashed border-foreground/30 m-4">
-                        No hay medallas configuradas. ¡Crea la primera!
+                        No hay insignias configuradas. ¡Crea la primera!
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -366,7 +366,7 @@ function BadgesAdminPanel() {
                                 <div className="md:col-span-2 space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold uppercase">Nombre de la Medalla</label>
+                                            <label className="text-xs font-bold uppercase">Nombre de la Insignia</label>
                                             <Input
                                                 required
                                                 value={formData.title}
@@ -497,7 +497,7 @@ function BadgesAdminPanel() {
                             </Button>
                             <Button onClick={handleSubmit} className="flex-1 border-2 border-foreground rounded-none pixel-btn bg-primary text-primary-foreground h-12">
                                 <Save className="w-4 h-4 mr-2" />
-                                {editingBadge ? 'GUARDAR CAMBIOS' : 'CREAR MEDALLA'}
+                                {editingBadge ? 'GUARDAR CAMBIOS' : 'CREAR INSIGNIA'}
                             </Button>
                         </div>
                     </div>

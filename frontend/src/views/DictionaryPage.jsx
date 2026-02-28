@@ -5,6 +5,27 @@ import Navbar from "@/components/Navbar";
 import { BookIcon } from '@/components/PixelIcons';
 import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 
+
+export const getTypeBadgeStyle = (type) => {
+    switch (type) {
+        case 'SLANG': return 'bg-yellow-100 text-yellow-800 border-yellow-800';
+        case 'PHRASAL_VERB': return 'bg-blue-100 text-blue-800 border-blue-800';
+        case 'IDIOM': return 'bg-purple-100 text-purple-800 border-purple-800';
+        case 'VOCABULARY': return 'bg-emerald-100 text-emerald-800 border-emerald-800';
+        default: return 'bg-gray-100 text-gray-800 border-gray-800';
+    }
+};
+
+export const getTypeBadgeText = (type) => {
+    switch (type) {
+        case 'SLANG': return 'SLANG';
+        case 'PHRASAL_VERB': return 'PHRASAL VERB';
+        case 'IDIOM': return 'IDIOM';
+        case 'VOCABULARY': return 'VOCABULARIO';
+        default: return 'PALABRA';
+    }
+};
+
 function DictionaryPage() {
     // Estados
     const [words, setWords] = useState([]);
@@ -174,13 +195,12 @@ function DictionaryPage() {
         `}
                                 >
                                     <div className="absolute top-0 right-0 p-2">
-                                        <span className={`text-[8px] font-mono px-2 py-1 border border-foreground/20 
-                ${word.word_type === "PHRASAL_VERB" ? "bg-accent/20 text-accent-foreground" : "bg-secondary/30 text-secondary-foreground"}`}>
-                                            {word.word_type === "SLANG" ? "SLG" : "VB"}
+                                        <span className={`text-[8px] md:text-[9px] font-mono px-1.5 py-0.5 md:px-2 md:py-1 border-2 font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${getTypeBadgeStyle(word.word_type)}`}>
+                                            {getTypeBadgeText(word.word_type)}
                                         </span>
                                     </div>
 
-                                    <h3 className={`text-2xl font-mono text-foreground mb-2 transition-colors ${word.is_unlocked ? 'group-hover:text-primary' : ''}`}>
+                                    <h3 className={`text-2xl font-mono text-foreground mt-3 mb-2 break-words transition-colors ${word.is_unlocked ? 'group-hover:text-primary' : ''}`}>
                                         {word.text}
                                     </h3>
                                     <p className={`text-lg text-muted-foreground font-sans line-clamp-2 leading-tight mb-4 ${!word.is_unlocked ? 'blur-[3px] select-none' : ''}`}>
@@ -337,8 +357,8 @@ const WordDetailModal = ({ word, onClose }) => {
                 <div className="flex items-center justify-between gap-2 mb-6 border-b-4 border-muted pb-4">
                     <h2 className="text-3xl md:text-4xl font-mono text-foreground">{word.text}</h2>
                     <div className="flex items-center gap-3">
-                        <span className={`px-3 py-1 text-[10px] mr-8 font-mono text-primary-foreground bg-primary pixel-border-primary rounded-sm uppercase`}>
-                            {word.word_type === 'PHRASAL_VERB' ? 'Phrasal Verb' : word.word_type === 'SLANG' ? 'Slang' : 'Palabra'}
+                        <span className={`px-3 py-1 text-[10px] mr-8 rounded-none font-mono border-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] uppercase font-bold ${getTypeBadgeStyle(word.word_type)}`}>
+                            {getTypeBadgeText(word.word_type)}
                         </span>
                     </div>
                 </div>

@@ -151,7 +151,7 @@ class WordViewSet(viewsets.ModelViewSet):
         if search_param:
             from django.db.models import Q
             queryset = queryset.filter(
-                Q(text__icontains=search_param) | Q(description__icontains=search_param)
+                Q(text__icontains=search_param) | Q(definition__icontains=search_param)
             )
         return queryset
 

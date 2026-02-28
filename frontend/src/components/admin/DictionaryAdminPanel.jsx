@@ -492,6 +492,70 @@ function DictionaryAdminPanel() {
                     </div>
                 </div>
             )}
+
+            {/* MODAL DE IMPORTACIÓN CSV */}
+            {isUploadOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-card border-4 border-foreground w-full max-w-md max-h-[90vh] flex flex-col relative z-50 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                        <div className="flex justify-between items-center p-4 border-b-4 border-foreground bg-accent shrink-0 text-accent-foreground">
+                            <h2 className="font-mono text-xl font-bold uppercase">IMPORTAR CSV</h2>
+                            <button
+                                onClick={() => {
+                                    setIsUploadOpen(false);
+                                    setUploadFile(null);
+                                }}
+                                className="hover:text-destructive cursor-pointer font-mono text-xl transition-colors"
+                            >
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        <div className="p-6 overflow-y-auto font-mono bg-background">
+                            <form onSubmit={handleFileUpload} className="space-y-6">
+                                <p className="text-sm font-sans text-muted-foreground mb-4">
+                                    Sube un archivo .csv con este formato exacto de columnas en la cabecera:
+                                    <br /><br />
+                                    <code className="bg-muted p-2 border-2 border-foreground block text-xs whitespace-normal break-words text-foreground font-bold shadow-inner">
+                                        word, translation, word_type, difficulty_level, definition, tags, ex1_en, ex1_es, ex2_en, ex2_es
+                                    </code>
+                                </p>
+
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-bold text-foreground tracking-wider">ARCHIVO CSV</label>
+                                    <input
+                                        type="file"
+                                        accept=".csv"
+                                        onChange={(e) => setUploadFile(e.target.files[0])}
+                                        className="w-full px-3 cursor-pointer py-2 bg-card border-2 border-foreground focus:border-primary focus:outline-none font-sans text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="flex gap-4 pt-4 border-t-2 border-foreground/20">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => {
+                                            setIsUploadOpen(false);
+                                            setUploadFile(null);
+                                        }}
+                                        className="flex-1 cursor-pointer border-2 border-foreground rounded-none pixel-btn text-xs px-2"
+                                    >
+                                        CANCELAR
+                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        disabled={!uploadFile}
+                                        className="flex-1 cursor-pointer border-2 border-foreground rounded-none pixel-btn bg-primary text-primary-foreground text-xs px-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] transition-all"
+                                    >
+                                        <Save className="w-4 h-4 mr-2" /> SUBIR CSV
+                                    </Button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
