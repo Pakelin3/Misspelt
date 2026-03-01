@@ -409,16 +409,27 @@ def process_game_action(request): #
 @permission_classes([IsAuthenticated])
 def get_quiz_words(request):
     """
-    Entrega un set de 10 palabras aleatorias para una ronda de juego en Godot.
-    Opcional: ?limit=5&type=SLANG
+    Entrega un set de palabras aleatorias para una ronda de juego en Godot.
+    Opcional: ?limit=5&type=SLANG&difficulty=EASY
     """
     limit = int(request.query_params.get('limit', 10))
     word_type = request.query_params.get('word_type', None)
+    difficulty = request.query_params.get('difficulty', None)
 
     words = Word.objects.all()
     
     if word_type:
         words = words.filter(word_type=word_type)
+        
+    if difficulty:
+        difficulty = difficulty.upper()
+        if difficulty == 'EASY':
+            words = words.filter(difficulty_level__lte=3)
+        elif difficulty == 'NORMAL':
+            words = words.filter(difficulty_level__gt=3, difficulty_level__lte=6)
+        elif difficulty == 'HARD':
+            words = words.filter(difficulty_level__gt=6)
+
     random_words = words.order_by('?')[:limit]
     
     serializer = WordSerializer(random_words, many=True)
@@ -516,7 +527,13 @@ def submit_game_results(request):
         'message': 'Partida guardada correctamente',
         'new_xp': stats.experience,
         'new_level': stats.get_level(),
-        'badges_unlocked': [b.title for b in newly_unlocked],
+        'badges_unlocked': [
+            {
+                'title': b.title,
+                'image': request.build_absolute_uri(b.image.url) if b.image else None
+            } 
+            for b in newly_unlocked
+        ],
         'match_breakdown': match_breakdown,
         'time_spent': time_spent
     }, status=status.HTTP_200_OK)

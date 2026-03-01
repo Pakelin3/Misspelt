@@ -158,9 +158,11 @@ const QuizManager = ({ words = [], allWords = [], onComplete, onClose, mode = 'p
                     ))}
                 </div>
 
-                <button onClick={onClose} className="text-muted-foreground hover:text-destructive transition-colors p-2 hover:bg-destructive/10 active:scale-95 border-2 border-transparent hover:border-destructive pixel-border">
-                    <X size={28} strokeWidth={3} />
-                </button>
+                {mode !== 'game' && (
+                    <button onClick={onClose} className="text-muted-foreground hover:text-destructive transition-colors p-2 hover:bg-destructive/10 active:scale-95 border-2 border-transparent hover:border-destructive pixel-border">
+                        <X size={28} strokeWidth={3} />
+                    </button>
+                )}
             </div>
 
             {/* Área de Juego */}

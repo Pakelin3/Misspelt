@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '@/context/AuthContext';
 import useAxios from '@/utils/useAxios';
+import { toast } from 'sonner';
 
 // UI Components
 import { Button } from '@/components/ui/Button';
@@ -19,6 +20,7 @@ const GamePage = () => {
     const [gameState, setGameState] = useState('SELECTION');
     const [results, setResults] = useState(null);
     const [selectedSkin, setSelectedSkin] = useState('mage');
+    const [difficulty, setDifficulty] = useState('NORMAL');
 
     // --- ESTADOS DEL QUIZ ---
     const [sessionWords, setSessionWords] = useState([]);
@@ -31,13 +33,31 @@ const GamePage = () => {
     const [currentQuizWord, setCurrentQuizWord] = useState(null);
     const iframeRef = useRef(null);
 
-    // Personajes disponibles
+    // Personajes disponibles con sus estadísticas e historia
     const CHARACTERS = [
-        { id: 'mage', name: 'Mage', sprite: '/game/skins/mage.png' },
-        { id: 'farmer', name: 'Farmer', sprite: '/game/skins/mage.png' },
-        { id: 'warlock', name: 'Warlock', sprite: '/game/skins/warlock.png' },
-        { id: 'erudit', name: 'Erudit', sprite: '/game/skins/erudit.png' },
+        {
+            id: 'mage', name: 'Mago', sprite: '/game/skins/mage.png',
+            stats: { hp: 100, dmg: 10, spd: 350 },
+            lore: "Un aprendiz de las artes arcanas que descubrió que las palabras encierran el verdadero poder del universo. Busca el glosario perdido para restaurar el orden."
+        },
+        {
+            id: 'farmer', name: 'Campesino', sprite: '/game/skins/mage.png', // Temporal: mage.png
+            stats: { hp: 120, dmg: 8, spd: 300 },
+            lore: "Cansado de que las plagas arruinaran sus cosechas, tomó su horca y aprendió a deletrear hechizos básicos para defender su granja."
+        },
+        {
+            id: 'warlock', name: 'Brujo', sprite: '/game/skins/warlock.png',
+            stats: { hp: 80, dmg: 12, spd: 300 },
+            lore: "Hizo un pacto con entidades oscuras a cambio de conocimiento prohibido. Su magia es destructiva, pero su fragilidad física es su mayor debilidad."
+        },
+        {
+            id: 'erudit', name: 'Erudito', sprite: '/game/skins/erudit.png',
+            stats: { hp: 100, dmg: 15, spd: 400 },
+            lore: "Un bibliotecario ermitaño que ha leído miles de libros. Su velocidad mental y física le permiten esquivar peligros mientras formula encantamientos precisos."
+        },
     ];
+
+    const currentCharacter = CHARACTERS.find(c => c.id === selectedSkin) || CHARACTERS[0];
 
     // 1. GESTIÓN DEL NAVBAR
     useEffect(() => {
@@ -115,6 +135,23 @@ const GamePage = () => {
                     time_spent: response.data?.time_spent || timeSpentSeconds,
                     breakdown: response.data?.match_breakdown
                 }));
+
+                const finalCorrectAnswers = Array.from(correctWordsRef.current).length;
+                if (finalCorrectAnswers > 0) {
+                    toast.success('Nuevas palabras añadidas al diccionario', {
+                        description: `Has aprendido o repasado ${finalCorrectAnswers} palabra${finalCorrectAnswers === 1 ? '' : 's'}.`,
+                    });
+                }
+
+                if (response.data?.badges_unlocked && response.data.badges_unlocked.length > 0) {
+                    response.data.badges_unlocked.forEach(badge => {
+                        toast('¡Insignia Desbloqueada!', {
+                            description: badge.title,
+                            icon: badge.image ? <img src={badge.image} alt={badge.title} className="w-8 h-8 rounded-full pixel-rendering" /> : <Trophy className="w-6 h-6 text-yellow-500" />,
+                            duration: 5000,
+                        });
+                    });
+                }
             } catch (error) {
                 console.error("Error al guardar partida (API):", error);
             }
@@ -162,8 +199,8 @@ const GamePage = () => {
         setIsPreparing(true);
 
         try {
-            console.log("React: Solicitando palabras para la partida...");
-            const response = await api.get('/game/quiz-words/');
+            console.log(`React: Solicitando palabras para la partida (Dificultad: ${difficulty})...`);
+            const response = await api.get(`/game/quiz-words/?difficulty=${difficulty}`);
             const data = Array.isArray(response.data) ? response.data : response.data.results || [];
 
             setSessionWords(data);
@@ -193,74 +230,140 @@ const GamePage = () => {
                         MISSPELT SURVIVOR
                     </h1>
 
-                    <Card className=" border-primary bg-background p-6 pixel-border w-full max-w-4xl rounded-none animate-in zoom-in-95 duration-500 delay-150">
-                        <h2 className="text-2xl font-bold uppercase text-center mb-6 text-foreground">Elige tu Héroe</h2>
+                    <Card className=" border-primary bg-background p-6 pixel-border w-full max-w-5xl rounded-none animate-in zoom-in-95 duration-500 delay-150">
+                        <div className="flex flex-col lg:flex-row gap-8">
+                            {/* Panel Izquierdo: Selección de Personaje */}
+                            <div className="flex-1">
+                                <h2 className="text-2xl font-bold uppercase text-center mb-6 text-foreground">Elige tu Héroe</h2>
 
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                            {CHARACTERS.map((char) => {
-                                const isSelected = selectedSkin === char.id;
-                                return (
-                                    <div
-                                        key={char.id}
-                                        onClick={() => setSelectedSkin(char.id)}
-                                        className={`
-                                            cursor-pointer flex flex-col items-center p-4 border-4 transition-all duration-200
-                                            ${isSelected
-                                                ? 'border-primary bg-primary/10 scale-105 shadow-xl'
-                                                : 'border-muted bg-muted/50 hover:border-primary/50 hover:scale-105'
-                                            }
-                                        `}
-                                    >
-                                        <div className="mb-2 overflow-hidden pixel-rendering">
-                                            <SpriteAnimator
-                                                src={char.sprite}
-                                                frameWidth={32}
-                                                frameHeight={32}
-                                                frameCount={4}
-                                                fps={isSelected ? 8 : 4}
-                                                scale={3}
-                                                style={{
-                                                    filter: isSelected ? 'none' : 'grayscale(100%) opacity(0.7)'
-                                                }}
-                                            />
-                                        </div>
-                                        <span className={`uppercase font-bold ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}>
-                                            {char.id === 'mage' ? 'Mago' : char.id === 'farmer' ? 'Campesino' : char.id === 'warlock' ? 'Brujo' : 'Erudito'}
-                                        </span>
-                                        {isSelected && (
-                                            <div className="absolute -top-3 -right-3 bg-primary text-black p-1 rounded-full shadow-lg animate-bounce hidden md:block">
-                                                <Star size={16} fill="currentColor" />
+                                <div className="grid grid-cols-2 gap-4 mb-6">
+                                    {CHARACTERS.map((char) => {
+                                        const isSelected = selectedSkin === char.id;
+                                        return (
+                                            <div
+                                                key={char.id}
+                                                onClick={() => setSelectedSkin(char.id)}
+                                                className={`
+                                                    cursor-pointer flex flex-col items-center p-4 border-4 transition-all duration-200
+                                                    ${isSelected
+                                                        ? 'border-primary bg-primary/10 scale-105 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+                                                        : 'border-muted bg-muted/50 hover:border-primary/50 hover:scale-105'
+                                                    }
+                                                `}
+                                            >
+                                                <div className="mb-2 overflow-hidden pixel-rendering">
+                                                    <SpriteAnimator
+                                                        src={char.sprite}
+                                                        frameWidth={32}
+                                                        frameHeight={32}
+                                                        frameCount={4}
+                                                        fps={isSelected ? 8 : 4}
+                                                        scale={3}
+                                                        style={{
+                                                            filter: isSelected ? 'none' : 'grayscale(100%) opacity(0.7)'
+                                                        }}
+                                                    />
+                                                </div>
+                                                <span className={`uppercase font-bold ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}>
+                                                    {char.name}
+                                                </span>
+                                                {isSelected && (
+                                                    <div className="absolute -top-3 -right-3 bg-primary text-black p-1 rounded-full shadow-lg animate-bounce hidden md:block">
+                                                        <Star size={16} fill="currentColor" />
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
 
-                        <div className="flex gap-4 flex-col md:flex-row">
-                            <Button
-                                variant="outline"
-                                onClick={() => navigate('/')}
-                                className="w-full md:w-1/3 rounded-none h-16 text-xl pixel-btn border-2 border-foreground "
-                            >
-                                <ArrowLeft className="mr-2" /> VOLVER
-                            </Button>
-                            <Button
-                                onClick={startGame}
-                                disabled={isPreparing}
-                                className={`w-full md:w-2/3 rounded-none h-16 text-2xl pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all ${isPreparing ? 'opacity-70 cursor-not-allowed' : ''}`}
-                            >
-                                {isPreparing ? (
-                                    <>
-                                        <div className="w-6 h-6 border-4 border-white border-t-transparent animate-spin rounded-full mr-2"></div>
-                                        CARGANDO...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Play className="mr-2 fill-current" /> ¡JUGAR!
-                                    </>
-                                )}
-                            </Button>
+                            {/* Panel Derecho: Lore, Stats y Opciones */}
+                            <div className="flex-1 flex flex-col justify-between bg-muted/20 border-4 border-foreground p-6 relative">
+                                <div className="absolute top-0 left-0 w-2 h-2 bg-foreground"></div>
+                                <div className="absolute top-0 right-0 w-2 h-2 bg-foreground"></div>
+                                <div className="absolute bottom-0 left-0 w-2 h-2 bg-foreground"></div>
+                                <div className="absolute bottom-0 right-0 w-2 h-2 bg-foreground"></div>
+
+                                <div>
+                                    <h3 className="text-3xl font-black text-primary uppercase mb-2 drop-shadow-sm">
+                                        {currentCharacter.name}
+                                    </h3>
+                                    <p className="text-base font-sans text-muted-foreground italic mb-6 leading-relaxed border-l-4 border-primary pl-4">
+                                        "{currentCharacter.lore}"
+                                    </p>
+
+                                    <div className="space-y-3 mb-8">
+                                        <div className="flex items-center justify-between">
+                                            <span className="font-bold text-sm uppercase">Salud (HP)</span>
+                                            <div className="flex flex-1 mx-4 h-4 bg-background border-2 border-foreground">
+                                                <div className="h-full bg-red-500" style={{ width: `${(currentCharacter.stats.hp / 200) * 100}%` }}></div>
+                                            </div>
+                                            <span className="text-sm">{currentCharacter.stats.hp}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="font-bold text-sm uppercase">Daño (DMG)</span>
+                                            <div className="flex flex-1 mx-4 h-4 bg-background border-2 border-foreground">
+                                                <div className="h-full bg-orange-500" style={{ width: `${(currentCharacter.stats.dmg / 20) * 100}%` }}></div>
+                                            </div>
+                                            <span className="text-sm">{currentCharacter.stats.dmg}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="font-bold text-sm uppercase">Velocidad</span>
+                                            <div className="flex flex-1 mx-4 h-4 bg-background border-2 border-foreground">
+                                                <div className="h-full bg-blue-500" style={{ width: `${(currentCharacter.stats.spd / 500) * 100}%` }}></div>
+                                            </div>
+                                            <span className="text-sm">{currentCharacter.stats.spd}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="mb-6">
+                                        <span className="block font-bold text-sm uppercase mb-2 text-center text-muted-foreground">Dificultad de Palabras</span>
+                                        <div className="flex grid-cols-3 gap-2">
+                                            {['EASY', 'NORMAL', 'HARD'].map(lvl => (
+                                                <button
+                                                    key={lvl}
+                                                    onClick={() => setDifficulty(lvl)}
+                                                    className={`
+                                                        flex-1 py-2 text-xs font-bold uppercase pixel-btn border-2 transition-all
+                                                        ${difficulty === lvl
+                                                            ? 'border-foreground bg-primary text-primary-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] translate-y-[-2px]'
+                                                            : 'border-muted-foreground bg-background text-muted-foreground hover:bg-muted/50'}
+                                                    `}
+                                                >
+                                                    {lvl === 'EASY' ? 'FÁCIL' : lvl === 'NORMAL' ? 'NORMAL' : 'DIFÍCIL'}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-4 flex-col lg:flex-row mt-4">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => navigate('/')}
+                                        className="w-full lg:w-1/3 rounded-none h-14 text-sm pixel-btn border-2 border-foreground hover:bg-muted"
+                                    >
+                                        <ArrowLeft className="mr-2" /> VOLVER
+                                    </Button>
+                                    <Button
+                                        onClick={startGame}
+                                        disabled={isPreparing}
+                                        className={`w-full lg:w-2/3 rounded-none h-14 text-xl pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all bg-accent text-accent-foreground ${isPreparing ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                    >
+                                        {isPreparing ? (
+                                            <>
+                                                <div className="w-5 h-5 border-4 border-foreground border-t-transparent animate-spin rounded-full mr-2"></div>
+                                                CARGANDO...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Play className="mr-2 fill-current" /> INICIAR PARTIDA
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
                     </Card>
                 </div>
