@@ -47,12 +47,12 @@ const GamePage = () => {
         },
         {
             id: 'warlock', name: 'Brujo', sprite: '/game/skins/warlock.png',
-            stats: { hp: 80, dmg: 12, spd: 300 },
+            stats: { hp: 80, dmg: 12, spd: 200 },
             lore: "Hizo un pacto con entidades oscuras a cambio de conocimiento prohibido. Su magia es destructiva, pero su fragilidad física es su mayor debilidad."
         },
         {
             id: 'erudit', name: 'Erudito', sprite: '/game/skins/erudit.png',
-            stats: { hp: 100, dmg: 15, spd: 400 },
+            stats: { hp: 100, dmg: 15, spd: 314.1 },
             lore: "Un bibliotecario ermitaño que ha leído miles de libros. Su velocidad mental y física le permiten esquivar peligros mientras formula encantamientos precisos."
         },
     ];
