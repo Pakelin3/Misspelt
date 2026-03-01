@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import AuthContext from '@/context/AuthContext';
 import useAxios from '@/utils/useAxios';
 import { toast } from 'sonner';
-
-// UI Components
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Trophy, Clock, Star, Home, Play, RotateCcw, ArrowLeft } from 'lucide-react';
