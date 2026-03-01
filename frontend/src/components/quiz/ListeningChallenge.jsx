@@ -162,7 +162,9 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
             <button
                 onClick={checkAnswer}
                 disabled={!inputValue || feedback}
-                className="w-full md:w-auto px-10 py-4 font-black text-xl uppercase pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
+                className="w-full md:w-auto bg-accent px-10 py-4 font-black text-xl uppercase pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] 
+                hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-[4px] active:shadow-none transition-all 
+                disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
             >
                 COMPROBAR
             </button>

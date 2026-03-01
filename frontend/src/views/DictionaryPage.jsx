@@ -200,7 +200,7 @@ function DictionaryPage() {
                                         </span>
                                     </div>
 
-                                    <h3 className={`text-2xl font-mono text-foreground mt-3 mb-2 break-words transition-colors ${word.is_unlocked ? 'group-hover:text-primary' : ''}`}>
+                                    <h3 className={`text-2xl font-mono text-foreground mt-4 mb-2 break-words transition-colors ${word.is_unlocked ? 'group-hover:text-primary' : ''}`}>
                                         {word.text}
                                     </h3>
                                     <p className={`text-lg text-muted-foreground font-sans line-clamp-2 leading-tight mb-4 ${!word.is_unlocked ? 'blur-[3px] select-none' : ''}`}>

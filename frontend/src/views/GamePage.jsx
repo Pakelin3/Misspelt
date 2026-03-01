@@ -36,7 +36,7 @@ const GamePage = () => {
         { id: 'mage', name: 'Mage', sprite: '/game/skins/mage.png' },
         { id: 'farmer', name: 'Farmer', sprite: '/game/skins/mage.png' },
         { id: 'warlock', name: 'Warlock', sprite: '/game/skins/warlock.png' },
-        { id: 'erudit', name: 'Erudit', sprite: '/game/skins/mage.png' },
+        { id: 'erudit', name: 'Erudit', sprite: '/game/skins/erudit.png' },
     ];
 
     // 1. GESTIÓN DEL NAVBAR
