@@ -29,7 +29,7 @@ export function FeaturesSection() {
     <section id="como-funciona" className="py-20 bg-card/30 border-y-4 border-muted">
       <div className="mx-auto max-w-6xl px-4">
         <div className="text-center mb-16">
-          <h2 className="font-mono text-2xl md:text-3xl text-foreground mb-4">
+          <h2 className="font-mono text-2xl md:text-4xl text-foreground mb-4">
             MECÁNICAS DE JUEGO
           </h2>
           <div className="h-1 w-24 bg-primary mx-auto" />

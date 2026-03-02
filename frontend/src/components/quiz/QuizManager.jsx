@@ -5,10 +5,10 @@ import SentenceBuilder from './SentenceBuilder';
 import MultiChoice from './MultiChoice';
 import ListeningChallenge from './ListeningChallenge';
 
-const QuizManager = ({ words = [], allWords = [], onComplete, onClose, mode = 'practice' }) => {
+const QuizManager = ({ words = [], allWords = [], onComplete, onClose, mode = 'practice', initialLives = 3, onLose }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [score, setScore] = useState(0);
-    const [lives, setLives] = useState(3);
+    const [lives, setLives] = useState(initialLives);
     const [gameStatus, setGameStatus] = useState('playing');
     const [currentWord, setCurrentWord] = useState(null);
     const [gameType, setGameType] = useState('multi');
@@ -50,10 +50,17 @@ const QuizManager = ({ words = [], allWords = [], onComplete, onClose, mode = 'p
     };
 
     const handleWrong = () => {
-        setLives(l => l - 1);
-        if (lives <= 1) {
-            setGameStatus('lost');
-        }
+        setLives(l => {
+            const newLives = l - 1;
+            if (newLives <= 0) {
+                if (onLose) {
+                    onLose();
+                } else {
+                    setGameStatus('lost');
+                }
+            }
+            return newLives;
+        });
     };
 
     const getDistractors = () => {
@@ -108,8 +115,8 @@ const QuizManager = ({ words = [], allWords = [], onComplete, onClose, mode = 'p
                     <button onClick={onClose} className="w-full md:w-auto px-8 md:px-10 py-4 uppercase bg-accent font-bold text-lg md:text-xl pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
                         {mode === 'game' ? 'Aceptar Destino' : 'Volver'}
                     </button>
-                    {mode === 'practice' && (
-                        <button onClick={() => { setLives(3); setScore(0); setCurrentIndex(0); setGameStatus('playing'); }} className="w-full md:w-auto px-8 md:px-10 py-4 uppercase font-bold text-lg md:text-xl bg-primary text-primary-foreground pixel-btn pixel-border-primary shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
+                    {mode === 'practice' && !onLose && (
+                        <button onClick={() => { setLives(initialLives); setScore(0); setCurrentIndex(0); setGameStatus('playing'); }} className="w-full md:w-auto px-8 md:px-10 py-4 uppercase font-bold text-lg md:text-xl bg-primary text-primary-foreground pixel-btn pixel-border-primary shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
                             Reintentar
                         </button>
                     )}
@@ -149,7 +156,7 @@ const QuizManager = ({ words = [], allWords = [], onComplete, onClose, mode = 'p
                 </div>
 
                 <div className="flex gap-1">
-                    {[...Array(3)].map((_, i) => (
+                    {[...Array(initialLives)].map((_, i) => (
                         <Heart
                             key={i}
                             size={28}

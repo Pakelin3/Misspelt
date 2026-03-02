@@ -94,9 +94,9 @@ export function GearIcon({ className = "w-6 h-6" }) {
       <path d="M5 11V13H2V11H5Z" fill="hsl(var(--foreground))" />
 
       {/* Dientes diagonales */}
-      <rect x="16.5" y="5.5" width="2" height="3" transform="rotate(45 16.5 5.5)" fill="hsl(var(--foreground))" />
-      <rect x="5.5" y="16.5" width="2" height="3" transform="rotate(45 5.5 16.5)" fill="hsl(var(--foreground))" />
-      <rect x="16.5" y="18.5" width="2" height="3" transform="rotate(135 16.5 18.5)" fill="hsl(var(--foreground))" />
+      <rect x="16" y="1" width="2" height="3" transform="rotate(45 16.5 5.5)" fill="hsl(var(--foreground))" />
+      <rect x="6" y="16.5" width="2" height="3" transform="rotate(45 5.5 16.5)" fill="hsl(var(--foreground))" />
+      <rect x="14" y="16" width="2" height="3" transform="rotate(135 16.5 18.5)" fill="hsl(var(--foreground))" />
       <rect x="5.5" y="7.5" width="2" height="3" transform="rotate(135 5.5 7.5)" fill="hsl(var(--foreground))" />
 
       {/* Agujero central */}

@@ -406,7 +406,7 @@ def process_game_action(request): #
 # * --------------------------------------------------------------------------------------------------
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def get_quiz_words(request):
     """
     Entrega un set de palabras aleatorias para una ronda de juego en Godot.
