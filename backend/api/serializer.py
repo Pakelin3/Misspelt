@@ -101,7 +101,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         full_verify_url = f"{settings.FRONTEND_URL}/verify-email/{str(token_obj.token)}/" 
 
-        subject = 'Activa tu cuenta en SlangMaster'
+        subject = 'Activa tu cuenta en Misspelt'
         message = render_to_string('emails/email_verification.html', {
             'username': user.username,
             'verify_url': full_verify_url,

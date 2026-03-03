@@ -68,7 +68,7 @@ class Profile(models.Model):
         related_name='current_users_profile',
         help_text="El avatar que el usuario está usando actualmente."
     )
-    verified = models.BooleanField(default=True)
+    verified = models.BooleanField(default=False)
 
     def __str__(self):
         return self.full_name if self.full_name else f"Perfil de {self.user.username}"

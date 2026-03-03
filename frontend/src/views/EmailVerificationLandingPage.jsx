@@ -35,10 +35,22 @@ const EmailVerificationLandingPage = () => {
     if (!verificationStatus && !token) {
 
         return (
-            <div className="flex justify-center items-center min-h-screen bg-gray-100">
-                <div className="bg-white p-8 rounded-lg shadow-md text-center">
-                    <h2 className="text-2xl font-bold mb-4">Acceso Inválido</h2>
-                    <p className="text-gray-600">No hay información de verificación para procesar.</p>
+            <div className="flex justify-center items-center min-h-screen bg-[var(--background)] p-4">
+                <div className={`
+                    p-6 sm:p-8 rounded-none w-full max-w-md text-center
+                    border-4 border-[var(--foreground)] box-border 
+                    shadow-[8px_8px_0_0_hsl(var(--destructive))]
+                    bg-[var(--card)] relative
+                `}>
+                    <div className="absolute -top-4 -left-4 w-8 h-8 bg-[var(--destructive)] border-4 border-[var(--foreground)] aspect-square"></div>
+
+                    <h2 className="text-2xl font-pixel text-[var(--destructive)] mb-4">
+                        ERROR CRÍTICO
+                    </h2>
+
+                    <p className="text-[var(--muted-foreground)]">
+                        No hay información de verificación mágica para procesar. El enlace parece estar corrompido, intenta registrarte nuevamente.
+                    </p>
                 </div>
             </div>
         );

@@ -43,24 +43,31 @@ const LoadingVerification = ({ status, showAlert }) => {
     }, [delayFinished, status, showAlert, navigate]);
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
-            <div className="bg-white p-8 rounded-lg shadow-xl text-center">
-                <h2 className="text-3xl font-bold text-gray-800 mb-6">
-                    Verificando tu correo electrónico...
+        <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-[var(--background)]">
+            <div className={`
+                p-6 sm:p-8 rounded-none w-full max-w-md text-center
+                border-4 border-[var(--foreground)] box-border 
+                shadow-[8px_8px_0_0_hsl(var(--primary))]
+                bg-[var(--card)] relative
+            `}>
+                <div className="absolute -top-4 -right-4 w-8 h-8 bg-[var(--secondary)] border-4 border-[var(--foreground)] aspect-square"></div>
+
+                <h2 className="text-2xl font-pixel text-[var(--foreground)] mb-6 uppercase tracking-wider">
+                    Verificando...
                 </h2>
-                <div className="mb-8">
+
+                <div className="mb-8 flex justify-center">
                     <ScaleLoader
                         visible={true}
-                        height="80"
-                        width="80"
-                        color="#4A90E2"
-                        ariaLabel="triangle-loading"
-                        wrapperStyle={{}}
-                        wrapperClass=""
+                        height={60}
+                        width={10}
+                        color="hsl(var(--primary))"
+                        ariaLabel="scale-loading"
                     />
                 </div>
-                <p className="text-gray-600 text-lg">
-                    Por favor, espera un momento. Estamos confirmando tu cuenta.
+
+                <p className="text-[var(--muted-foreground)] text-sm sm:text-base leading-relaxed font-sans">
+                    Por favor, espera un momento. Estamos inspeccionando tu pergamino mágico y confirmando tu cuenta.
                 </p>
             </div>
         </div>

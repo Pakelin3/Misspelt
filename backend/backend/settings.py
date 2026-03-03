@@ -143,16 +143,11 @@ AUTH_USER_MODEL = 'api.User'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 6, # <-- Aquí establecemos el límite de palabras por página (6 en este caso)
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend', 'rest_framework.filters.SearchFilter'],
 
-    # Para permitir que el frontend controle el tamaño de página (opcional, pero útil)
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 6, # Valor por defecto
-
+    'PAGE_SIZE': 6, # Límite de palabras por página (6 en este caso)
     'PAGE_SIZE_QUERY_PARAM': 'limit', # Permite que el frontend envíe ?limit=X
     'MAX_PAGE_SIZE': 100, # Límite máximo que el frontend puede solicitar 
 }
@@ -199,25 +194,8 @@ CORS_ORIGIN_WHITELIST = [
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True
 
-# # Cloudinary Settings
-# CLOUDINARY_CLOUD_NAME = 'dsdkvkv8k' 
-# CLOUDINARY_API_KEY = '338148223257146'       
-# CLOUDINARY_API_SECRET = 'gRWrpBnEjbb0z6LNV_vwD5kqve0'   
-
-# # Configuración para que Django use Cloudinary para archivos de medios
-# DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-
-DEFAULT_FROM_EMAIL = 'verthram20@gmail.com'
+DEFAULT_FROM_EMAIL = 'no-reply@misspelt.game'
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
-
-# Si usas SMTP real para producción:
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.tudominio.com' # Ejemplo: smtp.sendgrid.net, smtp.mailgun.org
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'tu_usuario_smtp'
-# EMAIL_HOST_PASSWORD = 'tu_password_smtp'
 
 # Configuración de EMAIL
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' 
@@ -232,7 +210,7 @@ BACKEND_URL = 'https://localhost:8000'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-STATIC_URL = 'static/' #
+STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') 
 
 SSL_CERTIFICATE = os.path.join(BASE_DIR, 'localhost+1.pem')
