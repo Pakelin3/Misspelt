@@ -383,7 +383,7 @@ const GamePage = () => {
 
                     <iframe
                         ref={iframeRef}
-                        src={`/game/index.html?skin=${selectedSkin}&words=${gameWordsTexts.join(',')}`}
+                        src={`/game/index.html?skin=${selectedSkin}&difficulty=${difficulty === 'EASY' ? 1 : difficulty === 'NORMAL' ? 2 : 3}&words=${gameWordsTexts.join(',')}`}
                         onLoad={handleIframeLoad}
                         className="w-full h-full border-none focus:outline-none block"
                         title="Godot Game"
