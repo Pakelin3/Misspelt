@@ -6,7 +6,7 @@ import { BookIcon } from '@/components/PixelIcons';
 import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 
 
-export const getTypeBadgeStyle = (type) => {
+const getTypeBadgeStyle = (type) => {
     switch (type) {
         case 'SLANG': return 'bg-yellow-100 text-yellow-800 border-yellow-800';
         case 'PHRASAL_VERB': return 'bg-blue-100 text-blue-800 border-blue-800';
@@ -16,7 +16,7 @@ export const getTypeBadgeStyle = (type) => {
     }
 };
 
-export const getTypeBadgeText = (type) => {
+const getTypeBadgeText = (type) => {
     switch (type) {
         case 'SLANG': return 'SLANG';
         case 'PHRASAL_VERB': return 'PHRASAL VERB';
@@ -85,7 +85,7 @@ function DictionaryPage() {
         } finally {
             setLoading(false);
         }
-    }, [wordsPerPage]);
+    }, [wordsPerPage, api]);
 
     // --- EFECTO DE BÚSQUEDA ---
     useEffect(() => {
@@ -97,6 +97,7 @@ function DictionaryPage() {
         if (currentPage > 0) {
             fetchWords(currentPage, debouncedSearchTerm, selectedFilter, false);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentPage, fetchWords]);
 
 
@@ -107,7 +108,17 @@ function DictionaryPage() {
         setIsModalOpen(true);
     };
 
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+    const filterOptions = [
+        { id: "all", label: "TODO", activeClass: "bg-primary text-primary-foreground border-foreground", badgeClass: "text-foreground" },
+        { id: "VOCABULARY", label: "VOCABULARIO", activeClass: "bg-emerald-500 text-white border-emerald-900", badgeClass: "text-emerald-500" },
+        { id: "SLANG", label: "JERGA", activeClass: "bg-yellow-400 text-yellow-950 border-yellow-900", badgeClass: "text-yellow-400" },
+        { id: "PHRASAL_VERB", label: "PHRASAL VERBS", activeClass: "bg-blue-500 text-white border-blue-900", badgeClass: "text-blue-500" },
+        { id: "IDIOM", label: "MODISMOS", activeClass: "bg-purple-500 text-white border-purple-900", badgeClass: "text-purple-500" }
+    ];
+
+    const currentFilterObj = filterOptions.find(f => f.id === selectedFilter) || filterOptions[0];
 
     return (
         <div className="min-h-screen bg-background font-sans flex flex-col">
@@ -143,24 +154,34 @@ function DictionaryPage() {
                         )}
                     </div>
 
-                    <div className="flex flex-wrap justify-center gap-2">
-                        {[
-                            { id: "all", label: "TODO" },
-                            { id: "SLANG", label: "JERGA" },
-                            { id: "PHRASAL_VERB", label: "VERBOS" }
-                        ].map((filter) => (
-                            <button
-                                key={filter.id}
-                                onClick={() => setSelectedFilter(filter.id)}
-                                className={`px-4 py-2 font-mono text-[10px] transition-all
-                                    ${selectedFilter === filter.id
-                                        ? "bg-primary text-primary-foreground pixel-border-primary"
-                                        : "bg-background text-foreground border-2 border-transparent hover:bg-muted hover:border-muted"
-                                    }`}
-                            >
-                                {filter.label}
-                            </button>
-                        ))}
+                    <div className="relative min-w-[180px]">
+                        <button
+                            onClick={() => setIsFilterOpen(!isFilterOpen)}
+                            className={`w-full flex items-center justify-between px-4 py-3 font-mono text-xs md:text-sm border-2 uppercase transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${currentFilterObj.activeClass}`}
+                        >
+                            <span className="font-bold">{currentFilterObj.label}</span>
+                            <ChevronLeft className={`w-4 h-4 transition-transform duration-200 ${isFilterOpen ? '-rotate-90' : 'rotate-180'}`} />
+                        </button>
+
+                        {isFilterOpen && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-card border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-20 flex flex-col animate-in slide-in-from-top-2 duration-200">
+                                {filterOptions.map((filter) => (
+                                    <button
+                                        key={filter.id}
+                                        onClick={() => {
+                                            setSelectedFilter(filter.id);
+                                            setIsFilterOpen(false);
+                                        }}
+                                        className={`px-4 py-3 font-mono text-xs text-left uppercase hover:bg-muted transition-colors border-b-2 border-transparent hover:border-muted flex items-center gap-2
+                                            ${selectedFilter === filter.id ? "bg-muted font-bold text-primary" : "text-foreground font-medium"}
+                                        `}
+                                    >
+                                        <span className={`w-2 h-2 rounded-none inline-block ${filter.id === "all" ? "bg-primary" : `bg-current ${filter.badgeClass}`}`}></span>
+                                        {filter.label}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
