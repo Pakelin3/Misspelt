@@ -4,6 +4,8 @@ import useAxios from "@/utils/useAxios";
 import Navbar from "@/components/Navbar";
 import { BookIcon } from '@/components/PixelIcons';
 import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
+import VzlaFlag from '@/assets/ve.svg';
+import UsaFlag from '@/assets/us.svg';
 
 
 const getTypeBadgeStyle = (type) => {
@@ -18,9 +20,9 @@ const getTypeBadgeStyle = (type) => {
 
 const getTypeBadgeText = (type) => {
     switch (type) {
-        case 'SLANG': return 'SLANG';
-        case 'PHRASAL_VERB': return 'PHRASAL VERB';
-        case 'IDIOM': return 'IDIOM';
+        case 'SLANG': return 'JERGA';
+        case 'PHRASAL_VERB': return 'VERBO FRASAL';
+        case 'IDIOM': return 'MODISMO';
         case 'VOCABULARY': return 'VOCABULARIO';
         default: return 'PALABRA';
     }
@@ -113,8 +115,8 @@ function DictionaryPage() {
     const filterOptions = [
         { id: "all", label: "TODO", activeClass: "bg-primary text-primary-foreground border-foreground", badgeClass: "text-foreground" },
         { id: "VOCABULARY", label: "VOCABULARIO", activeClass: "bg-emerald-500 text-white border-emerald-900", badgeClass: "text-emerald-500" },
-        { id: "SLANG", label: "JERGA", activeClass: "bg-yellow-400 text-yellow-950 border-yellow-900", badgeClass: "text-yellow-400" },
-        { id: "PHRASAL_VERB", label: "PHRASAL VERBS", activeClass: "bg-blue-500 text-white border-blue-900", badgeClass: "text-blue-500" },
+        { id: "SLANG", label: "JERGAS", activeClass: "bg-yellow-400 text-yellow-950 border-yellow-900", badgeClass: "text-yellow-400" },
+        { id: "PHRASAL_VERB", label: "VERBOS FRASALES", activeClass: "bg-blue-500 text-white border-blue-900", badgeClass: "text-blue-500" },
         { id: "IDIOM", label: "MODISMOS", activeClass: "bg-purple-500 text-white border-purple-900", badgeClass: "text-purple-500" }
     ];
 
@@ -314,12 +316,11 @@ const WordDetailModal = ({ word, onClose }) => {
                 apiKey: apiKey
             });
 
-            // ID de voz por defecto (Rachel), puedes cambiarlo en ElevenLabs
             const voiceId = "21m00Tcm4TlvDq8ikWAM";
 
             const audioStream = await elevenlabs.textToSpeech.convert(voiceId, {
                 text: text,
-                model_id: "eleven_multilingual_v2", // Actualizado a v2 según el doc
+                model_id: "eleven_multilingual_v2",
                 output_format: "mp3_44100_128",
             });
 
@@ -421,11 +422,11 @@ const WordDetailModal = ({ word, onClose }) => {
                                     {typeof word.examples[currentExampleIndex] === 'object' ? (
                                         <>
                                             <div className="flex items-center gap-2">
-                                                🇺🇸
+                                                <img src={UsaFlag} alt="US Flag" className="w-6 h-6" />
                                                 <p className="text-gray-800 text-base leading-relaxed"> {word.examples[currentExampleIndex].en}</p>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                🇻🇪
+                                                <img src={VzlaFlag} alt="VE Flag" className="w-6 h-6" />
                                                 <p className="text-gray-500 italic text-base leading-relaxed"> {word.examples[currentExampleIndex].es}</p>
                                             </div>
                                         </>

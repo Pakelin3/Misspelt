@@ -53,7 +53,7 @@ const useAxios = () => {
                 return Promise.reject(error);
             }
         });
-        
+
         return instance;
     }, [authTokens, logoutUser, setAuthTokens, setUser]);
 
