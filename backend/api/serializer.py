@@ -8,6 +8,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.urls import reverse
 from datetime import timedelta
+import resend
 
 
 # * --------------------------------------------------------------------------------------------------
@@ -105,7 +106,20 @@ class RegisterSerializer(serializers.ModelSerializer):
             'username': user.username,
             'verify_url': full_verify_url,
         })
-        send_mail(subject, '', settings.EMAIL_HOST_USER, [user.email], html_message=message)
+        
+        resend.api_key = settings.RESEND_API_KEY
+        
+        try:
+            r = resend.Emails.send({
+                "from": "onboarding@resend.dev",
+                "to": [user.email],
+                "subject": subject,
+                "html": message
+            })
+            print(f"Resend email dispatched successfully: {r}")
+        except Exception as e:
+            print(f"Error sending email via Resend: {e}")
+            
         return user
 
 # * --------------------------------------------------------------------------------------------------

@@ -11,3 +11,7 @@ PyJWT==2.11.0
 sqlparse==0.5.5
 Werkzeug==3.1.5
 Pillow
+resend
+python-dotenv
+resend
+python-dotenv

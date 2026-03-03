@@ -13,9 +13,13 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -217,9 +221,9 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Configuración de EMAIL
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' 
-# O si prefieres guardarlos en un archivo:
-# EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-# EMAIL_FILE_PATH = BASE_DIR / 'sent_emails' # Asegúrate de que esta carpeta exista y tenga permisos
+
+# Resend Settings
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
 
 
 FRONTEND_URL = 'https://localhost:5173' 

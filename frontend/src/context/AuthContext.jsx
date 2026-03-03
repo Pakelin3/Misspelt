@@ -81,12 +81,20 @@ export const AuthProvider = ({ children }) => {
             });
 
             if (response.status === 200) {
+                const decodedUser = jwtDecode(response.data.access);
                 setAuthTokens(response.data);
-                setUser(jwtDecode(response.data.access));
+                setUser(decodedUser);
                 localStorage.setItem('authTokens', JSON.stringify(response.data));
-                navigate('/');
-                showToast("Inicio de sesión exitoso", "success");
-                console.log("Usuario decodificado después del login:", jwtDecode(response.data.access));
+
+                if (!decodedUser.verified) {
+                    navigate('/check-email');
+                    showAlert("Falta poco", "Por favor, verifica tu correo electrónico para usar tu cuenta.", "info");
+                } else {
+                    navigate('/');
+                    showToast("Inicio de sesión exitoso", "success");
+                }
+
+                console.log("Usuario decodificado después del login:", decodedUser);
                 return {};
             }
         } catch (error) {
