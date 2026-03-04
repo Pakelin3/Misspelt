@@ -1,15 +1,62 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, Suspense, lazy } from 'react';
 import useAxios from '@/utils/useAxios';
 import axios from 'axios';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
 
 // Importamos los iconos pixelados
 import { VillagerIcon, SignalIcon, ScrollIcon, MedalRibbonIcon } from '@/components/AdminPixelIcons';
 // Importamos icono genérico para la carta extra
 import { BrainIcon } from '@/components/PixelIcons';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip);
+const LazyBar = lazy(() => Promise.all([
+    import('chart.js'),
+    import('react-chartjs-2')
+]).then(([chartJs, reactChartJs]) => {
+    chartJs.Chart.register(
+        chartJs.CategoryScale,
+        chartJs.LinearScale,
+        chartJs.BarElement,
+        chartJs.Title,
+        chartJs.Tooltip
+    );
+    return { default: reactChartJs.Bar };
+}));
+
+// Componente extraído para la Tarjeta de Estadística
+const StatCard = ({ title, value, icon: Icon, colorClass, children }) => (
+    <div className={`
+        relative bg-card pixel-border p-6 flex flex-col justify-between 
+        min-h-[140px] overflow-hidden group hover:-translate-y-1 transition-transform
+    `}>
+        <div className="flex justify-between items-start z-10">
+            <div>
+                <div className='flex justify-center items-center'>
+                    <h3 className="font-mono text-xs mr-2.5 text-muted-foreground uppercase mb-1 tracking-wider">
+                        {title}
+                    </h3>
+                    <div className={` min-h-10 min-w-10 flex items-center-safe justify-center bg-background rounded-sm border-2 border-foreground ${colorClass}`}>
+                        <Icon className="w-6 h-6" />
+                    </div>
+                </div>
+
+                <p className="font-sans text-4xl text-foreground font-bold">
+                    {value}
+                </p>
+            </div>
+        </div>
+
+        {/* Icono decorativo grande en el fondo */}
+        <div className={`
+            absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 
+            transition-all group-hover:scale-110 rotate-12
+            ${colorClass}
+        `}>
+            <Icon className="w-24 h-24" />
+        </div>
+
+        {/* Espacio para contenido extra (gráficos) */}
+        {children && <div className="mt-4 z-10 relative">{children}</div>}
+    </div>
+);
 
 function DashboardStatsCards() {
     const api = useAxios();
@@ -81,51 +128,13 @@ function DashboardStatsCards() {
         layout: { padding: 0 }
     };
 
-    // Componente interno para la Tarjeta de Estadística
-    const StatCard = ({ title, value, icon: Icon, colorClass, children }) => (
-        <div className={`
-            relative bg-card pixel-border p-6 flex flex-col justify-between 
-            min-h-[140px] overflow-hidden group hover:-translate-y-1 transition-transform
-        `}>
-            <div className="flex justify-between items-start z-10">
-                <div>
-                    <div className='flex justify-center items-center'>
-                        <h3 className="font-mono text-xs mr-2.5 text-muted-foreground uppercase mb-1 tracking-wider">
-                            {title}
-                        </h3>
-                        <div className={` min-h-10 min-w-10 flex items-center-safe justify-center bg-background rounded-sm border-2 border-foreground ${colorClass}`}>
-                            <Icon className="w-6 h-6" />
-                        </div>
-                    </div>
 
-                    <p className="font-sans text-4xl text-foreground font-bold">
-                        {value}
-                    </p>
-                </div>
-            </div>
-
-            {/* Icono decorativo grande en el fondo */}
-            <div className={`
-                absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 
-                transition-all group-hover:scale-110 rotate-12
-                ${colorClass}
-            `}>
-                <Icon className="w-24 h-24" />
-            </div>
-
-            {/* Icono pequeño superior */}
-
-
-            {/* Espacio para contenido extra (gráficos) */}
-            {children && <div className="mt-4 z-10 relative">{children}</div>}
-        </div>
-    );
 
     if (loading) {
         return (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="bg-card/50 h-36 pixel-border animate-pulse flex items-center justify-center">
+                    <div key={`loading-skeleton-${i}`} className="bg-card/50 h-36 pixel-border animate-pulse flex items-center justify-center">
                         <span className="font-mono text-xs text-muted-foreground">CARGANDO...</span>
                     </div>
                 ))}
@@ -174,7 +183,9 @@ function DashboardStatsCards() {
                     colorClass="text-primary"
                 >
                     <div className="h-12 w-full mt-1 opacity-80">
-                        <Bar data={activeUsersChartData} options={chartOptions} />
+                        <Suspense fallback={<div className="font-mono text-[10px] text-muted-foreground w-full h-full flex items-center justify-center">Cargando gráfico...</div>}>
+                            <LazyBar data={activeUsersChartData} options={chartOptions} />
+                        </Suspense>
                     </div>
                 </StatCard>
 

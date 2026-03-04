@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
     DndContext,
     closestCenter,
@@ -65,11 +65,14 @@ const SortableWord = ({ id, text, isChecked, isCorrect }) => {
 
 // --- COMPONENTE PRINCIPAL ---
 const SentenceBuilder = ({ word, onSuccess, onError }) => {
-    const [items, setItems] = useState([]);
-    const [targetSentence, setTargetSentence] = useState("");
-    const [translation, setTranslation] = useState("");
-    const [isChecked, setIsChecked] = useState(false);
-    const [isCorrect, setIsCorrect] = useState(false);
+    const [state, dispatch] = React.useReducer((s, a) => ({ ...s, ...a }), {
+        items: [],
+        targetSentence: "",
+        translation: "",
+        isChecked: false,
+        isCorrect: false
+    });
+    const { items, targetSentence, translation, isChecked, isCorrect } = state;
 
     // Configuración de sensores (Mouse, Touch y Teclado para accesibilidad)
     const sensors = useSensors(
@@ -84,9 +87,6 @@ const SentenceBuilder = ({ word, onSuccess, onError }) => {
             let example = word.examples[0];
             if (typeof example === 'string') example = { en: example, es: "Traduce esto" };
 
-            setTargetSentence(example.en);
-            setTranslation(example.es);
-
             // Creamos objetos con ID único para dnd-kit
             const wordsArray = example.en.split(' ').map((w, i) => ({
                 id: `word-${i}-${w}`, // ID compuesto para evitar duplicados si hay palabras repetidas
@@ -99,9 +99,13 @@ const SentenceBuilder = ({ word, onSuccess, onError }) => {
                 [wordsArray[i], wordsArray[j]] = [wordsArray[j], wordsArray[i]];
             }
 
-            setItems(wordsArray);
-            setIsChecked(false);
-            setIsCorrect(false);
+            dispatch({
+                targetSentence: example.en,
+                translation: example.es,
+                items: wordsArray,
+                isChecked: false,
+                isCorrect: false
+            });
         }
     }, [word]);
 
@@ -109,10 +113,12 @@ const SentenceBuilder = ({ word, onSuccess, onError }) => {
         const { active, over } = event;
 
         if (active.id !== over.id) {
-            setItems((items) => {
-                const oldIndex = items.findIndex((item) => item.id === active.id);
-                const newIndex = items.findIndex((item) => item.id === over.id);
-                return arrayMove(items, oldIndex, newIndex);
+            dispatch({
+                items: arrayMove(
+                    items,
+                    items.findIndex((item) => item.id === active.id),
+                    items.findIndex((item) => item.id === over.id)
+                )
             });
         }
     };
@@ -122,14 +128,13 @@ const SentenceBuilder = ({ word, onSuccess, onError }) => {
         const cleanCurrent = currentSentence.replace(/[.,!?;:]/g, '').toLowerCase().trim();
         const cleanTarget = targetSentence.replace(/[.,!?;:]/g, '').toLowerCase().trim();
 
-        setIsChecked(true);
         if (cleanCurrent === cleanTarget) {
-            setIsCorrect(true);
+            dispatch({ isChecked: true, isCorrect: true });
             setTimeout(onSuccess, 1500);
         } else {
-            setIsCorrect(false);
+            dispatch({ isChecked: true, isCorrect: false });
             setTimeout(() => {
-                setIsChecked(false);
+                dispatch({ isChecked: false });
                 onError();
             }, 1500);
         }

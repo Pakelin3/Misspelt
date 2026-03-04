@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { HelpCircle, CheckCircle, XCircle } from 'lucide-react';
 
 const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
-    const [options, setOptions] = useState([]);
-    const [selectedOption, setSelectedOption] = useState(null);
-    const [isChecked, setIsChecked] = useState(false);
+    const [{ options, selectedOption, isChecked }, setState] = useState({
+        options: [],
+        selectedOption: null,
+        isChecked: false
+    });
 
     useEffect(() => {
         const correctOption = {
@@ -25,20 +27,17 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
         const allOptions = [correctOption, ...wrongOptions]
             .sort(() => 0.5 - Math.random());
 
-        setOptions(allOptions);
-        setSelectedOption(null);
-        setIsChecked(false);
+        setState({
+            options: allOptions,
+            selectedOption: null,
+            isChecked: false
+        });
     }, [word, distractors]);
 
     const handleSelect = (option) => {
         if (isChecked) return;
-        setSelectedOption(option);
+        setState(prev => ({ ...prev, selectedOption: option, isChecked: true }));
 
-        checkAnswer(option);
-    };
-
-    const checkAnswer = (option) => {
-        setIsChecked(true);
         if (option.isCorrect) {
             setTimeout(onSuccess, 1000);
         } else {

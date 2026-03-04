@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { StarIcon, SwordIcon } from "@/components/PixelIcons";
-import heroBg from "@/img/background.png";
+import heroBg from "@/img/background.jpg";
 // import TextType from "@/components/ui/TextType";
 // import ASCIIText from "@/components/ui/TextASCII";
 import TextShuffle from "@/components/ui/TextShuffle";

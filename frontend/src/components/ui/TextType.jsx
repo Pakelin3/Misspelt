@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState, createElement, useMemo, useCallback } from 'react';
+import React, { useEffect, useRef, createElement, useMemo, useCallback } from 'react';
 import { gsap } from 'gsap';
+
+const EMPTY_COLORS = [];
 
 const TextType = ({
     text,
@@ -17,18 +19,21 @@ const TextType = ({
     cursorCharacter = '|',
     cursorClassName = '',
     cursorBlinkDuration = 0.5,
-    textColors = [],
+    textColors = EMPTY_COLORS,
     variableSpeed,
     onSentenceComplete,
     startOnVisible = false,
     reverseMode = false,
     ...props
 }) => {
-    const [displayedText, setDisplayedText] = useState('');
-    const [currentCharIndex, setCurrentCharIndex] = useState(0);
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [currentTextIndex, setCurrentTextIndex] = useState(0);
-    const [isVisible, setIsVisible] = useState(!startOnVisible);
+    const [state, dispatch] = React.useReducer((s, a) => ({ ...s, ...(typeof a === 'function' ? a(s) : a) }), {
+        displayedText: '',
+        currentCharIndex: 0,
+        isDeleting: false,
+        currentTextIndex: 0,
+        isVisible: !startOnVisible
+    });
+    const { displayedText, currentCharIndex, isDeleting, currentTextIndex, isVisible } = state;
     const cursorRef = useRef(null);
     const containerRef = useRef(null);
 
@@ -52,7 +57,7 @@ const TextType = ({
             entries => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        setIsVisible(true);
+                        dispatch({ isVisible: true });
                     }
                 });
             },
@@ -87,7 +92,7 @@ const TextType = ({
         const executeTypingAnimation = () => {
             if (isDeleting) {
                 if (displayedText === '') {
-                    setIsDeleting(false);
+                    dispatch({ isDeleting: false });
                     if (currentTextIndex === textArray.length - 1 && !loop) {
                         return;
                     }
@@ -96,27 +101,25 @@ const TextType = ({
                         onSentenceComplete(textArray[currentTextIndex], currentTextIndex);
                     }
 
-                    setCurrentTextIndex(prev => (prev + 1) % textArray.length);
-                    setCurrentCharIndex(0);
+                    dispatch(s => ({ currentTextIndex: (s.currentTextIndex + 1) % textArray.length, currentCharIndex: 0 }));
                     timeout = setTimeout(() => { }, pauseDuration);
                 } else {
                     timeout = setTimeout(() => {
-                        setDisplayedText(prev => prev.slice(0, -1));
+                        dispatch(s => ({ displayedText: s.displayedText.slice(0, -1) }));
                     }, deletingSpeed);
                 }
             } else {
                 if (currentCharIndex < processedText.length) {
                     timeout = setTimeout(
                         () => {
-                            setDisplayedText(prev => prev + processedText[currentCharIndex]);
-                            setCurrentCharIndex(prev => prev + 1);
+                            dispatch(s => ({ displayedText: s.displayedText + processedText[s.currentCharIndex], currentCharIndex: s.currentCharIndex + 1 }));
                         },
                         variableSpeed ? getRandomSpeed() : typingSpeed
                     );
                 } else if (textArray.length >= 1) {
                     if (!loop && currentTextIndex === textArray.length - 1) return;
                     timeout = setTimeout(() => {
-                        setIsDeleting(true);
+                        dispatch({ isDeleting: true });
                     }, pauseDuration);
                 }
             }

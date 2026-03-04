@@ -13,13 +13,17 @@ const EmailVerificationLandingPage = () => {
         const urlParams = new URLSearchParams(location.search);
         const status = urlParams.get('status');
 
+        let nextStatus = null;
         if (status) {
-            setVerificationStatus(status);
+            nextStatus = status;
         } else if (token) {
             console.warn("EmailVerificationLandingPage: Token en URL pero sin parámetro 'status'. Esto sugiere que la redirección del backend no ocurrió como se esperaba.");
-            setVerificationStatus('backend_redirect_failed');
-        } else {
+            nextStatus = 'backend_redirect_failed';
+        }
 
+        if (nextStatus) {
+            setVerificationStatus(nextStatus);
+        } else {
             if (showAlert && typeof showAlert === 'function') {
                 showAlert('Información', 'Página de verificación de correo. Si esperas un email, por favor, revisa tu bandeja de entrada.', 'info');
             }
@@ -27,7 +31,6 @@ const EmailVerificationLandingPage = () => {
                 if (showAlert && typeof showAlert === 'function') {
                     showAlert('Redirigiendo...', null, 'info', false, 1000);
                 }
-
             }, 500);
         }
     }, [token, location.search, showAlert]);

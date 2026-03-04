@@ -1,23 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ScaleLoader from "react-spinners/ScaleLoader";
 
 const LoadingVerification = ({ status, showAlert }) => {
     const navigate = useNavigate();
-    const [delayFinished, setDelayFinished] = useState(false);
     const REDIRECT_DELAY_MS = 8000;
 
     useEffect(() => {
-
         const timer = setTimeout(() => {
-            setDelayFinished(true);
-        }, REDIRECT_DELAY_MS);
-
-        return () => clearTimeout(timer);
-    }, []);
-
-    useEffect(() => {
-        if (delayFinished) {
             if (showAlert && typeof showAlert === 'function') {
                 if (status === 'success') {
                     showAlert('¡Verificación Completa!', 'Tu correo ha sido verificado con éxito. Serás redirigido al login.', 'success', true, 3000)
@@ -39,8 +29,10 @@ const LoadingVerification = ({ status, showAlert }) => {
                 console.error("showAlert no está disponible en LoadingVerification.");
                 navigate('/login', { replace: true });
             }
-        }
-    }, [delayFinished, status, showAlert, navigate]);
+        }, REDIRECT_DELAY_MS);
+
+        return () => clearTimeout(timer);
+    }, [status, showAlert, navigate]);
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-[var(--background)]">

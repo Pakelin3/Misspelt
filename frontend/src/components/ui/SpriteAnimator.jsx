@@ -12,16 +12,18 @@ import React from 'react';
  * @param {number} scale - Escala del sprite (default 1).
  * @param {boolean} playing - Si la animación se está reproduciendo.
  */
+const EMPTY_STYLE = {};
+
 const SpriteAnimator = ({
     src,
     frameWidth = 32,
     frameHeight = 32,
-    frameCount = 4,
+    frameCount = 8,
     fps = 8,
     scale = 1,
     playing = true,
     className = "",
-    style = {}
+    style = EMPTY_STYLE
 }) => {
     // Calculamos el ancho total del sheet
     const sheetWidth = frameWidth * frameCount;

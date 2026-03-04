@@ -125,13 +125,13 @@ function BadgesPage() {
             <Navbar />
 
             <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-8 md:py-12 mt-16">
-                
+
                 {/* HEADER */}
                 <div className="text-center mb-12">
                     <div className="inline-flex items-center justify-center p-4 bg-accent/20 rounded-full pixel-border-accent mb-4">
-                        <TrophyIcon className="w-10 h-10 text-accent" />
+                        <TrophyIcon className="w-8 h-8 text-accent" />
                     </div>
-                    <h1 className="text-3xl md:text-5xl font-mono text-foreground mb-4">SALA DE TROFEOS</h1>
+                    <h1 className="text-3xl md:text-4xl font-mono text-foreground mb-4">SALA DE TROFEOS</h1>
                     <p className="text-xl text-muted-foreground font-sans max-w-2xl mx-auto">
                         Aquí se exhiben los hitos de tu aventura. ¡Completa desafíos para llenar las vitrinas!
                     </p>
@@ -159,10 +159,10 @@ function BadgesPage() {
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                         {allBadges.map(badge => (
-                            <BadgeCard 
-                                key={badge.id} 
-                                badge={badge} 
-                                status={getBadgeStatus(badge)} 
+                            <BadgeCard
+                                key={badge.id}
+                                badge={badge}
+                                status={getBadgeStatus(badge)}
                             />
                         ))}
                     </div>

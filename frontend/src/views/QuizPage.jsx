@@ -7,8 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Home } from 'lucide-react';
 
 const QuizPage = () => {
-    const [sessionWords, setSessionWords] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [{ sessionWords, loading }, setState] = useState({ sessionWords: [], loading: true });
     const api = useAxios();
     const navigate = useNavigate();
 
@@ -17,11 +16,10 @@ const QuizPage = () => {
             try {
                 const response = await api.get('/game/quiz-words/');
                 const data = Array.isArray(response.data) ? response.data : response.data.results || [];
-                setSessionWords(data);
-                setLoading(false);
+                setState({ sessionWords: data, loading: false });
             } catch (error) {
                 console.error("Error loading quiz words:", error);
-                setLoading(false);
+                setState(prev => ({ ...prev, loading: false }));
             }
         };
 

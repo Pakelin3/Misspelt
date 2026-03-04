@@ -3,22 +3,23 @@ import { Volume2, Mic } from 'lucide-react';
 import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 
 const ListeningChallenge = ({ word, onSuccess, onError }) => {
-    const [inputValue, setInputValue] = useState("");
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [feedback, setFeedback] = useState(null);
-    const [voices, setVoices] = useState([]);
+    const [{ inputValue, isPlaying, feedback, voices }, setState] = useState({
+        inputValue: "",
+        isPlaying: false,
+        feedback: null,
+        voices: []
+    });
     const inputRef = useRef(null);
 
     useEffect(() => {
-        setInputValue("");
-        setFeedback(null);
+        setState(prev => ({ ...prev, inputValue: "", feedback: null }));
         setTimeout(() => inputRef.current?.focus(), 100);
     }, [word]);
 
     useEffect(() => {
         const updateVoices = () => {
             const availableVoices = window.speechSynthesis.getVoices();
-            setVoices(availableVoices);
+            setState(prev => ({ ...prev, voices: availableVoices }));
         };
         updateVoices();
         window.speechSynthesis.onvoiceschanged = updateVoices;
@@ -29,7 +30,7 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
 
     const playAudio = async () => {
         if (isPlaying) return;
-        setIsPlaying(true);
+        setState(prev => ({ ...prev, isPlaying: true }));
         console.log("🔊 Solicitando audio a IA (ElevenLabs SDK):", word.text);
 
         try {
@@ -57,7 +58,7 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
             audio.onplay = () => console.log("▶️ Reproduciendo IA de ElevenLabs SDK...");
             audio.onended = () => {
                 console.log("⏹️ Audio finalizado.");
-                setIsPlaying(false);
+                setState(prev => ({ ...prev, isPlaying: false }));
                 URL.revokeObjectURL(audioUrl);
             };
 
@@ -78,13 +79,13 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
 
                 window.currentUtterance = utterance;
                 utterance.onend = () => {
-                    setIsPlaying(false);
+                    setState(prev => ({ ...prev, isPlaying: false }));
                     delete window.currentUtterance;
                 };
 
                 window.speechSynthesis.speak(utterance);
             } else {
-                setIsPlaying(false);
+                setState(prev => ({ ...prev, isPlaying: false }));
                 alert("Tu navegador no soporta audio :(");
             }
         }
@@ -100,12 +101,12 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
         const isSynonym = word.substitutes && word.substitutes.some(s => s.toLowerCase() === cleanInput);
 
         if (cleanInput === cleanTarget || isSynonym) {
-            setFeedback('correct');
+            setState(prev => ({ ...prev, feedback: 'correct' }));
             setTimeout(onSuccess, 1000);
         } else {
-            setFeedback('wrong');
+            setState(prev => ({ ...prev, feedback: 'wrong' }));
             setTimeout(() => {
-                setFeedback(null);
+                setState(prev => ({ ...prev, feedback: null }));
                 onError();
             }, 1000);
         }
@@ -136,7 +137,7 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
                     ref={inputRef}
                     type="text"
                     value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
+                    onChange={(e) => setState(prev => ({ ...prev, inputValue: e.target.value }))}
                     disabled={feedback === 'correct'}
                     placeholder="Escribe lo que escuchas..."
                     autoCapitalize="off"

@@ -5,10 +5,41 @@ import SentenceBuilder from './SentenceBuilder';
 import MultiChoice from './MultiChoice';
 import ListeningChallenge from './ListeningChallenge';
 
-const QuizManager = ({ words = [], allWords = [], onComplete, onClose, mode = 'practice', initialLives = 3, onLose }) => {
+const GameRenderer = ({ currentWord, gameType, handleCorrect, handleWrong, allWords, words }) => {
+    if (!currentWord) return <div className="text-center font-pixel animate-pulse text-primary">Cargando desafío...</div>;
+
+    const uniqueKey = currentWord.id + gameType;
+    const commonProps = {
+        word: currentWord,
+        onSuccess: handleCorrect,
+        onError: handleWrong
+    };
+
+    const getDistractors = () => {
+        const source = (allWords && allWords.length > 0) ? allWords : words;
+        return source.filter(w => w.id !== currentWord.id);
+    };
+
+    switch (gameType) {
+        case 'sentence':
+            return <SentenceBuilder key={uniqueKey} {...commonProps} />;
+        case 'listening':
+            return <ListeningChallenge key={uniqueKey} {...commonProps} />;
+        case 'multi':
+        default: {
+            const distractors = getDistractors();
+            return <MultiChoice key={uniqueKey} {...commonProps} distractors={distractors} />;
+        }
+    }
+};
+
+const EMPTY_WORDS = [];
+const EMPTY_ALL_WORDS = [];
+
+const QuizManager = ({ words = EMPTY_WORDS, allWords = EMPTY_ALL_WORDS, onComplete, onClose, mode = 'practice', initialLives = 3, onLose }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [score, setScore] = useState(0);
-    const [lives, setLives] = useState(initialLives);
+    const [lives, setLives] = useState(() => initialLives);
     const [gameStatus, setGameStatus] = useState('playing');
     const [currentWord, setCurrentWord] = useState(null);
     const [gameType, setGameType] = useState('multi');
@@ -61,38 +92,6 @@ const QuizManager = ({ words = [], allWords = [], onComplete, onClose, mode = 'p
             }
             return newLives;
         });
-    };
-
-    const getDistractors = () => {
-        if (!currentWord) return [];
-        const source = (allWords && allWords.length > 0) ? allWords : words;
-        return source.filter(w => w.id !== currentWord.id);
-    };
-
-    const renderGame = () => {
-        if (!currentWord) return <div className="text-center font-pixel animate-pulse text-primary">Cargando desafío...</div>;
-
-        const uniqueKey = currentWord.id + gameType;
-
-        const commonProps = {
-            word: currentWord,
-            onSuccess: handleCorrect,
-            onError: handleWrong
-        };
-
-        switch (gameType) {
-            case 'sentence':
-                return <SentenceBuilder key={uniqueKey} {...commonProps} />;
-
-            case 'listening':
-                return <ListeningChallenge key={uniqueKey} {...commonProps} />;
-
-            case 'multi':
-            default: {
-                const distractors = getDistractors();
-                return <MultiChoice key={uniqueKey} {...commonProps} distractors={distractors} />;
-            }
-        }
     };
 
     // --- VISTA DE DERROTA ---
@@ -158,7 +157,7 @@ const QuizManager = ({ words = [], allWords = [], onComplete, onClose, mode = 'p
                 <div className="flex gap-1">
                     {[...Array(initialLives)].map((_, i) => (
                         <Heart
-                            key={i}
+                            key={`life-${i}`}
                             size={28}
                             className={`${i < lives ? 'fill-destructive text-destructive drop-shadow-sm' : 'fill-muted text-muted-foreground opacity-50'} transition-all duration-300`}
                         />
@@ -178,7 +177,14 @@ const QuizManager = ({ words = [], allWords = [], onComplete, onClose, mode = 'p
                     key={currentIndex}
                     className="w-full flex justify-center animate-in fade-in slide-in-from-right-8 duration-500"
                 >
-                    {renderGame()}
+                    <GameRenderer
+                        currentWord={currentWord}
+                        gameType={gameType}
+                        handleCorrect={handleCorrect}
+                        handleWrong={handleWrong}
+                        allWords={allWords}
+                        words={words}
+                    />
                 </div>
             </div>
 

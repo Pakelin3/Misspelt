@@ -33,7 +33,7 @@ const Accordion = () => {
     return (
         <div className="">
             {panels.map((panel, index) => (
-                <div key={index} className="border-b border-[var(--color-bg-secondary)] last:border-b-0">
+                <div key={panel.title} className="border-b border-[var(--color-bg-secondary)] last:border-b-0">
                     <button
                         className={`flex justify-between items-center cursor-pointer w-full py-4 px-5 text-left text-lg font-semibold transition-colors duration-300 focus:outline-none 
                             ${theme === 'light'

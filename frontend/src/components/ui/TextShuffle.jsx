@@ -6,10 +6,12 @@ import { useGSAP } from '@gsap/react';
 
 gsap.registerPlugin(ScrollTrigger, GSAPSplitText, useGSAP);
 
-const Shuffle = ({
+const EMPTY_STYLE = {};
+
+const TextShuffle = ({
     text,
     className = '',
-    style = {},
+    style = EMPTY_STYLE,
     shuffleDirection = 'right',
     duration = 0.35,
     maxDelay = 0,
@@ -56,10 +58,15 @@ const Shuffle = ({
     }, [threshold, rootMargin]);
 
     useEffect(() => {
-        if ('fonts' in document) {
-            if (document.fonts.status === 'loaded') setFontsLoaded(true);
-            else document.fonts.ready.then(() => setFontsLoaded(true));
-        } else setFontsLoaded(true);
+        const check = () => {
+            if ('fonts' in document) {
+                if (document.fonts.status === 'loaded') return true;
+                document.fonts.ready.then(() => setFontsLoaded(true));
+                return false;
+            }
+            return true;
+        };
+        if (check()) setFontsLoaded(true);
     }, []);
 
     useGSAP(
@@ -388,4 +395,4 @@ const Shuffle = ({
     return React.createElement(Tag, { ref: ref, className: classes, style: commonStyle }, text);
 };
 
-export default Shuffle;
+export default TextShuffle;

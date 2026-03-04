@@ -287,7 +287,7 @@ function DictionaryAdminPanel() {
                                             <div className="inline-flex gap-0.5 flex-wrap w-20 justify-center">
                                                 {[...Array(10)].map((_, i) => (
                                                     <div
-                                                        key={i}
+                                                        key={`diff-${word.id}-${i}`}
                                                         className={`w-1.5 h-1.5 border border-foreground ${i < word.difficulty_level ? 'bg-primary' : 'bg-transparent'}`}
                                                     />
                                                 ))}
@@ -447,7 +447,7 @@ function DictionaryAdminPanel() {
                                 </div>
 
                                 {formData.examples.map((example, index) => (
-                                    <div key={index} className="flex gap-2 items-start relative bg-background p-3 border-2 border-foreground/30">
+                                    <div key={`example-input-${index}`} className="flex gap-2 items-start relative bg-background p-3 border-2 border-foreground/30">
                                         <div className="flex-1 space-y-2">
                                             <input
                                                 type="text"
