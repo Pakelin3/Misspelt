@@ -68,8 +68,6 @@ const GamePage = () => {
 
     const [isPreparing, setIsPreparing] = useState(false);
     const handleIframeLoad = (e) => {
-        console.log("React: Iframe cargado. Inyectando puente de comunicación...");
-
         const iframeWindow = e.target.contentWindow;
         if (!iframeWindow) {
             console.error("React: No se pudo acceder a la ventana del iframe.");
@@ -77,24 +75,18 @@ const GamePage = () => {
         }
 
         iframeWindow.triggerQuiz = (wordText) => {
-            console.log("React (desde Iframe): 🚨 Petición de Quiz recibida:", wordText);
-
             if (!wordText) return;
-
             const currentWords = sessionWordsRef.current;
-
             const foundWord = currentWords.find(w => {
                 const txt = w.text || w.id;
                 return txt && typeof txt === 'string' && txt.trim().toUpperCase() === wordText.trim().toUpperCase();
             });
 
             if (foundWord) {
-                console.log("React: Palabra encontrada:", foundWord);
                 seenWordsRef.current.add(foundWord.id);
                 setCurrentQuizWord(foundWord);
                 setShowQuiz(true);
             } else {
-                console.warn(`Palabra '${wordText}' no encontrada en memoria. Disponibles:`, currentWords);
                 setCurrentQuizWord({
                     id: 9999,
                     text: wordText,
@@ -107,8 +99,6 @@ const GamePage = () => {
         };
 
         iframeWindow.handleGameOver = async (finalScore, timeSpentSeconds = 0) => {
-            console.log("Game Over recibido:", finalScore, "Tiempo:", timeSpentSeconds);
-
             setResults({ xp_earned: finalScore, level: 1 });
             setGameState('RESULTS');
 
@@ -156,7 +146,6 @@ const GamePage = () => {
         };
 
         iframeWindow.onGodotExit = () => {
-            console.log("🚪 Godot solicitó salir del juego.");
             setGameState('SELECTION');
         };
     };
@@ -166,16 +155,23 @@ const GamePage = () => {
             const godotWindow = iframeRef.current.contentWindow;
 
             if (typeof godotWindow.godotQuizCallback === 'function') {
-                console.log(`React: Enviando respuesta al Iframe Godot (${success})...`);
                 godotWindow.godotQuizCallback(success);
             } else {
                 console.error("React: ⚠️ No encontré 'godotQuizCallback' en el iframe.");
             }
 
             setTimeout(() => {
-                iframeRef.current.focus();
-                if (iframeRef.current.contentWindow) {
-                    iframeRef.current.contentWindow.focus();
+                if (iframeRef.current) {
+                    iframeRef.current.focus();
+                    if (iframeRef.current.contentWindow) {
+                        iframeRef.current.contentWindow.focus();
+                        try {
+                            const godotCanvas = iframeRef.current.contentDocument.getElementById('canvas');
+                            if (godotCanvas) godotCanvas.focus();
+                        } catch {
+                            console.warn("React: Cannot access iframe contentDocument for canvas focus");
+                        }
+                    }
                 }
             }, 100);
 
@@ -190,13 +186,11 @@ const GamePage = () => {
         if (success && currentQuizWord) {
             correctWordsRef.current.add(currentQuizWord.id);
         }
-        console.log("React: Quiz completado (Victoria).");
         sendToGodot(success);
     };
 
     const handleQuizClose = () => {
         setShowQuiz(false);
-        console.log("React: Quiz cerrado manualmente o derrota (X).");
         sendToGodot(false);
     };
 
@@ -205,7 +199,6 @@ const GamePage = () => {
         setIsPreparing(true);
 
         try {
-            console.log(`React: Solicitando palabras para la partida (Dificultad: ${difficulty})...`);
             const response = await api.get(`/game/quiz-words/?difficulty=${difficulty}`);
             const data = Array.isArray(response.data) ? response.data : response.data.results || [];
 
@@ -214,7 +207,6 @@ const GamePage = () => {
 
             const wordsArray = data.map(w => w.text || "ERROR");
             setGameWordsTexts(wordsArray);
-            console.log("React: Palabras listas para Godot:", wordsArray);
 
             setGameState('PLAYING');
         } catch (error) {
