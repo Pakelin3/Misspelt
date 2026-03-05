@@ -415,8 +415,16 @@ def get_quiz_words(request):
     limit = int(request.query_params.get('limit', 10))
     word_type = request.query_params.get('word_type', None)
     difficulty = request.query_params.get('difficulty', None)
+    discovered = request.query_params.get('discovered', 'false').lower() == 'true'
 
-    words = Word.objects.all()
+    if discovered and request.user.is_authenticated:
+        try:
+            stats = UserStats.objects.get(user=request.user)
+            words = stats.unlocked_words.all()
+        except UserStats.DoesNotExist:
+            words = Word.objects.none()
+    else:
+        words = Word.objects.all()
     
     if word_type:
         words = words.filter(word_type=word_type)

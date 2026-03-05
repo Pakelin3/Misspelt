@@ -104,3 +104,11 @@ export function GearIcon({ className = "w-6 h-6" }) {
     </svg>
   );
 }
+
+export function PixelHeartIcon({ className = "w-6 h-6" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 6H10V8H14V6H18V10H20V14H18V16H16V18H14V20H10V18H8V16H6V14H4V10H6V6Z" strokeWidth="2" strokeLinejoin="miter" strokeLinecap="square" />
+    </svg>
+  );
+}

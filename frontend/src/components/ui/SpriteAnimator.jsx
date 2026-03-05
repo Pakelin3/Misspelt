@@ -46,9 +46,9 @@ const SpriteAnimator = ({
                     backgroundRepeat: 'no-repeat',
                     width: `${sheetWidth * scale}px`,
                     height: `${frameHeight * scale}px`,
-                    backgroundSize: `${sheetWidth * scale}px ${frameHeight * scale}px`, // Ajustamos el tamaño del background al escalado
+                    backgroundSize: `${sheetWidth * scale}px ${frameHeight * scale}px`,
                     animation: playing ? `sprite-animation ${duration}s steps(${frameCount}) infinite` : 'none',
-                    imageRendering: 'pixelated' // Importante para pixel art
+                    imageRendering: 'pixelated'
                 }}
             />
             <style>{`

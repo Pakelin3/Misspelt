@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { X, Trophy, AlertCircle, Heart } from 'lucide-react';
+import { X, Trophy, AlertCircle } from 'lucide-react';
+import { PixelHeartIcon } from '@/components/PixelIcons';
 import SentenceBuilder from './SentenceBuilder';
 import MultiChoice from './MultiChoice';
 import ListeningChallenge from './ListeningChallenge';
@@ -156,10 +157,9 @@ const QuizManager = ({ words = EMPTY_WORDS, allWords = EMPTY_ALL_WORDS, onComple
 
                 <div className="flex gap-1">
                     {[...Array(initialLives)].map((_, i) => (
-                        <Heart
+                        <PixelHeartIcon
                             key={`life-${i}`}
-                            size={28}
-                            className={`${i < lives ? 'fill-destructive text-destructive drop-shadow-sm' : 'fill-muted text-muted-foreground opacity-50'} transition-all duration-300`}
+                            className={`w-7 h-7 ${i < lives ? 'fill-destructive text-destructive drop-shadow-sm' : 'fill-muted text-muted-foreground opacity-50'} transition-all duration-300`}
                         />
                     ))}
                 </div>

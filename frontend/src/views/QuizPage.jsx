@@ -14,7 +14,7 @@ const QuizPage = () => {
     useEffect(() => {
         const fetchQuizWords = async () => {
             try {
-                const response = await api.get('/game/quiz-words/');
+                const response = await api.get('/game/quiz-words/?discovered=true');
                 const data = Array.isArray(response.data) ? response.data : response.data.results || [];
                 setState({ sessionWords: data, loading: false });
             } catch (error) {

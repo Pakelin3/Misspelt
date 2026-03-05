@@ -39,7 +39,7 @@ const GamePage = () => {
             lore: "Un aprendiz de las artes arcanas que descubrió que las palabras encierran el verdadero poder del universo. Busca el glosario perdido para restaurar el orden."
         },
         {
-            id: 'farmer', name: 'Campesino', sprite: '/game/skins/MagoS.png',
+            id: 'farmer', name: 'Campesino', sprite: '/game/skins/warlock.png',
             stats: { hp: 120, dmg: 8, spd: 300 },
             lore: "Cansado de que las plagas arruinaran sus cosechas, tomó su horca y aprendió a deletrear hechizos básicos para defender su granja."
         },
@@ -254,7 +254,7 @@ const GamePage = () => {
                                                         src={char.sprite}
                                                         frameWidth={32}
                                                         frameHeight={32}
-                                                        frameCount={8}
+                                                        frameCount={4}
                                                         fps={isSelected ? 8 : 4}
                                                         scale={3}
                                                         style={{
