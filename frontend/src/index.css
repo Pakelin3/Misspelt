@@ -2,7 +2,6 @@
 
 @import "tailwindcss";
 /* @plugin "tailwindcss-animate"; */
-
 @layer base {
   :root {
     --background: 36 55% 90%;

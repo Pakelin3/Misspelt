@@ -101,7 +101,7 @@ const QuizManager = ({ words = EMPTY_WORDS, allWords = EMPTY_ALL_WORDS, onComple
             <div className="flex flex-col items-center justify-center p-8 text-center bg-background rounded-none border-4 border-primary pixel-border animate-in zoom-in duration-300 shadow-[8px_8px_0px_0px_rgba(var(--primary),0.5)]">
                 <AlertCircle size={80} className="text-destructive mb-6 drop-shadow-md" />
                 <h2 className="text-4xl font-black text-destructive mb-4 font-pixel tracking-wider drop-shadow-sm">
-                    {mode === 'game' ? 'GAME OVER' : '¡INTÉNTALO DE NUEVO!'}
+                    {mode === 'game' ? '¡OH NO...!' : '¡INTÉNTALO DE NUEVO!'}
                 </h2>
                 <p className="mb-8 text-foreground text-xl font-sans font-bold">
                     {mode === 'game' ? (
@@ -131,7 +131,7 @@ const QuizManager = ({ words = EMPTY_WORDS, allWords = EMPTY_ALL_WORDS, onComple
             <div className="flex flex-col items-center justify-center p-8 text-center bg-background rounded-none border-4 border-primary pixel-border animate-in zoom-in duration-300 shadow-[8px_8px_0px_0px_rgba(var(--primary),0.5)]">
                 <Trophy size={80} className="text-yellow-500 mb-6 animate-bounce drop-shadow-md" />
                 <h2 className="text-4xl font-black text-primary mb-4 font-pixel tracking-wider drop-shadow-sm">
-                    {mode === 'game' ? '¡VICTORIA!' : '¡COMPLETADO!'}
+                    {mode === 'game' ? '¡VAMOS!' : '¡COMPLETADO!'}
                 </h2>
                 <p className="mb-8 text-foreground text-xl font-sans font-bold">Has dominado estas palabras.</p>
                 <div className="bg-muted px-8 py-4 border-4 border-primary mb-8 pixel-border shadow-[4px_4px_0px_0px_rgba(var(--primary),0.3)]">

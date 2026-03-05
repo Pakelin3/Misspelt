@@ -220,7 +220,6 @@ const GamePage = () => {
 
     return (
         <div className="w-full h-screen bg-background text-foreground overflow-hidden font-pixel">
-
             {/* VISTA A: MENÚ DE SELECCIÓN */}
             {gameState === 'SELECTION' && (
                 <div className="flex flex-col items-center justify-center h-full gap-8 p-4 relative z-10">
