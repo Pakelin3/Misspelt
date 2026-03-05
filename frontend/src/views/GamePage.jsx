@@ -171,6 +171,14 @@ const GamePage = () => {
             } else {
                 console.error("React: ⚠️ No encontré 'godotQuizCallback' en el iframe.");
             }
+
+            setTimeout(() => {
+                iframeRef.current.focus();
+                if (iframeRef.current.contentWindow) {
+                    iframeRef.current.contentWindow.focus();
+                }
+            }, 100);
+
         } else {
             console.error("React: Referencia al Iframe perdida.");
         }
