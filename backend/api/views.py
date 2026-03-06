@@ -21,7 +21,9 @@ from api.serializer import (
     BadgeSerializer,
     UserStatsSerializer,
     AdminUserSerializer,
-    AvatarSerializer
+    AvatarSerializer,
+    GameHistorySerializer,
+    ProfileUpdateSerializer
 )
 
 
@@ -250,6 +252,7 @@ class WordViewSet(viewsets.ModelViewSet):
 class BadgeViewSet(viewsets.ModelViewSet): 
     queryset = Badge.objects.all().order_by('title') 
     serializer_class = BadgeSerializer 
+    pagination_class = None
     #permission_classes = [IsAuthenticated, IsAdminUser]
 
 # * --------------------------------------------------------------------------------------------------
@@ -258,6 +261,7 @@ class BadgeViewSet(viewsets.ModelViewSet):
 class AvatarViewSet(viewsets.ModelViewSet): 
     queryset = Avatar.objects.all().order_by('name') 
     serializer_class = AvatarSerializer 
+    pagination_class = None
     # Restringir permisos solo a administradores, ya que el CRUD es para gestión
     #permission_classes = [IsAuthenticated, IsAdminUser]
 
@@ -478,45 +482,44 @@ def submit_game_results(request):
     for w in seen_words:
         if w.word_type in match_breakdown["seen"]:
             match_breakdown["seen"][w.word_type] += 1
-        stats.words_seen_total = F('words_seen_total') + 1
-        if w.word_type == "SLANG": stats.slangs_seen = F('slangs_seen') + 1
-        elif w.word_type == "PHRASAL_VERB": stats.phrasal_verbs_seen = F('phrasal_verbs_seen') + 1
+        stats.words_seen_total += 1
+        if w.word_type == "SLANG": stats.slangs_seen += 1
+        elif w.word_type == "PHRASAL_VERB": stats.phrasal_verbs_seen += 1
 
     for w in correct_words:
         if w.word_type in match_breakdown["correct"]:
             match_breakdown["correct"][w.word_type] += 1
             
             if w.word_type == "SLANG": 
-                stats.slangs_learned = F('slangs_learned') + 1
-                stats.correct_slangs = F('correct_slangs') + 1
+                stats.slangs_learned += 1
+                stats.correct_slangs += 1
             elif w.word_type == "IDIOM": 
-                stats.idioms_learned = F('idioms_learned') + 1
+                stats.idioms_learned += 1
             elif w.word_type == "PHRASAL_VERB": 
-                stats.phrasal_verbs_learned = F('phrasal_verbs_learned') + 1
-                stats.correct_phrasal_verbs = F('correct_phrasal_verbs') + 1
+                stats.phrasal_verbs_learned += 1
+                stats.correct_phrasal_verbs += 1
             elif w.word_type == "VOCABULARY": 
-                stats.vocabulary_learned = F('vocabulary_learned') + 1
+                stats.vocabulary_learned += 1
                 
     stats.save()
     
     if correct_words.exists():
         stats.unlocked_words.add(*correct_words)
 
-    stats.experience = F('experience') + xp_earned
-    stats.total_questions_answered = F('total_questions_answered') + total_questions
-    stats.correct_answers_total = F('correct_answers_total') + correct_answers
-    stats.total_letters_killed = F('total_letters_killed') + letters_killed
-    stats.total_bosses_killed = F('total_bosses_killed') + bosses_killed
-    stats.total_time_played_seconds = F('total_time_played_seconds') + time_spent
+    stats.experience += xp_earned
+    stats.total_questions_answered += total_questions
+    stats.correct_answers_total += correct_answers
+    stats.total_letters_killed += letters_killed
+    stats.total_bosses_killed += bosses_killed
+    stats.total_time_played_seconds += time_spent
     
     from django.utils import timezone
     today = timezone.now().date()
     if stats.last_login_date != today:
-        stats.current_streak = F('current_streak') + 1
+        stats.current_streak += 1
         stats.last_login_date = today
         
     stats.save()
-    stats.refresh_from_db()
 
     if stats.current_streak > stats.longest_streak:
         stats.longest_streak = stats.current_streak
@@ -570,3 +573,34 @@ def get_quiz_question(word_id):
         "options": [correct_word.text] + [d.text for d in distractors], # (luego se desordena en frontend)
         "accepted_answers": [correct_word.text] + [s.text for s in correct_word.substitutes.all()]
     }
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA HISTORIAL DE PARTIDAS ---
+# * --------------------------------------------------------------------------------------------------
+class GameHistoryListView(generics.ListAPIView):
+    serializer_class = GameHistorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return GameHistory.objects.filter(user=self.request.user).order_by('-played_at')[:20]
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEW PARA ACTUALIZAR PERFIL ---
+# * --------------------------------------------------------------------------------------------------
+class ProfileUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        profile = request.user.profile
+        return Response({
+            'full_name': profile.full_name,
+            'current_avatar': profile.current_avatar.id if profile.current_avatar else None,
+            'current_title': profile.current_title,
+        })
+
+    def patch(self, request):
+        profile = request.user.profile
+        serializer = ProfileUpdateSerializer(profile, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)

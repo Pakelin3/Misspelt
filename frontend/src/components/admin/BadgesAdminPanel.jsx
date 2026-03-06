@@ -13,6 +13,7 @@ function BadgesAdminPanel() {
 
     // Estados de datos
     const [badges, setBadges] = useState([]);
+    const [avatars, setAvatars] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const [searchTerm, setSearchTerm] = useState('');
@@ -27,6 +28,8 @@ function BadgesAdminPanel() {
         description: '',
         category: 'BASIC',
         xp_reward: 50,
+        avatar_reward: '',
+        title_reward: '',
         condition_type: 'correct_slangs',
         condition_value: 10,
         condition_description: '',
@@ -40,7 +43,7 @@ function BadgesAdminPanel() {
         setLoading(true);
         try {
             const response = await api.get(`/badges/`);
-            const data = response.data.results ? response.data.results : response.data;
+            const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
             setBadges(data);
         } catch (err) {
             console.error("Error fetching badges:", err);
@@ -50,9 +53,20 @@ function BadgesAdminPanel() {
         }
     }, [api]);
 
+    const fetchAvatars = useCallback(async () => {
+        try {
+            const response = await api.get(`/avatars/`);
+            const data = response.data.results ? response.data.results : response.data;
+            setAvatars(data);
+        } catch (err) {
+            console.error("Error fetching avatars:", err);
+        }
+    }, [api]);
+
     useEffect(() => {
         fetchBadges();
-    }, [fetchBadges]);
+        fetchAvatars();
+    }, [fetchBadges, fetchAvatars]);
 
     // --- MANEJADORES DEL FORMULARIO ---
     const handleOpenForm = (badge = null) => {
@@ -69,8 +83,12 @@ function BadgesAdminPanel() {
 
             // Extract reward data safely
             let xp = 50;
-            if (badge.reward_data && badge.reward_data.exp) {
-                xp = badge.reward_data.exp;
+            let avatarId = '';
+            let titleRw = '';
+            if (badge.reward_data) {
+                if (badge.reward_data.exp) xp = badge.reward_data.exp;
+                if (badge.reward_data.avatar_id) avatarId = badge.reward_data.avatar_id;
+                if (badge.reward_data.title) titleRw = badge.reward_data.title;
             }
 
             setFormData({
@@ -78,6 +96,8 @@ function BadgesAdminPanel() {
                 description: badge.description || '',
                 category: badge.category || 'BASIC',
                 xp_reward: xp,
+                avatar_reward: avatarId,
+                title_reward: titleRw,
                 condition_type: condType,
                 condition_value: condValue,
                 condition_description: badge.condition_description || '',
@@ -92,6 +112,8 @@ function BadgesAdminPanel() {
                 description: '',
                 category: 'BASIC',
                 xp_reward: 50,
+                avatar_reward: '',
+                title_reward: '',
                 condition_type: 'correct_slangs',
                 condition_value: 10,
                 condition_description: '',
@@ -106,9 +128,24 @@ function BadgesAdminPanel() {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setFormData({ ...formData, image: file });
-            const objectUrl = URL.createObjectURL(file);
-            setPreviewUrl(objectUrl);
+            if (file.type !== 'image/png' && file.type !== 'image/webp') {
+                toast.error('Formato inválido', { description: 'Solo se permiten imágenes PNG o WebP.' });
+                fileInputRef.current.value = '';
+                return;
+            }
+
+            const img = new Image();
+            img.onload = () => {
+                if (img.width !== 80 || img.height !== 80) {
+                    toast.error('Tamaño inválido', { description: `La imagen debe ser de 80x80 píxeles. (Actual: ${img.width}x${img.height}) para cambiar de tamaño usa https://squoosh.app/` });
+                    fileInputRef.current.value = '';
+                } else {
+                    setFormData({ ...formData, image: file });
+                    const objectUrl = URL.createObjectURL(file);
+                    setPreviewUrl(objectUrl);
+                }
+            };
+            img.src = URL.createObjectURL(file);
         }
     };
 
@@ -127,9 +164,20 @@ function BadgesAdminPanel() {
         dataToSend.append('unlock_condition_data', JSON.stringify(conditionData));
         dataToSend.append('condition_description', formData.condition_description || `${formData.condition_type}: ${formData.condition_value}`);
 
-        const rewardData = { exp: Number(formData.xp_reward) };
+        const rewardData = {};
+        if (Number(formData.xp_reward) > 0) rewardData.exp = Number(formData.xp_reward);
+        if (formData.avatar_reward) rewardData.avatar_id = Number(formData.avatar_reward);
+        if (formData.title_reward) rewardData.title = formData.title_reward;
+
         dataToSend.append('reward_data', JSON.stringify(rewardData));
-        dataToSend.append('reward_description', formData.reward_description || `+${formData.xp_reward} XP`);
+
+        const defaultRewardDesc = [
+            Number(formData.xp_reward) > 0 ? `+${formData.xp_reward} XP` : null,
+            formData.title_reward ? `Título: ${formData.title_reward}` : null,
+            formData.avatar_reward ? `Avatar` : null
+        ].filter(Boolean).join(' | ') || 'Sin Recompensa';
+
+        dataToSend.append('reward_description', formData.reward_description || defaultRewardDesc);
 
         dataToSend.append('category', formData.category);
 
@@ -358,7 +406,7 @@ function BadgesAdminPanel() {
                                         onChange={handleFileChange}
                                     />
                                     <p className="text-[10px] text-muted-foreground text-center">
-                                        Recomendado: PNG/WebP 512x512px <a href="https://thiings.co/" target="_blank" rel="noopener noreferrer" className="underline">thiings.co</a>
+                                        Recomendado: PNG/WebP 80x80px <a href="https://thiings.co/" target="_blank" rel="noopener noreferrer" className="underline">thiings.co</a>
                                     </p>
                                 </div>
 
@@ -481,14 +529,36 @@ function BadgesAdminPanel() {
                                                     className="h-8 border border-foreground rounded-none focus:ring-0 focus:border-primary text-right font-bold text-xs"
                                                 />
                                             </div>
+                                            <div className="space-y-2 mt-2">
+                                                <label className="text-[10px] uppercase text-primary">Avatar (Opcional)</label>
+                                                <select
+                                                    className="w-full h-8 px-2 bg-background border border-foreground text-foreground rounded-none focus:outline-none focus:border-primary text-xs"
+                                                    value={formData.avatar_reward}
+                                                    onChange={e => setFormData({ ...formData, avatar_reward: e.target.value })}
+                                                >
+                                                    <option value="">Ninguno</option>
+                                                    {avatars.map(av => (
+                                                        <option key={av.id} value={av.id}>{av.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div className="space-y-2 mt-2">
+                                                <label className="text-[10px] uppercase text-primary">Título (Opcional)</label>
+                                                <Input
+                                                    type="text"
+                                                    value={formData.title_reward}
+                                                    onChange={e => setFormData({ ...formData, title_reward: e.target.value })}
+                                                    placeholder="Ej: Maestro de las Letras"
+                                                    className="h-8 border border-foreground rounded-none focus:ring-0 focus:border-primary text-xs w-full"
+                                                />
+                                            </div>
                                             <div className="space-y-2 mt-auto">
                                                 <label className="text-[10px] uppercase block underline decoration-dashed mt-4">Texto Público Premio</label>
                                                 <Input
-                                                    required
                                                     value={formData.reward_description}
                                                     onChange={e => setFormData({ ...formData, reward_description: e.target.value })}
                                                     className="h-8 border border-foreground rounded-none focus:ring-0 focus:border-primary text-xs"
-                                                    placeholder="Ej: +50 XP"
+                                                    placeholder="Opcional. Se autogenera"
                                                 />
                                             </div>
                                         </div>

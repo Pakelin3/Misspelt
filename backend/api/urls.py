@@ -29,6 +29,11 @@ urlpatterns = [
     path("game/submit-results/", views.submit_game_results, name="game_submit_results"),
     # -------------------------------
 
+    # --- RUTAS DE PERFIL ---
+    path("game-history/", views.GameHistoryListView.as_view(), name="game_history_list"),
+    path("profile/me/", views.ProfileUpdateView.as_view(), name="profile_me"),
+    # -------------------------------
+
     path("", views.getRoutes),
     path('', include(router.urls)),
 ]

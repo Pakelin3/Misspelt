@@ -68,6 +68,7 @@ class Profile(models.Model):
         related_name='current_users_profile',
         help_text="El avatar que el usuario está usando actualmente."
     )
+    current_title = models.CharField(max_length=100, blank=True, null=True, help_text="Título que el usuario está usando actualmente.")
     verified = models.BooleanField(default=False)
 
     def __str__(self):
@@ -162,6 +163,7 @@ class UserStats(models.Model):
         related_name='unlocked_by_users',
         help_text="Avatares que el usuario ha desbloqueado."
     )
+    unlocked_titles = models.JSONField(default=list, blank=True, help_text="Títulos que el usuario ha desbloqueado.")
 
     def get_accuracy_percentage(self):
         if self.total_questions_answered == 0:
@@ -262,10 +264,22 @@ class GameHistory(models.Model):
 # ! --- MODELO BADGE (INSIGNIA) ---
 # * --------------------------------------------------------------------------------------------------
 
+import os
+import re
+
+def clean_filename(instance_name):
+    clean_name = re.sub(r'[^a-zA-Z0-9]', '_', instance_name).lower()
+    return re.sub(r'_+', '_', clean_name).strip('_')
+
+def badge_image_upload_to(instance, filename):
+    ext = filename.split('.')[-1] if '.' in filename else 'png'
+    new_filename = f"{clean_filename(instance.title)}.{ext}"
+    return os.path.join('badges/', new_filename)
+
 class Badge(models.Model):
     title = models.CharField(max_length=100, unique=True, help_text="Nombre de la insignia")
     description = models.TextField(help_text="Descripción de lo que se necesita para obtenerla")
-    image = models.ImageField(upload_to='badges/', blank=True, null=True, help_text="Imagen de la insignia")
+    image = models.ImageField(upload_to=badge_image_upload_to, blank=True, null=True, help_text="Imagen de la insignia")
     
     CATEGORY_CHOICES = [
         ('BASIC', 'Básica'),
@@ -285,9 +299,14 @@ class Badge(models.Model):
 # * --------------------------------------------------------------------------------------------------
 # ! --- MODELO AVATAR ---
 # * --------------------------------------------------------------------------------------------------
+def avatar_image_upload_to(instance, filename):
+    ext = filename.split('.')[-1] if '.' in filename else 'png'
+    new_filename = f"{clean_filename(instance.name)}.{ext}"
+    return os.path.join('avatars/', new_filename)
+
 class Avatar(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    image = models.ImageField(upload_to='avatars/', help_text="Imagen del avatar")
+    image = models.ImageField(upload_to=avatar_image_upload_to, help_text="Imagen del avatar")
     is_default = models.BooleanField(default=False, help_text="Si es un avatar disponible para todos al inicio")
     unlock_condition_description = models.TextField(blank=True, null=True, help_text="Descripción de cómo desbloquearlo si no es default")
 

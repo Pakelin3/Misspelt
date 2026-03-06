@@ -206,3 +206,21 @@ class AdminUserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email', 'is_staff', 'is_superuser', 'date_joined', 'last_login', 'is_online']
         read_only_fields = ['date_joined', 'last_login']
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- MODELO GAMEHISTORY ---
+# * --------------------------------------------------------------------------------------------------
+from api.models import GameHistory
+
+class GameHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GameHistory
+        fields = ['id', 'game_mode', 'played_at', 'score', 'correct_in_game', 'total_questions_in_game', 'time_spent_seconds', 'letters_killed', 'bosses_killed']
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- MODELO PROFILE UPDATE ---
+# * --------------------------------------------------------------------------------------------------
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['full_name', 'current_avatar', 'current_title', 'image']

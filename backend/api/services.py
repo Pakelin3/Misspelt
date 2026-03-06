@@ -27,11 +27,19 @@ def award_badge_rewards(user, badge):
                 user_stats.unlocked_avatars.add(avatar) 
                 user_stats.save()
                 print(f"Usuario {user.username} desbloqueó el avatar '{avatar.name}' del badge '{badge.title}'.")
-                # Opcional: Establecerlo como actual si el usuario no tiene uno o es el primero
-                # if not user.profile.current_avatar:
-                #    user.profile.current_avatar = avatar
-                #    user.profile.save()
         except Avatar.DoesNotExist:
             print(f"Advertencia: Avatar con ID {avatar_id} no encontrado para recompensar.")
+
+    # Otorgar Título
+    if 'title' in reward_data:
+        title = reward_data['title']
+        user_stats = user.stats 
+        if not isinstance(user_stats.unlocked_titles, list):
+            user_stats.unlocked_titles = []
+            
+        if title not in user_stats.unlocked_titles:
+            user_stats.unlocked_titles.append(title)
+            user_stats.save()
+            print(f"Usuario {user.username} desbloqueó el título '{title}' del badge '{badge.title}'.")
 
     # Más tipos de recompensas (ej. 'coins', 'items', etc.)

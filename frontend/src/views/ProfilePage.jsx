@@ -1,192 +1,520 @@
-import React, { useState, useEffect, useCallback, useContext, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import useAxios from '@/utils/useAxios';
-import { useTheme } from '@/context/ThemeContext';
 import AuthContext from '@/context/AuthContext';
-import { ScaleLoader } from 'react-spinners';
-import { Plus, Minus } from 'lucide-react'; 
+import Navbar from "@/components/Navbar";
+import { toast } from 'sonner';
+
+// ─── Inline Icons ─────────────────────────────────────────────
+const EditIcon = ({ className }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+);
+const SaveIcon = ({ className }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <polyline points="20 6 9 17 4 12" />
+    </svg>
+);
+const XIcon = ({ className }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+);
+
+// ─── Stat Gauge Component ─────────────────────────────────────
+const StatGauge = ({ label, value, maxValue, suffix = '', isPercentage = false }) => {
+    const percentage = maxValue > 0 ? Math.min(100, (value / maxValue) * 100) : 0;
+    const displayValue = isPercentage ? `${value.toFixed(1)}%` : `${value}${suffix}`;
+    const color = isPercentage
+        ? (value >= 80 ? 'bg-green-500' : value >= 50 ? 'bg-yellow-500' : 'bg-red-500')
+        : 'bg-accent';
+    const textColor = isPercentage
+        ? (value >= 80 ? 'text-green-500' : value >= 50 ? 'text-yellow-500' : 'text-red-500')
+        : 'text-accent';
+
+    return (
+        <div className="p-3 bg-muted/20 border-2 border-foreground/20 hover:border-foreground/40 transition-colors">
+            <div className="flex justify-between items-center mb-1.5">
+                <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider">{label}</span>
+                <span className={`text-sm font-mono font-bold ${textColor}`}>{displayValue}</span>
+            </div>
+            <div className="w-full h-2 bg-muted border border-foreground/20 relative">
+                <div className={`h-full ${color} transition-all duration-700`} style={{ width: `${percentage}%` }} />
+            </div>
+        </div>
+    );
+};
+
+// ─── Tab Button ───────────────────────────────────────────────
+const TabButton = ({ active, onClick, children }) => (
+    <button
+        onClick={onClick}
+        className={`
+            px-4 py-2.5 font-mono text-xs uppercase tracking-wider transition-all border-b-4
+            ${active
+                ? 'border-primary text-primary bg-primary/10 font-bold'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted'
+            }
+        `}
+    >
+        {children}
+    </button>
+);
 
 function ProfilePage() {
     const api = useAxios();
-    const { theme } = useTheme();
-    const { user } = useContext(AuthContext); 
+    const { user } = useContext(AuthContext);
 
     const [userStats, setUserStats] = useState(null);
+    const [profileData, setProfileData] = useState(null);
+    const [gameHistory, setGameHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [feedbackMessage, setFeedbackMessage] = useState(''); 
+    const [activeTab, setActiveTab] = useState('stats');
 
-    const statLabels = useMemo(() => ({
-        experience: 'Experiencia Total',
-        words_seen_total: 'Palabras Vistas',
-        slangs_seen: 'Slangs Vistos',
-        phrasal_verbs_seen: 'Phrasal Verbs Vistos',
-        correct_answers_total: 'Respuestas Correctas',
-        total_questions_answered: 'Preguntas Respondidas',
-        correct_slangs: 'Slangs Acertados',
-        total_slangs_questions: 'Preguntas Slangs',
-        correct_phrasal_verbs: 'Phrasal Verbs Acertados',
-        total_phrasal_verbs_questions: 'Preguntas Phrasal Verbs',
-        current_streak: 'Racha Actual',
-        longest_streak: 'Racha Más Larga',
-    }), []);
+    // Edit mode
+    const [isEditing, setIsEditing] = useState(false);
+    const [editForm, setEditForm] = useState({ full_name: '', current_avatar: '', current_title: '' });
+    const [saving, setSaving] = useState(false);
 
-    const fetchUserStats = useCallback(async () => {
+    // ─── FETCH ────────────────────────────────────
+    const fetchAllData = useCallback(async () => {
+        if (!user || !user.user_id) {
+            setError('No hay usuario logueado.');
+            setLoading(false);
+            return;
+        }
         setLoading(true);
         setError(null);
         try {
-            if (user && user.user_id) {
-                const response = await api.get('/user-stats/me/');
-                setUserStats(response.data);
-            } else {
-                setError('No hay usuario logueado.');
-            }
+            const [statsRes, profileRes, historyRes] = await Promise.all([
+                api.get('/user-stats/me/'),
+                api.get('/profile/me/'),
+                api.get('/game-history/'),
+            ]);
+            setUserStats(statsRes.data);
+            setProfileData(profileRes.data);
+            const historyData = historyRes.data.results || historyRes.data;
+            setGameHistory(Array.isArray(historyData) ? historyData : []);
         } catch (err) {
-            console.error("Error fetching user stats:", err);
-            setError("No se pudieron cargar las estadísticas del usuario.");
+            console.error("Error fetching profile data:", err);
+            setError("No se pudieron cargar los datos del perfil.");
         } finally {
             setLoading(false);
         }
     }, [api, user]);
 
     useEffect(() => {
-        fetchUserStats();
-    }, [fetchUserStats]);
+        fetchAllData();
+    }, [fetchAllData]);
 
-    const handleUpdateStat = useCallback(async (statName, delta) => {
-        if (!userStats) return;
+    const handleStartEditing = () => {
+        setEditForm({
+            full_name: profileData?.full_name || '',
+            current_avatar: profileData?.current_avatar || '',
+            current_title: profileData?.current_title || '',
+        });
+        setIsEditing(true);
+    };
 
-        const oldValue = userStats[statName] || 0; 
-        const newValue = Math.max(0, oldValue + delta); 
-
-        setFeedbackMessage(''); 
-
+    const handleSaveProfile = async () => {
+        setSaving(true);
         try {
-            const payload = { [statName]: newValue };
-            const response = await api.patch('/user-stats/me/', payload);
-            setUserStats(response.data); 
+            const payload = {};
+            if (editForm.full_name !== (profileData?.full_name || '')) payload.full_name = editForm.full_name;
+            if (editForm.current_avatar !== (profileData?.current_avatar || '')) payload.current_avatar = editForm.current_avatar || null;
+            if (editForm.current_title !== (profileData?.current_title || '')) payload.current_title = editForm.current_title || null;
 
-            let message = `${statLabels[statName]} actualizado a ${newValue}.`;
-            if (response.data.newly_unlocked_badges && response.data.newly_unlocked_badges.length > 0) {
-                message += ` ¡Has desbloqueado nuevas insignias: ${response.data.newly_unlocked_badges.join(', ')}!`;
-            }
-            setFeedbackMessage(message);
-
-            setTimeout(() => setFeedbackMessage(''), 3000);
-
+            await api.patch('/profile/me/', payload);
+            await fetchAllData(); // Recargar todo
+            setIsEditing(false);
+            toast.success('¡Perfil actualizado!');
         } catch (err) {
-            console.error(`Error al actualizar ${statName}:`, err.response?.data || err.message);
-            setFeedbackMessage(`Error al actualizar ${statLabels[statName]}.`);
+            console.error(err);
+            toast.error('Error', { description: 'No se pudo guardar el perfil.' });
+        } finally {
+            setSaving(false);
         }
-    }, [api, userStats, statLabels]);
+    };
 
+    // ─── HELPERS ──────────────────────────────────
+    const getAccuracy = (correct, total) => {
+        if (!total || total === 0) return 0;
+        return (correct / total) * 100;
+    };
+
+    const formatTime = (seconds) => {
+        if (!seconds) return '0m';
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        if (h > 0) return `${h}h ${m}m`;
+        return `${m}m`;
+    };
+
+    const formatDate = (dateStr) => {
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    };
+
+    // ─── RENDER ───────────────────────────────────
     if (loading) {
         return (
-            <div className={`min-h-[calc(100vh-64px)] flex items-center justify-center 
-                ${theme === 'light' ? 'bg-[var(--color-body-bg)]' : 'bg-[var(--color-dark-bg-main)]'}`}>
-                <ScaleLoader color={theme === 'light' ? 'var(--color-bg-tertiary)' : 'var(--color-bg-secondary)'} loading={true} size={50} aria-label="Cargando perfil" />
-                <p className={`ml-4 ${theme === 'light' ? 'text-[var(--color-text-main)]' : 'text-[var(--color-dark-text)]'}`}>Cargando perfil...</p>
+            <div className="min-h-screen bg-background flex flex-col">
+                <Navbar />
+                <div className="flex-1 flex flex-col items-center justify-center gap-4 mt-16">
+                    <div className="w-16 h-16 border-4 border-accent border-t-transparent animate-spin rounded-full" />
+                    <p className="font-mono text-xs text-muted-foreground animate-pulse">CARGANDO PERFIL...</p>
+                </div>
             </div>
         );
     }
 
-    if (error) {
+    if (error || !userStats) {
         return (
-            <div className={`min-h-[calc(100vh-64px)] flex items-center justify-center 
-                ${theme === 'light' ? 'bg-[var(--color-body-bg)]' : 'bg-[var(--color-dark-bg-main)]'}`}>
-                <p className="text-red-500 text-center">{error}</p>
+            <div className="min-h-screen bg-background flex flex-col">
+                <Navbar />
+                <div className="flex-1 flex items-center justify-center mt-16">
+                    <p className="text-destructive font-mono">{error || 'Sin datos.'}</p>
+                </div>
             </div>
         );
     }
 
-    if (!userStats) {
-        return (
-            <div className={`min-h-[calc(100vh-64px)] flex items-center justify-center p-4 
-                ${theme === 'light' ? 'bg-[var(--color-body-bg)]' : 'bg-[var(--color-dark-bg-main)]'}`}>
-                <p className={`text-lg ${theme === 'light' ? 'text-[var(--color-text-main)]' : 'text-[var(--color-dark-text)]'}`}>
-                    No se encontraron estadísticas para tu perfil.
-                </p>
-            </div>
-        );
-    }
+    const generalAccuracy = getAccuracy(userStats.correct_answers_total, userStats.total_questions_answered);
+    const slangAccuracy = getAccuracy(userStats.correct_slangs, userStats.total_slangs_questions);
+    const pvAccuracy = getAccuracy(userStats.correct_phrasal_verbs, userStats.total_phrasal_verbs_questions);
+
+    // Find current avatar object
+    const currentAvatarObj = userStats.unlocked_avatars?.find(a => a.id === profileData?.current_avatar);
+    const avatarSrc = currentAvatarObj?.image || `https://ui-avatars.com/api/?name=${userStats.user_username}&background=random`;
 
     return (
-        <div className={`min-h-[calc(100vh-64px)] p-6 ${theme === 'light' ? 'bg-[var(--color-body-bg)]' : 'bg-[var(--color-dark-bg-main)]'}`}>
-            <h1 className={`text-3xl font-bold mb-8 text-center ${theme === 'light' ? 'text-[var(--color-text-main)]' : 'text-[var(--color-dark-text)]'}`}>
-                Perfil de Usuario
-            </h1>
+        <div className="min-h-screen bg-background font-sans flex flex-col">
+            <Navbar />
 
-            <div className={`max-w-2xl mx-auto p-6 rounded-lg shadow-md
-                ${theme === 'light' ? 'bg-[var(--color-bg-card)]' : 'bg-[var(--color-dark-bg-secondary)]'}`}>
-                <h2 className={`text-2xl font-semibold mb-4 ${theme === 'light' ? 'text-[var(--color-text-main)]' : 'text-[var(--color-dark-text)]'}`}>
-                    Estadísticas de {userStats.user_username}
-                </h2>
+            <div className="flex-1 max-w-5xl w-full mx-auto px-4 py-8 md:py-12 mt-16">
 
-                {feedbackMessage && (
-                    <div className="mb-4 p-3 bg-green-200 text-green-800 rounded">
-                        {feedbackMessage}
+                {/* ═══════════ PLAYER CARD (Hero Section) ═══════════ */}
+                <div className="relative bg-card pixel-border p-6 md:p-8 mb-8">
+
+                    {/* Edit Button */}
+                    {!isEditing ? (
+                        <button
+                            onClick={handleStartEditing}
+                            className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors border-2 border-transparent hover:border-primary"
+                        >
+                            <EditIcon className="w-4 h-4" />
+                        </button>
+                    ) : (
+                        <div className="absolute top-4 right-4 flex gap-2">
+                            <button
+                                onClick={handleSaveProfile}
+                                disabled={saving}
+                                className="p-2 bg-primary text-primary-foreground border-2 border-foreground hover:brightness-110 transition-all disabled:opacity-50"
+                            >
+                                <SaveIcon className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={() => setIsEditing(false)}
+                                className="p-2 text-muted-foreground hover:text-destructive border-2 border-transparent hover:border-destructive transition-colors"
+                            >
+                                <XIcon className="w-4 h-4" />
+                            </button>
+                        </div>
+                    )}
+
+                    <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                        {/* Avatar */}
+                        <div className="relative shrink-0 flex flex-col items-center">
+                            <div className="w-28 h-28 pixel-border bg-muted/30 p-1 overflow-hidden flex items-center justify-center">
+                                <img
+                                    src={isEditing ? (userStats.unlocked_avatars?.find(a => a.id === editForm.current_avatar)?.image || avatarSrc) : avatarSrc}
+                                    alt="Avatar"
+                                    className="w-full h-full object-contain"
+                                />
+                            </div>
+                            <div className="absolute -bottom-2 -right-2 px-2 py-0.5 bg-accent text-accent-foreground font-mono text-[10px] font-bold pixel-border-accent z-10">
+                                NVL {userStats.level}
+                            </div>
+                        </div>
+
+                        {/* Info */}
+                        <div className="flex-1 text-center md:text-left">
+                            {!isEditing ? (
+                                <>
+                                    <h1 className="text-2xl md:text-3xl font-mono font-bold text-foreground mb-1">
+                                        {profileData?.full_name || userStats.user_username}
+                                    </h1>
+                                    <p className="text-sm text-muted-foreground font-mono mb-1">@{userStats.user_username}</p>
+                                    {profileData?.current_title && (
+                                        <span className="inline-block px-3 py-1 text-[11px] font-mono font-bold bg-primary/20 text-primary border-2 border-primary/40 mt-1">
+                                            {profileData.current_title}
+                                        </span>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="space-y-3 max-w-md">
+                                    <div>
+                                        <label className="text-[10px] font-mono uppercase text-muted-foreground block mb-1">Nombre Completo</label>
+                                        <input
+                                            value={editForm.full_name}
+                                            onChange={e => setEditForm({ ...editForm, full_name: e.target.value })}
+                                            className="w-full h-9 px-3 bg-background border-2 border-foreground rounded-none focus:outline-none focus:border-primary text-sm font-mono"
+                                            placeholder="Tu nombre..."
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-mono uppercase text-muted-foreground block mb-1">Avatar</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {(userStats.unlocked_avatars || []).map(av => (
+                                                <button
+                                                    key={av.id}
+                                                    onClick={() => setEditForm({ ...editForm, current_avatar: av.id })}
+                                                    className={`w-14 h-14 p-1 border-2 transition-all ${editForm.current_avatar === av.id
+                                                        ? 'border-primary bg-primary/20 scale-110'
+                                                        : 'border-foreground/30 hover:border-foreground'
+                                                        }`}
+                                                >
+                                                    <img src={av.image} alt={av.name} className="w-full h-full object-contain" />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-mono uppercase text-muted-foreground block mb-1">Título</label>
+                                        <select
+                                            value={editForm.current_title}
+                                            onChange={e => setEditForm({ ...editForm, current_title: e.target.value })}
+                                            className="w-full h-9 px-3 bg-background border-2 border-foreground text-foreground rounded-none focus:outline-none focus:border-primary text-sm font-mono"
+                                        >
+                                            <option value="">Sin título</option>
+                                            {(userStats.unlocked_titles || []).map(t => (
+                                                <option key={t} value={t}>{t}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* XP Progress Bar */}
+                            <div className="mt-4 max-w-sm mx-auto md:mx-0">
+                                <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1">
+                                    <span>XP: {userStats.experience}</span>
+                                    <span>Siguiente: {userStats.xp_for_next_level}</span>
+                                </div>
+                                <div className="w-full h-3 bg-muted border-2 border-foreground relative">
+                                    <div
+                                        className="h-full bg-accent transition-all duration-700"
+                                        style={{ width: `${userStats.xp_progress_in_current_level}%` }}
+                                    />
+                                    <div className="absolute top-0 left-0 w-full h-px bg-white/20" />
+                                </div>
+                                <p className="text-[10px] font-mono text-right text-muted-foreground mt-0.5">
+                                    {userStats.xp_progress_in_current_level?.toFixed(1)}%
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Quick Stats (Right Side) */}
+                        <div className="hidden md:grid grid-cols-2 gap-2 shrink-0">
+                            {[
+                                { label: 'Racha', value: userStats.current_streak, icon: '🔥' },
+                                { label: 'Récord', value: userStats.longest_streak, icon: '⭐' },
+                                { label: 'Insignias', value: userStats.unlocked_badges?.length || 0, icon: '🏆' },
+                                { label: 'Avatares', value: userStats.unlocked_avatars?.length || 0, icon: '🎭' },
+                            ].map(s => (
+                                <div key={s.label} className="flex items-center gap-2 px-3 py-2 bg-muted/20 border border-foreground/20">
+                                    <span className="text-lg">{s.icon}</span>
+                                    <div>
+                                        <p className="text-base font-mono font-bold text-foreground leading-none">{s.value}</p>
+                                        <p className="text-[9px] font-mono text-muted-foreground uppercase">{s.label}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* ═══════════ TABS ═══════════ */}
+                <div className="flex border-b-2 border-foreground/20 mb-6 overflow-x-auto">
+                    <TabButton active={activeTab === 'stats'} onClick={() => setActiveTab('stats')}>
+                        📊 Estadísticas
+                    </TabButton>
+                    <TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history')}>
+                        📜 Historial
+                    </TabButton>
+                    <TabButton active={activeTab === 'badges'} onClick={() => setActiveTab('badges')}>
+                        🏆 Insignias
+                    </TabButton>
+                </div>
+
+                {/* ═══════════ TAB CONTENT ═══════════ */}
+
+                {/* ─── STATS TAB ─── */}
+                {activeTab === 'stats' && (
+                    <div className="space-y-6 animate-in fade-in duration-300">
+
+                        {/* Precision Section */}
+                        <div className="bg-card pixel-border p-5">
+                            <h3 className="font-mono text-sm uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
+                                <span className="text-lg">🎯</span> Precisión
+                            </h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <StatGauge label="General" value={generalAccuracy} maxValue={100} isPercentage />
+                                <StatGauge label="Slangs" value={slangAccuracy} maxValue={100} isPercentage />
+                                <StatGauge label="Phrasal Verbs" value={pvAccuracy} maxValue={100} isPercentage />
+                            </div>
+                        </div>
+
+                        {/* Knowledge Section */}
+                        <div className="bg-card pixel-border p-5">
+                            <h3 className="font-mono text-sm uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
+                                <span className="text-lg">📚</span> Conocimiento
+                            </h3>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                <StatGauge label="Slangs Dominados" value={userStats.slangs_learned || 0} maxValue={100} />
+                                <StatGauge label="Idioms Dominados" value={userStats.idioms_learned || 0} maxValue={50} />
+                                <StatGauge label="PV Dominados" value={userStats.phrasal_verbs_learned || 0} maxValue={50} />
+                                <StatGauge label="Vocabulario" value={userStats.vocabulary_learned || 0} maxValue={200} />
+                            </div>
+                        </div>
+
+                        {/* Activity Section */}
+                        <div className="bg-card pixel-border p-5">
+                            <h3 className="font-mono text-sm uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
+                                <span className="text-lg">⚡</span> Actividad
+                            </h3>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                <StatGauge label="Palabras Vistas" value={userStats.words_seen_total || 0} maxValue={500} />
+                                <StatGauge label="Preguntas" value={userStats.total_questions_answered || 0} maxValue={1000} />
+                                <StatGauge label="Respuestas Correctas" value={userStats.correct_answers_total || 0} maxValue={userStats.total_questions_answered || 1} />
+                            </div>
+                        </div>
+
+                        {/* Combat Section */}
+                        <div className="bg-card pixel-border p-5">
+                            <h3 className="font-mono text-sm uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
+                                <span className="text-lg">⚔️</span> Combate (Acumulado)
+                            </h3>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                <StatGauge label="Letras Eliminadas" value={userStats.total_letters_killed || 0} maxValue={5000} />
+                                <StatGauge label="Jefes Derrotados" value={userStats.total_bosses_killed || 0} maxValue={50} />
+                                <StatGauge label="Tiempo Jugado" value={userStats.total_time_played_seconds || 0} maxValue={36000} suffix={` (${formatTime(userStats.total_time_played_seconds)})`} />
+                            </div>
+                        </div>
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Nivel y XP */}
-                    <div className={`p-4 rounded-md ${theme === 'light' ? 'bg-gray-100' : 'bg-[var(--color-dark-bg-tertiary)]'}`}>
-                        <p className={`font-semibold ${theme === 'light' ? 'text-[var(--color-text-main)]' : 'text-[var(--color-dark-text)]'}`}>
-                            Nivel: <span className="font-bold text-[var(--color-accent-blue)]">{userStats.level}</span>
-                        </p>
-                        <p className={`text-sm ${theme === 'light' ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-dark-text-secondary)]'}`}>
-                            XP Total: {userStats.experience}
-                        </p>
-                        <p className={`text-sm ${theme === 'light' ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-dark-text-secondary)]'}`}>
-                            Próximo Nivel: {userStats.xp_for_next_level} XP
-                        </p>
-                        <div className="w-full bg-gray-300 rounded-full h-2 mt-2">
-                            <div className="bg-[var(--color-accent-green)] h-2 rounded-full" style={{ width: `${userStats.xp_progress_in_current_level}%` }}></div>
-                        </div>
-                        <p className={`text-xs text-right mt-1 ${theme === 'light' ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-dark-text-secondary)]'}`}>
-                            {userStats.xp_progress_in_current_level}%
-                        </p>
-                    </div>
+                {/* ─── HISTORY TAB ─── */}
+                {activeTab === 'history' && (
+                    <div className="animate-in fade-in duration-300">
+                        {gameHistory.length === 0 ? (
+                            <div className="text-center p-12 bg-card pixel-border text-muted-foreground">
+                                <p className="text-4xl mb-3">📜</p>
+                                <p className="font-mono text-sm">Aún no has jugado ninguna partida.</p>
+                                <p className="text-xs mt-1">¡Ve a jugar y tu historial aparecerá aquí!</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {gameHistory.map(game => {
+                                    const accuracy = getAccuracy(game.correct_in_game, game.total_questions_in_game);
+                                    const accColor = accuracy >= 80 ? 'text-green-500' : accuracy >= 50 ? 'text-yellow-500' : 'text-red-500';
+                                    const isSurvivor = game.game_mode === 'SURVIVOR';
 
-                    {/* Lista de Estadísticas Modificables */}
-                    <div className="md:col-span-2">
-                        <h3 className={`text-lg font-semibold mt-4 mb-2 ${theme === 'light' ? 'text-[var(--color-text-main)]' : 'text-[var(--color-dark-text)]'}`}>
-                            Estadísticas para Probar Insignias:
-                        </h3>
-                        <ul className="space-y-2">
-                            {Object.entries(statLabels).map(([key, label]) => (
-                                <li key={key} className={`flex items-center justify-between p-3 rounded-md
-                                    ${theme === 'light' ? 'bg-gray-100' : 'bg-[var(--color-dark-bg-tertiary)]'}`}>
-                                    <span className={theme === 'light' ? 'text-[var(--color-text-main)]' : 'text-[var(--color-dark-text)]'}>
-                                        {label}: <span className="font-semibold">{userStats[key] || 0}</span>
-                                    </span>
-                                    <div className="flex space-x-2">
-                                        <button
-                                            onClick={() => handleUpdateStat(key, -1)}
-                                            className={`p-1 rounded-full ${theme === 'light' ? 'bg-gray-200 hover:bg-gray-300' : 'bg-neutral-600 hover:bg-neutral-700'} ${theme === 'light' ? 'text-[var(--color-text-main)]' : 'text-[var(--color-dark-text)]'}`}
-                                            aria-label={`Disminuir ${label}`}
-                                        >
-                                            <Minus className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleUpdateStat(key, 1)}
-                                            className={`p-1 rounded-full ${theme === 'light' ? 'bg-gray-200 hover:bg-gray-300' : 'bg-neutral-600 hover:bg-neutral-700'} ${theme === 'light' ? 'text-[var(--color-text-main)]' : 'text-[var(--color-dark-text)]'}`}
-                                            aria-label={`Aumentar ${label}`}
-                                        >
-                                            <Plus className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleUpdateStat(key, 5)} // Aumentar en 5 para pruebas rápidas
-                                            className={`p-1 rounded-full ${theme === 'light' ? 'bg-gray-200 hover:bg-gray-300' : 'bg-neutral-600 hover:bg-neutral-700'} ${theme === 'light' ? 'text-[var(--color-text-main)]' : 'text-[var(--color-dark-text)]'}`}
-                                            aria-label={`Aumentar ${label} en 5`}
-                                        >
-                                            +5
-                                        </button>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
+                                    return (
+                                        <div key={game.id} className="bg-card pixel-border p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 hover:bg-muted/20 transition-colors">
+                                            {/* Mode Icon */}
+                                            <div className={`
+                                                w-12 h-12 flex items-center justify-center text-2xl border-2 shrink-0
+                                                ${isSurvivor ? 'border-red-500/50 bg-red-500/10' : 'border-blue-500/50 bg-blue-500/10'}
+                                            `}>
+                                                {isSurvivor ? '⚔️' : '🧠'}
+                                            </div>
+
+                                            {/* Details */}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 border ${isSurvivor ? 'border-red-500/50 text-red-500' : 'border-blue-500/50 text-blue-500'}`}>
+                                                        {isSurvivor ? 'SURVIVOR' : 'QUIZ'}
+                                                    </span>
+                                                    <span className="text-[10px] text-muted-foreground font-mono">{formatDate(game.played_at)}</span>
+                                                </div>
+                                                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-mono text-muted-foreground">
+                                                    {game.total_questions_in_game > 0 && (
+                                                        <span>Preguntas: <span className="text-foreground font-bold">{game.correct_in_game}/{game.total_questions_in_game}</span></span>
+                                                    )}
+                                                    {game.time_spent_seconds > 0 && (
+                                                        <span>Tiempo: <span className="text-foreground font-bold">{formatTime(game.time_spent_seconds)}</span></span>
+                                                    )}
+                                                    {isSurvivor && game.letters_killed > 0 && (
+                                                        <span>Letras: <span className="text-foreground font-bold">{game.letters_killed}</span></span>
+                                                    )}
+                                                    {isSurvivor && game.bosses_killed > 0 && (
+                                                        <span>Jefes: <span className="text-foreground font-bold">{game.bosses_killed}</span></span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Score & Accuracy */}
+                                            <div className="flex items-center gap-4 shrink-0">
+                                                {game.total_questions_in_game > 0 && (
+                                                    <div className="text-right">
+                                                        <p className={`font-mono text-lg font-bold ${accColor}`}>{accuracy.toFixed(0)}%</p>
+                                                        <p className="text-[9px] font-mono text-muted-foreground uppercase">Precisión</p>
+                                                    </div>
+                                                )}
+                                                <div className="text-right">
+                                                    <p className="font-mono text-lg font-bold text-accent">+{game.score}</p>
+                                                    <p className="text-[9px] font-mono text-muted-foreground uppercase">XP</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
-                </div>
+                )}
+
+                {/* ─── BADGES TAB ─── */}
+                {activeTab === 'badges' && (
+                    <div className="animate-in fade-in duration-300">
+                        {(!userStats.unlocked_badges || userStats.unlocked_badges.length === 0) ? (
+                            <div className="text-center p-12 bg-card pixel-border text-muted-foreground">
+                                <p className="text-4xl mb-3">🏆</p>
+                                <p className="font-mono text-sm">Aún no has desbloqueado insignias.</p>
+                                <p className="text-xs mt-1">¡Sigue jugando para ganar tus primeras insignias!</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                {userStats.unlocked_badges.map(badge => (
+                                    <div key={badge.id} className="bg-card pixel-border p-4 flex flex-col items-center text-center hover:-translate-y-1 transition-transform">
+                                        <div className="w-16 h-16 mb-3 flex items-center justify-center">
+                                            {badge.image ? (
+                                                <img src={badge.image} alt={badge.title} className="w-full h-full object-contain" />
+                                            ) : (
+                                                <span className="text-3xl">🏆</span>
+                                            )}
+                                        </div>
+                                        <h4 className="font-mono text-[11px] font-bold text-foreground leading-tight mb-1">{badge.title}</h4>
+                                        <p className="text-[9px] text-muted-foreground leading-tight">{badge.reward_description}</p>
+                                        <div className={`
+                                            mt-2 px-2 py-0.5 text-[8px] font-mono font-bold uppercase border
+                                            ${badge.category === 'LEGENDARY' ? 'border-yellow-500 text-yellow-500 bg-yellow-500/10' :
+                                                badge.category === 'EPIC' ? 'border-purple-500 text-purple-500 bg-purple-500/10' :
+                                                    badge.category === 'RARE' ? 'border-blue-500 text-blue-500 bg-blue-500/10' :
+                                                        'border-stone-400 text-stone-400 bg-stone-400/10'}
+                                        `}>
+                                            {badge.category}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
             </div>
         </div>
     );
