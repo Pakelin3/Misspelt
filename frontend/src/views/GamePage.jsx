@@ -150,6 +150,10 @@ const GamePage = () => {
         iframeWindow.onGodotExit = () => {
             setGameState('SELECTION');
         };
+
+        iframeWindow.handleExitGame = () => {
+            setGameState('SELECTION');
+        };
     };
 
     const sendToGodot = (success) => {
@@ -371,16 +375,6 @@ const GamePage = () => {
             {/* VISTA B: GAME RUNNING */}
             {gameState === 'PLAYING' && (
                 <div className="relative w-full h-full bg-black flex flex-col">
-                    <button
-                        onClick={() => {
-                            if (window.confirm("¿Salir de la partida? Perderás el progreso.")) {
-                                setGameState('SELECTION');
-                            }
-                        }}
-                        className="absolute top-20 left-4 p-2 bg-black/50 hover:bg-red-600 text-white rounded-full transition-colors z-20"
-                    >
-                        <Home size={20} />
-                    </button>
 
                     <iframe
                         ref={iframeRef}

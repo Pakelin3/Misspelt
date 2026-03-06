@@ -4,10 +4,10 @@ def award_badge_rewards(user, badge):
     """
     Otorga las recompensas asociadas a un badge al usuario.
     """
-    if not badge.reward_data: # Si no hay datos de recompensa
+    if not badge.reward_data: 
         return
 
-    reward_data = badge.reward_data # Accede al JSONField
+    reward_data = badge.reward_data 
 
     # Otorgar EXP
     if 'exp' in reward_data:
@@ -21,10 +21,10 @@ def award_badge_rewards(user, badge):
     if 'avatar_id' in reward_data:
         avatar_id = reward_data['avatar_id']
         try:
-            avatar = Avatar.objects.get(id=avatar_id) #
-            user_stats = user.stats # Accede a UserStats a través de la relación related_name 'stats'
+            avatar = Avatar.objects.get(id=avatar_id) 
+            user_stats = user.stats 
             if avatar not in user_stats.unlocked_avatars.all():
-                user_stats.unlocked_avatars.add(avatar) # Desbloquea el avatar
+                user_stats.unlocked_avatars.add(avatar) 
                 user_stats.save()
                 print(f"Usuario {user.username} desbloqueó el avatar '{avatar.name}' del badge '{badge.title}'.")
                 # Opcional: Establecerlo como actual si el usuario no tiene uno o es el primero

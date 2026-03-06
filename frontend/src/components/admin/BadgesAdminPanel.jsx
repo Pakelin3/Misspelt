@@ -424,6 +424,13 @@ function BadgesAdminPanel() {
                                                     <option value="level_reached">Nivel de Jugador</option>
                                                     <option value="total_exp_achieved">Experiencia Total</option>
 
+                                                    <option value="total_letters_killed">Letras Eliminadas (Total)</option>
+                                                    <option value="total_bosses_killed">Jefes Derrotados (Total)</option>
+                                                    <option value="total_time_played_seconds">Tiempo Jugado (Segundos, Total)</option>
+                                                    <option value="single_game_letters_killed">Letras Eliminadas (Misma Partida)</option>
+                                                    <option value="single_game_bosses_killed">Jefes Derrotados (Misma Partida)</option>
+                                                    <option value="single_game_time_survived">Sobrevivir Tiempo (Segundos, Misma Partida)</option>
+
                                                     <option value="general_accuracy">Precisión General (%)</option>
                                                     <option value="slang_accuracy">Precisión Slang (%)</option>
                                                     <option value="phrasal_verb_accuracy">Precisión Phrasal Verbs (%)</option>

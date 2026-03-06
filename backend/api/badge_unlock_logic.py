@@ -8,6 +8,8 @@ def check_and_unlock_badges(user):
     para un usuario dado y otorga los badges si las condiciones se cumplen.
     """
     user_stats, created = UserStats.objects.get_or_create(user=user)
+    from api.models import GameHistory
+    latest_game = GameHistory.objects.filter(user=user).order_by('-played_at').first()
     
     all_badges = Badge.objects.all()
     
@@ -95,6 +97,24 @@ def check_and_unlock_badges(user):
                         is_condition_met = True
                 elif condition_type == 'slangs_seen':
                     if user_stats.slangs_seen >= required_value:
+                        is_condition_met = True
+                elif condition_type == 'total_letters_killed':
+                    if user_stats.total_letters_killed >= required_value:
+                        is_condition_met = True
+                elif condition_type == 'total_bosses_killed':
+                    if user_stats.total_bosses_killed >= required_value:
+                        is_condition_met = True
+                elif condition_type == 'total_time_played_seconds':
+                    if user_stats.total_time_played_seconds >= required_value:
+                        is_condition_met = True
+                elif condition_type == 'single_game_letters_killed':
+                    if latest_game and latest_game.letters_killed >= required_value:
+                        is_condition_met = True
+                elif condition_type == 'single_game_bosses_killed':
+                    if latest_game and latest_game.bosses_killed >= required_value:
+                        is_condition_met = True
+                elif condition_type == 'single_game_time_survived':
+                    if latest_game and latest_game.time_spent_seconds >= required_value:
                         is_condition_met = True
 
                 if not is_condition_met:

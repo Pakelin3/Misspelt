@@ -505,6 +505,9 @@ def submit_game_results(request):
     stats.experience = F('experience') + xp_earned
     stats.total_questions_answered = F('total_questions_answered') + total_questions
     stats.correct_answers_total = F('correct_answers_total') + correct_answers
+    stats.total_letters_killed = F('total_letters_killed') + letters_killed
+    stats.total_bosses_killed = F('total_bosses_killed') + bosses_killed
+    stats.total_time_played_seconds = F('total_time_played_seconds') + time_spent
     
     from django.utils import timezone
     today = timezone.now().date()
@@ -519,7 +522,6 @@ def submit_game_results(request):
         stats.longest_streak = stats.current_streak
         stats.save()
 
-    # 4. Crear el Historial
     from api.models import GameHistory
     GameHistory.objects.create(
         user=user,
