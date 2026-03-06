@@ -457,6 +457,8 @@ def submit_game_results(request):
     game_mode = data.get('game_mode', 'SURVIVOR')
     
     time_spent = data.get('time_spent', 0)
+    letters_killed = data.get('letters_killed', 0)
+    bosses_killed = data.get('bosses_killed', 0)
     seen_word_ids = data.get('seen_word_ids', [])
     correct_word_ids = data.get('correct_word_ids', [])
 
@@ -526,7 +528,9 @@ def submit_game_results(request):
         total_questions_in_game=total_questions,
         game_mode=game_mode,
         time_spent_seconds=time_spent,
-        match_breakdown=match_breakdown
+        match_breakdown=match_breakdown,
+        letters_killed=letters_killed,
+        bosses_killed=bosses_killed
     )
 
     newly_unlocked = check_and_unlock_badges(user)

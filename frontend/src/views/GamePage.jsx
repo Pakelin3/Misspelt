@@ -98,7 +98,7 @@ const GamePage = () => {
             }
         };
 
-        iframeWindow.handleGameOver = async (finalScore, timeSpentSeconds = 0) => {
+        iframeWindow.handleGameOver = async (finalScore, timeSpentSeconds = 0, lettersKilled = 0, bossesKilled = 0) => {
             setResults({ xp_earned: finalScore, level: 1 });
             setGameState('RESULTS');
 
@@ -106,6 +106,8 @@ const GamePage = () => {
                 const response = await api.post('/game/submit-results/', {
                     xp_earned: finalScore,
                     time_spent: timeSpentSeconds,
+                    letters_killed: lettersKilled,
+                    bosses_killed: bossesKilled,
                     seen_word_ids: Array.from(seenWordsRef.current),
                     correct_word_ids: Array.from(correctWordsRef.current),
                     score: finalScore * 10,

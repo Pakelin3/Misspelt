@@ -221,10 +221,10 @@ class UserStats(models.Model):
             return 0
         return 50 * level * (level - 1) # Nivel 1 necesita 0, Nivel 2 necesita 50, Nivel 3 necesita 200, Nivel 4 necesita 450
 
-    # ? Formulas:
-    # * Ejemplo 1 (lineal): return level * 100
-    # * Ejemplo 2 (exponencial simple): return 100 * (2 ** (level - 1)) - 100
-    # * Ejemplo 3 (más complejo, común en juegos):
+    # ! Formulas:
+    # ? Ejemplo 1 (lineal): return level * 100
+    # ? Ejemplo 2 (exponencial simple): return 100 * (2 ** (level - 1)) - 100
+    # ? Ejemplo 3 (más complejo, común en juegos):
     #   xp_per_level = 100 # XP base para cada nivel
     #   xp_growth_factor = 1.1 # Cada nivel requiere 10% mas XP que el anterior
     #   total_xp = 0
@@ -248,6 +248,8 @@ class GameHistory(models.Model):
     correct_in_game = models.IntegerField(default=0) 
     total_questions_in_game = models.IntegerField(default=0)
     time_spent_seconds = models.IntegerField(default=0)
+    letters_killed = models.IntegerField(default=0)
+    bosses_killed = models.IntegerField(default=0)
     match_breakdown = models.JSONField(default=dict, blank=True)
 
     def __str__(self):
