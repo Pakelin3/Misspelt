@@ -5,7 +5,7 @@ import useAxios from '@/utils/useAxios';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Trophy, Clock, Star, Home, Play, RotateCcw, ArrowLeft } from 'lucide-react';
+import { Trophy, Clock, Star, Home, Play, RotateCcw, ArrowLeft, Info, X, ChevronRight, Sparkles } from 'lucide-react';
 import SpriteAnimator from '@/components/ui/SpriteAnimator';
 import QuizManager from '@/components/quiz/QuizManager';
 import { driver } from "driver.js";
@@ -42,22 +42,54 @@ const GamePage = () => {
         },
         {
             id: 'farmer', name: 'Campesino', sprite: '/game/skins/farmer.png',
-            stats: { hp: 120, dmg: 8, spd: 300 },
+            stats: { hp: 150, dmg: 15, spd: 280 },
             lore: "Cansado de que las plagas arruinaran sus cosechas, tomó su guadaña y aprendió a deletrear hechizos básicos para defender su granja."
         },
         {
             id: 'warlock', name: 'Brujo', sprite: '/game/skins/warlock.png',
-            stats: { hp: 20, dmg: 12, spd: 200 },
+            stats: { hp: 20, dmg: 18, spd: 380 },
             lore: "Hizo un pacto con entidades oscuras a cambio de conocimiento prohibido. Su magia es destructiva, pero su fragilidad física es su mayor debilidad."
         },
         {
             id: 'erudit', name: 'Erudito', sprite: '/game/skins/erudit.png',
-            stats: { hp: 100, dmg: 15, spd: 314.1 },
+            stats: { hp: 80, dmg: 12, spd: 314.1 },
             lore: "Un bibliotecario ermitaño que ha leído miles de libros. Su velocidad mental y física le permiten esquivar peligros mientras formula encantamientos precisos."
         },
     ];
 
+    const UPGRADES = {
+        mage: [
+            { name: 'Multicast', tier: 'Nv. 1-3', desc: 'Añade un proyectil adicional. (Máximo 4 proyectiles a la vez).', emoji: '🔮', color: 'text-blue-400', bg: 'bg-blue-500/20', border: 'border-blue-500/40' },
+            { name: 'Disparo Perforante', tier: 'Nv. 4', desc: 'Los proyectiles ahora atraviesan a 1 enemigo.', emoji: '💫', color: 'text-purple-400', bg: 'bg-purple-500/20', border: 'border-purple-500/40' },
+            { name: 'Archimago', tier: 'Nv. 5+', desc: '+20% de Daño Total. (Mejora infinita para el endgame).', emoji: '⚡', color: 'text-yellow-400', bg: 'bg-yellow-500/20', border: 'border-yellow-500/40', ultimate: true },
+        ],
+        warlock: [
+            { name: 'Corrupción', tier: 'x3', desc: 'Aumenta el tamaño de tu aura oscura en un 15%.', emoji: '🌑', color: 'text-purple-400', bg: 'bg-purple-500/20', border: 'border-purple-500/40' },
+            { name: 'Vacío Famélico', tier: 'x2', desc: 'El aura hace daño un 20% más rápido (reduce el tiempo entre ticks).', emoji: '🕳️', color: 'text-red-400', bg: 'bg-red-500/20', border: 'border-red-500/40' },
+            { name: 'Segador de Almas', tier: 'DEF', desc: 'Los enemigos que mueren dentro de tu aura curan 1 HP (cooldown: 2s).', emoji: '💀', color: 'text-green-400', bg: 'bg-green-500/20', border: 'border-green-500/40', ultimate: true },
+        ],
+        erudit: [
+            { name: 'Más Conocimiento', tier: 'x6', desc: 'Añade un libro adicional a tu órbita defensiva.', emoji: '📖', color: 'text-blue-400', bg: 'bg-blue-500/20', border: 'border-blue-500/40' },
+            { name: 'Lectura Rápida', tier: 'MAX', desc: 'Los libros giran un 30% más rápido a tu alrededor.', emoji: '💨', color: 'text-cyan-400', bg: 'bg-cyan-500/20', border: 'border-cyan-500/40' },
+            { name: 'Libros Pesados', tier: 'DEF', desc: '+10% daño general e infligen +50% de Empuje (Knockback).', emoji: '📚', color: 'text-amber-400', bg: 'bg-amber-500/20', border: 'border-amber-500/40', ultimate: true },
+        ],
+        farmer: [
+            { name: 'Guadaña Afilada', tier: 'Nv. 1', desc: 'La guadaña atraviesa a 1 enemigo antes de regresar.', emoji: '🌾', color: 'text-green-400', bg: 'bg-green-500/20', border: 'border-green-500/40' },
+            { name: 'Cosecha Magna', tier: 'Nv. 2', desc: 'El tamaño de tu guadaña aumenta un 30%.', emoji: '🌿', color: 'text-lime-400', bg: 'bg-lime-500/20', border: 'border-lime-500/40' },
+            { name: 'Doble Guadaña', tier: 'Nv. 3', desc: 'Lanza una segunda guadaña al mismo tiempo.', emoji: '⚔️', color: 'text-orange-400', bg: 'bg-orange-500/20', border: 'border-orange-500/40' },
+            { name: 'Segar Almas', tier: 'Nv. 4', desc: 'Las guadañas atraviesan enemigos de forma infinita (Pierce ∞).', emoji: '💀', color: 'text-red-400', bg: 'bg-red-500/20', border: 'border-red-500/40' },
+            { name: 'Cosecha Crítica', tier: 'Nv. 5+', desc: '+20% de Daño Total continuo para el late-game.', emoji: '🔥', color: 'text-yellow-400', bg: 'bg-yellow-500/20', border: 'border-yellow-500/40', ultimate: true },
+        ],
+    };
+
     const currentCharacter = CHARACTERS.find(c => c.id === selectedSkin) || CHARACTERS[0];
+    const currentUpgrades = UPGRADES[selectedSkin] || [];
+    const [showUpgrades, setShowUpgrades] = useState(false);
+
+    // Reset upgrades panel when character changes
+    useEffect(() => {
+        setShowUpgrades(false);
+    }, [selectedSkin]);
 
     // --- DRIVER.JS TUTORIAL ---
     const startTutorial = useCallback(() => {
@@ -337,11 +369,15 @@ const GamePage = () => {
                                                 <span className={`uppercase font-bold ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}>
                                                     {char.name}
                                                 </span>
-                                                {isSelected && (
-                                                    <div className="absolute -top-3 -right-3 bg-primary text-black p-1 rounded-full shadow-lg animate-bounce hidden md:block">
-                                                        <Star size={16} fill="currentColor" />
-                                                    </div>
-                                                )}
+                                                {/* {isSelected && (
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); setShowUpgrades(prev => !prev); }}
+                                                        className="absolute -top-3 -right-3 bg-accent text-accent-foreground p-1.5 border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:scale-110 transition-all hidden md:flex items-center justify-center group"
+                                                        title="Ver mejoras exclusivas"
+                                                    >
+                                                        <Sparkles size={14} className="group-hover:animate-spin" />
+                                                    </button>
+                                                )} */}
                                             </div>
                                         );
                                     })}
@@ -349,7 +385,7 @@ const GamePage = () => {
                             </div>
 
                             {/* Panel Derecho: Lore, Stats y Opciones */}
-                            <div className="flex-1 flex flex-col justify-between bg-muted/20 border-4 border-foreground p-6 relative">
+                            <div className="flex-1 flex flex-col justify-between bg-muted/20 border-4 border-foreground p-6 relative overflow-hidden">
                                 <div className="absolute top-0 left-0 w-2 h-2 bg-foreground"></div>
                                 <div className="absolute top-0 right-0 w-2 h-2 bg-foreground"></div>
                                 <div className="absolute bottom-0 left-0 w-2 h-2 bg-foreground"></div>
@@ -387,6 +423,16 @@ const GamePage = () => {
                                             );
                                         })}
                                     </div>
+
+                                    {/* Botón para abrir el Árbol de Mejoras*/}
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setShowUpgrades(true)}
+                                        className="w-full mb-6 relative h-12 text-xs rounded-none font-bold uppercase pixel-btn border-2 border-accent hover:bg-accent hover:text-accent-foreground text-accent group overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 transition-all"
+                                    >
+                                        <Sparkles size={16} className="mr-2 group-hover:animate-spin" />
+                                        Ver Árbol de Mejoras
+                                    </Button>
 
                                     <div id="tutorial-game-difficulty" className="mb-6">
                                         <span className="block font-bold text-sm uppercase mb-2 text-center text-muted-foreground">Dificultad de Palabras</span>
@@ -435,6 +481,63 @@ const GamePage = () => {
                                         )}
                                     </Button>
                                 </div>
+
+                                {/* Upgrades Overlay */}
+                                {showUpgrades && (
+                                    <div className="absolute inset-0 z-30 bg-background/95 backdrop-blur-md flex flex-col animate-in fade-in zoom-in-95 duration-200 border-4 border-accent shadow-2xl">
+                                        <div className="bg-accent text-accent-foreground px-5 py-4 flex items-center justify-between shadow-sm">
+                                            <div className="flex items-center gap-3">
+                                                <Sparkles size={20} className="animate-pulse" />
+                                                <h3 className="font-black text-lg uppercase tracking-wider drop-shadow-sm">Mejoras de {currentCharacter.name}</h3>
+                                            </div>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setShowUpgrades(false); }}
+                                                className="hover:bg-background/20 text-accent-foreground p-1.5 transition-colors border-2 border-transparent hover:border-accent-foreground shadow-sm hover:shadow-md"
+                                                title="Cerrar"
+                                            >
+                                                <X size={20} />
+                                            </button>
+                                        </div>
+                                        <div className="flex-1 overflow-y-auto px-2 py-4 custom-scrollbar scroll-smooth">
+                                            <div className="relative before:absolute before:inset-y-4 before:left-[34px] before:w-1 before:bg-accent/20 space-y-3">
+                                                {currentUpgrades.map((upg, idx) => (
+                                                    <div
+                                                        key={upg.name}
+                                                        className={`relative pl-14 pr-3 py-1  flex flex-col justify-center min-h-[4rem] animate-in slide-in-from-right-4 fade-in duration-300`}
+                                                        style={{ animationDelay: `${idx * 80}ms`, animationFillMode: 'both' }}
+                                                    >
+                                                        {/* Timeline Node */}
+                                                        <div className={`absolute  left-[29px] top-1/2 -translate-y-1/2 w-3 h-3 rounded-none border-2 border-background rotate-45 z-10 ${upg.ultimate ? 'bg-yellow-400 scale-150 shadow-[0_0_10px_rgba(250,204,21,0.5)]' : 'bg-accent'}`} />
+
+                                                        {/* Content Card */}
+                                                        <div className={`flex text-base items-start  gap-4 p-3 border-2 ${upg.border} ${upg.bg} w-full shadow-[2px_2px_0_0_rgba(0,0,0,0.5)] hover:shadow-[4px_4px_0_0_rgba(0,0,0,0.5)] transition-all hover:-translate-y-0.5 relative group bg-background/50 backdrop-blur-sm`}>
+                                                            <div className="flex flex-col items-center justify-center gap-1 w-8 shrink-0">
+                                                                <span className="text-2xl drop-shadow-sm group-hover:scale-110 transition-transform">{upg.emoji}</span>
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center flex-wrap gap-2 mb-1.5 line-clamp-1">
+                                                                    <span
+                                                                        className={`font-black ml-0.5 text-base uppercase drop-shadow-md ${upg.color}`}
+                                                                        style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8), -1px -1px 0 rgba(0,0,0,0.4), 1px -1px 0 rgba(0,0,0,0.4), -1px 1px 0 rgba(0,0,0,0.4)' }}
+                                                                    >
+                                                                        {upg.name}
+                                                                    </span>
+                                                                    <span className={`text-[12px] font-black uppercase px-1.5 py-0.5 border ${upg.ultimate ? 'bg-yellow-500/20  border-yellow-500/50' : 'bg-foreground/10 border-foreground/30 text-foreground'}`}>
+                                                                        {upg.tier}
+                                                                    </span>
+                                                                </div>
+                                                                <p className="text-xm text-muted-foreground leading-relaxed font-sans">{upg.desc}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="p-3 bg-muted/40 text-center text-[16px] text-muted-foreground uppercase border-t-2 border-accent/20">
+                                            Asciende de nivel en la partida para desbloquear estas habilidades
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </Card>
