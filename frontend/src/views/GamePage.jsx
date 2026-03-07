@@ -5,7 +5,7 @@ import useAxios from '@/utils/useAxios';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Trophy, Clock, Star, Home, Play, RotateCcw, ArrowLeft, Info, X, ChevronRight, Sparkles } from 'lucide-react';
+import { Trophy, Clock, Star, Home, Play, RotateCcw, ArrowLeft, X, Sparkles, Lock } from 'lucide-react';
 import SpriteAnimator from '@/components/ui/SpriteAnimator';
 import QuizManager from '@/components/quiz/QuizManager';
 import { driver } from "driver.js";
@@ -21,6 +21,7 @@ const GamePage = () => {
     const [results, setResults] = useState(null);
     const [selectedSkin, setSelectedSkin] = useState('mage');
     const [difficulty, setDifficulty] = useState('NORMAL');
+    const [unlockedCharacters, setUnlockedCharacters] = useState(['mage']);
 
     // --- ESTADOS DEL QUIZ ---
     const [sessionWords, setSessionWords] = useState([]);
@@ -38,22 +39,26 @@ const GamePage = () => {
         {
             id: 'mage', name: 'Mago', sprite: '/game/skins/mage.png',
             stats: { hp: 100, dmg: 10, spd: 350 },
-            lore: "Un aprendiz de las artes arcanas que descubrió que las palabras encierran el verdadero poder del universo. Busca el glosario perdido para restaurar el orden."
-        },
-        {
-            id: 'farmer', name: 'Campesino', sprite: '/game/skins/farmer.png',
-            stats: { hp: 150, dmg: 15, spd: 280 },
-            lore: "Cansado de que las plagas arruinaran sus cosechas, tomó su guadaña y aprendió a deletrear hechizos básicos para defender su granja."
+            lore: "Un aprendiz de las artes arcanas que descubrió que las palabras encierran el verdadero poder del universo. Busca el glosario perdido para restaurar el orden.",
+            unlockReq: "Desbloqueado por defecto"
         },
         {
             id: 'warlock', name: 'Brujo', sprite: '/game/skins/warlock.png',
             stats: { hp: 20, dmg: 18, spd: 380 },
-            lore: "Hizo un pacto con entidades oscuras a cambio de conocimiento prohibido. Su magia es destructiva, pero su fragilidad física es su mayor debilidad."
+            lore: "Hizo un pacto con entidades oscuras a cambio de conocimiento prohibido. Su magia es destructiva, pero su fragilidad física es su mayor debilidad.",
+            unlockReq: "Derrota al menos 1 Jefe en una partida."
         },
         {
             id: 'erudit', name: 'Erudito', sprite: '/game/skins/erudit.png',
             stats: { hp: 80, dmg: 12, spd: 314.1 },
-            lore: "Un bibliotecario ermitaño que ha leído miles de libros. Su velocidad mental y física le permiten esquivar peligros mientras formula encantamientos precisos."
+            lore: "Un bibliotecario ermitaño que ha leído miles de libros. Su velocidad mental y física le permiten esquivar peligros mientras formula encantamientos precisos.",
+            unlockReq: "Responde correctamente 100 preguntas en total."
+        },
+        {
+            id: 'farmer', name: 'Campesino', sprite: '/game/skins/farmer.png',
+            stats: { hp: 150, dmg: 15, spd: 280 },
+            lore: "Cansado de que las plagas arruinaran sus cosechas, tomó su guadaña y aprendió a deletrear hechizos básicos para defender su granja.",
+            unlockReq: "Elimina a 2000 palabras enemigas."
         },
     ];
 
@@ -122,6 +127,13 @@ const GamePage = () => {
                     }
                 },
                 {
+                    element: '#tutorial-game-upgrades',
+                    popover: {
+                        title: 'Árbol de Mejoras',
+                        description: 'Al subir de nivel en la partida, desbloquearás mejoras exclusivas. ¡Revisa el árbol de habilidades de tu personaje aquí antes de empezar!'
+                    }
+                },
+                {
                     element: '#tutorial-game-difficulty',
                     popover: {
                         title: 'El nivel del Vocabulario',
@@ -156,10 +168,22 @@ const GamePage = () => {
         }
     }, [gameState, startTutorial]);
 
-    // 1. GESTIÓN DEL NAVBAR
+    // 1. GESTIÓN DEL NAVBAR Y FETCH DE STATS
     useEffect(() => {
         const navbar = document.querySelector('nav');
         if (navbar) navbar.style.display = 'none';
+        const fetchStats = async () => {
+            try {
+                const res = await api.get('/user-stats/me/');
+                if (res.data && res.data.unlocked_characters) {
+                    setUnlockedCharacters(res.data.unlocked_characters);
+                }
+            } catch (error) {
+                console.error("Error fetching user stats for unlocked characters:", error);
+            }
+        };
+        fetchStats();
+
         return () => {
             if (navbar) navbar.style.display = 'flex';
         };
@@ -340,20 +364,37 @@ const GamePage = () => {
 
                                 <div id="tutorial-game-heroes" className="grid grid-cols-2 gap-4 mb-6">
                                     {CHARACTERS.map((char) => {
+                                        const isUnlocked = unlockedCharacters.includes(char.id);
                                         const isSelected = selectedSkin === char.id;
                                         return (
                                             <div
                                                 key={char.id}
-                                                onClick={() => setSelectedSkin(char.id)}
+                                                onClick={() => {
+                                                    if (isUnlocked) {
+                                                        setSelectedSkin(char.id);
+                                                    } else {
+                                                        toast.info('Personaje Bloqueado', { description: char.unlockReq });
+                                                    }
+                                                }}
                                                 className={`
-                                                    cursor-pointer flex flex-col items-center p-4 border-4 transition-all duration-200
+                                                    relative flex flex-col items-center p-4 border-4 transition-all duration-200
+                                                    ${isUnlocked ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}
                                                     ${isSelected
-                                                        ? 'border-primary bg-primary/10 scale-105 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
-                                                        : 'border-muted bg-muted/50 hover:border-primary/50 hover:scale-105'
+                                                        ? 'border-primary bg-primary/10 scale-105 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-10'
+                                                        : isUnlocked
+                                                            ? 'border-muted bg-muted/50 hover:border-primary/50 hover:scale-105'
+                                                            : 'border-muted bg-muted/20 grayscale'
                                                     }
                                                 `}
                                             >
-                                                <div className="mb-2 overflow-hidden pixel-rendering">
+                                                {!isUnlocked && (
+                                                    <div className="absolute inset-0 bg-background/50 z-20 flex items-center justify-center backdrop-blur-[1px]">
+                                                        <div className="bg-background p-2 border-2 border-foreground shadow-md rounded-none">
+                                                            <Lock size={20} className="text-muted-foreground" />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                <div className={`mb-2 overflow-hidden pixel-rendering ${!isUnlocked ? 'opacity-30' : ''}`}>
                                                     <SpriteAnimator
                                                         src={char.sprite}
                                                         frameWidth={32}
@@ -366,18 +407,9 @@ const GamePage = () => {
                                                         }}
                                                     />
                                                 </div>
-                                                <span className={`uppercase font-bold ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}>
+                                                <span className={`uppercase font-bold ${isSelected ? 'text-primary' : 'text-muted-foreground'} ${!isUnlocked ? 'opacity-50' : ''}`}>
                                                     {char.name}
                                                 </span>
-                                                {/* {isSelected && (
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); setShowUpgrades(prev => !prev); }}
-                                                        className="absolute -top-3 -right-3 bg-accent text-accent-foreground p-1.5 border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:scale-110 transition-all hidden md:flex items-center justify-center group"
-                                                        title="Ver mejoras exclusivas"
-                                                    >
-                                                        <Sparkles size={14} className="group-hover:animate-spin" />
-                                                    </button>
-                                                )} */}
                                             </div>
                                         );
                                     })}
@@ -395,11 +427,21 @@ const GamePage = () => {
                                     <h3 className="text-3xl font-black text-primary uppercase mb-2 drop-shadow-sm">
                                         {currentCharacter.name}
                                     </h3>
-                                    <p className="text-base font-sans text-muted-foreground italic mb-6 leading-relaxed border-l-4 border-primary pl-4">
+                                    <p className="text-base font-sans text-muted-foreground italic mb-2 leading-relaxed border-l-4 border-primary pl-4">
                                         "{currentCharacter.lore}"
                                     </p>
 
-                                    <div className="space-y-3 mb-8">
+                                    {!unlockedCharacters.includes(currentCharacter.id) && (
+                                        <div className="mb-6 p-3 border-2 border-red-500/50 bg-red-500/10 flex items-start gap-3 animate-in pulse duration-1000">
+                                            <Lock className="text-red-500 shrink-0 mt-0.5" size={18} />
+                                            <div>
+                                                <p className="text-xs font-bold text-red-500 uppercase mb-0.5">Personaje Bloqueado</p>
+                                                <p className="text-sm font-sans text-muted-foreground">{currentCharacter.unlockReq}</p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="space-y-3 mb-8 mt-4">
                                         {[
                                             { label: 'HP', value: currentCharacter.stats.hp, max: 200, color: 'bg-red-500' },
                                             { label: 'DMG', value: currentCharacter.stats.dmg, max: 20, color: 'bg-orange-500' },
@@ -426,6 +468,7 @@ const GamePage = () => {
 
                                     {/* Botón para abrir el Árbol de Mejoras*/}
                                     <Button
+                                        id="tutorial-game-upgrades"
                                         variant="outline"
                                         onClick={() => setShowUpgrades(true)}
                                         className="w-full mb-6 relative h-12 text-xs rounded-none font-bold uppercase pixel-btn border-2 border-accent hover:bg-accent hover:text-accent-foreground text-accent group overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 transition-all"

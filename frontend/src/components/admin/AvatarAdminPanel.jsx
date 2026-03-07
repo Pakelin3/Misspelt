@@ -290,7 +290,7 @@ function AvatarAdminPanel() {
                                         onChange={handleFileChange}
                                     />
                                     <p className="text-[10px] text-muted-foreground">
-                                        Recomendado: 500x500px o cuadrado
+                                        Recomendado: 128x128px
                                     </p>
                                 </div>
 

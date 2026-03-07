@@ -120,7 +120,7 @@ function AdminDashboard() {
                     {isSidebarOpen && (
                         <div className="px-2 pb-2">
                             <div className="text-[10px] font-mono text-center text-muted-foreground opacity-70">
-                                v1.0.4-BETA
+                                v1.5.01-BETA
                             </div>
                         </div>
                     )}

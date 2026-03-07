@@ -181,6 +181,7 @@ class UserStatsSerializer(serializers.ModelSerializer):
     xp_progress_in_current_level = serializers.SerializerMethodField()
     unlocked_badges = BadgeSerializer(many=True, read_only=True, source='badges') 
     unlocked_avatars = AvatarSerializer(many=True, read_only=True)  
+    unlocked_characters = serializers.SerializerMethodField()
     
     class Meta:
         model = UserStats
@@ -195,6 +196,20 @@ class UserStatsSerializer(serializers.ModelSerializer):
 
     def get_xp_progress_in_current_level(self, obj):
         return round(obj.get_xp_progress_in_current_level(), 2)
+
+    def get_unlocked_characters(self, obj):
+        unlocked = ['mage'] 
+        
+        if getattr(obj, 'total_bosses_killed', 0) >= 1:
+            unlocked.append('warlock')
+        
+        if getattr(obj, 'correct_answers_total', 0) >= 100:
+            unlocked.append('erudit')
+            
+        if getattr(obj, 'total_letters_killed', 0) >= 2000:
+            unlocked.append('farmer')
+            
+        return unlocked
 
 
 # * --------------------------------------------------------------------------------------------------
