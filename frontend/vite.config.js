@@ -19,10 +19,9 @@ export default defineConfig({
       key: path.resolve(__dirname, '../backend/key.pem'),
       cert: path.resolve(__dirname, '../backend/cert.pem'),
     },
-    // headers: {
-    //   "Cross-Origin-Embedder-Policy": "require-corp",
-    //   "Cross-Origin-Opener-Policy": "same-origin",
-    // },
+    headers: {
+      "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
+    },
   },
   resolve: {
     alias: {

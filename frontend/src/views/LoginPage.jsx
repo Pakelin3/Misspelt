@@ -1,11 +1,12 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import AuthContext from '@/context/AuthContext';
+import { useGoogleLogin } from '@react-oauth/google';
 import googleIcon from '@/assets/google.svg';
 import { LeafIcon } from '@/components/PixelIcons';
 
 function LoginPage({ onScreenChange }) {
-    const { loginUser } = useContext(AuthContext);
+    const { loginUser, googleAuth } = useContext(AuthContext);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
@@ -31,6 +32,18 @@ function LoginPage({ onScreenChange }) {
             setErrors(responseErrors);
         }
     };
+
+    const handleGoogleLogin = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            const responseErrors = await googleAuth(tokenResponse.access_token);
+            if (responseErrors && Object.keys(responseErrors).length > 0) {
+                setErrors(responseErrors);
+            }
+        },
+        onError: () => {
+            setErrors({ general_error: 'Fallo al conectar con Google' });
+        }
+    });
 
     return (
         <div className="flex justify-center items-center min-h-screen bg-background p-4 font-sans">
@@ -62,7 +75,11 @@ function LoginPage({ onScreenChange }) {
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
                     {/* Botón Google Pixelado */}
-                    <button type="button" className="flex cursor-not-allowed items-center justify-center gap-3 px-4 py-3 border-2 border-foreground bg-white text-foreground font-sans text-xl hover:bg-muted transition-colors opacity-70">
+                    <button
+                        type="button"
+                        onClick={() => handleGoogleLogin()}
+                        className="flex items-center justify-center gap-3 px-4 py-3 border-2 border-foreground bg-white text-foreground font-sans text-xl hover:bg-muted transition-colors cursor-pointer"
+                    >
                         <img src={googleIcon} alt="Google Icon" className="w-5 h-5 pixel-rendering" />
                         CONTINUAR CON GOOGLE
                     </button>

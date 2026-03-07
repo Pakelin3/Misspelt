@@ -26,6 +26,12 @@ from api.serializer import (
     ProfileUpdateSerializer
 )
 
+from google.oauth2 import id_token
+import google.auth.transport.requests
+import requests
+import uuid
+from rest_framework_simplejwt.tokens import RefreshToken
+
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA AUTENTICACION ---
@@ -48,7 +54,68 @@ class MyTokenObtainPairView(TokenObtainPairView): #
             print(f"Refresh Token: {response.data.get('refresh')}")
             print("--------------------------\n")
         
+        
         return response
+
+class GoogleLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        token = request.data.get('token')
+        if not token:
+            return Response({"detail": "Token no proporcionado"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user_info_response = requests.get(
+                'https://www.googleapis.com/oauth2/v3/userinfo',
+                headers={'Authorization': f'Bearer {token}'}
+            )
+
+            if not user_info_response.ok:
+                return Response({"detail": "Token inválido de Google"}, status=status.HTTP_400_BAD_REQUEST)
+                
+            user_info = user_info_response.json()
+            email = user_info.get('email')
+            name = user_info.get('name', '')
+            
+            if not email:
+                return Response({"detail": "Email no proporcionado por Google"}, status=status.HTTP_400_BAD_REQUEST)
+
+            user, created = User.objects.get_or_create(email=email, defaults={
+                'username': email.split('@')[0] + str(uuid.uuid4())[:4],
+                'is_active': True
+            })
+
+            if created:
+                user.set_unusable_password() 
+                user.save()
+                
+            if hasattr(user, 'profile'):
+                profile = user.profile
+                profile.verified = True
+                if created:
+                    profile.full_name = name
+                profile.save()
+            else:
+
+                from api.models import Profile, UserStats
+                profile = Profile.objects.create(user=user, verified=True, full_name=name)
+                UserStats.objects.get_or_create(user=user)
+
+            user.is_online = True
+            user.save()
+            
+            from api.serializer import myTokenObtainPairSerializer
+            serializer = myTokenObtainPairSerializer(context={'request': request})
+            refresh = serializer.get_token(user)
+
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }, status=status.HTTP_200_OK if not created else status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({"detail": f"Error de autenticación con Google: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA CIERRE DE SESION ---

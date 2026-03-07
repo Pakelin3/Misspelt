@@ -23,8 +23,9 @@ urlpatterns = [
     path("user/is-staff/", views.UserIsStaffAPIView.as_view(), name="user_is_staff"),
     path("test/", views.testEndPoint, name="test_endpoint"),
     path("verify-email/<uuid:token>/", views.VerifyEmailView.as_view(), name="verify_email"),
+    path("auth/google/", views.GoogleLoginView.as_view(), name="google_login"),
 
-    # --- RUTAS DE JUEGO (NUEVAS) ---
+    # --- RUTAS DE JUEGO ---
     path("game/quiz-words/", views.get_quiz_words, name="game_quiz_words"),
     path("game/submit-results/", views.submit_game_results, name="game_submit_results"),
     # -------------------------------

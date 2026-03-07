@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import AuthContext from '@/context/AuthContext';
+import { useGoogleLogin } from '@react-oauth/google';
 import googleIcon from '@/assets/google.svg';
 import { LeafIcon } from '@/components/PixelIcons';
 
@@ -11,7 +12,7 @@ function RegisterPage({ onScreenChange }) {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [errors, setErrors] = useState({});
 
-    const { registerUser } = useContext(AuthContext);
+    const { registerUser, googleAuth } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
@@ -31,10 +32,22 @@ function RegisterPage({ onScreenChange }) {
         }
     };
 
+    const handleGoogleLogin = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            const responseErrors = await googleAuth(tokenResponse.access_token);
+            if (responseErrors && Object.keys(responseErrors).length > 0) {
+                setErrors(responseErrors);
+            }
+        },
+        onError: () => {
+            setErrors({ general_error: 'Fallo al conectar con Google' });
+        }
+    });
+
     return (
         <div className="flex justify-center items-center min-h-screen bg-background p-4 font-sans">
             <div className="bg-card pixel-border p-6 sm:p-8 w-full max-w-md relative shadow-none">
-                
+
                 {/* Botón Cerrar */}
                 <Link
                     to="/"
@@ -43,7 +56,7 @@ function RegisterPage({ onScreenChange }) {
                         onScreenChange ? onScreenChange('register') : navigate('/');
                     }}
                     className="absolute top-4 right-4 text-muted-foreground hover:text-destructive font-mono text-xl transition-colors no-underline"
-                > 
+                >
                     X
                 </Link>
 
@@ -64,9 +77,13 @@ function RegisterPage({ onScreenChange }) {
                 </div>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    
+
                     {/* Botón Google */}
-                    <button type="button" className="flex cursor-not-allowed items-center justify-center gap-3 px-4 py-3 border-2 border-foreground bg-white text-foreground font-sans text-2xl hover:bg-muted transition-colors opacity-70">
+                    <button
+                        type="button"
+                        onClick={() => handleGoogleLogin()}
+                        className="flex items-center justify-center gap-3 px-4 py-3 border-2 border-foreground bg-white text-foreground font-sans text-2xl hover:bg-muted transition-colors cursor-pointer"
+                    >
                         <img src={googleIcon} alt="Google" className="w-5 h-5 pixel-rendering" />
                         Registro con Google
                     </button>
@@ -155,8 +172,8 @@ function RegisterPage({ onScreenChange }) {
                     )}
 
                     {/* Botón Submit */}
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         className="w-full py-4 mt-4 bg-primary text-primary-foreground font-mono text-sm pixel-border-primary pixel-btn cursor-pointer uppercase tracking-wide shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]"
                     >
                         Crear Cuenta
@@ -171,7 +188,7 @@ function RegisterPage({ onScreenChange }) {
                                 onScreenChange ? onScreenChange('login') : navigate('/login');
                             }}
                             className="ml-2 text-accent hover:text-accent-foreground hover:underline decoration-2 underline-offset-4"
-                        > 
+                        >
                             INICIA SESIÓN
                         </Link>
                     </div>

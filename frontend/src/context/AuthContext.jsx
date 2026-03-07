@@ -170,6 +170,30 @@ export const AuthProvider = ({ children }) => {
         return { general_error: 'Hubo un error inesperado.' };
     };
 
+    const googleAuth = async (token) => {
+        try {
+            const response = await axios.post(`${baseURL}/auth/google/`, {
+                token: token,
+            });
+
+            if (response.status === 200 || response.status === 201) {
+                const decodedUser = jwtDecode(response.data.access);
+                setAuthTokens(response.data);
+                setUser(decodedUser);
+                localStorage.setItem('authTokens', JSON.stringify(response.data));
+
+                navigate('/');
+                showToast("Autenticación con Google exitosa", "success");
+                return {};
+            }
+        } catch (error) {
+            console.error('Error durante autenticación con Google:', error.response?.data || error.message);
+            showAlert('Error con Google', 'No se pudo iniciar sesión con Google.', 'error');
+            return { general_error: 'No se pudo iniciar sesión con Google.' };
+        }
+        return { general_error: 'Hubo un error inesperado con Google.' };
+    };
+
     const logoutUser = useCallback(async () => {
         try {
             await axios.post(`${baseURL}/logout/`, {}, {
@@ -258,6 +282,7 @@ export const AuthProvider = ({ children }) => {
         setAuthTokens,
         registerUser,
         loginUser,
+        googleAuth,
         logoutUser,
         updateToken,
         baseURL
