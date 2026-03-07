@@ -23,7 +23,7 @@ Al final de cada sesión, regresas a la base con estadísticas que miden cuánto
 
 ## ✨ Características Principales
 
-- **🎮 Gameplay Dinámico 2D:** Construido con el motor [Godot](https://godotengine.org/). Controles y físicas fluidas, <i>spawn</i> procedural de enemigos y mecánicas de colisión intensas.
+- **🎮 Gameplay Dinámico 2D:** Construido con el motor [Godot](https://github.com/Pakelin3/Misspelt-game). Controles y físicas fluidas, <i>spawn</i> procedural de enemigos y mecánicas de colisión intensas.
 - **🧠 Módulos Educativos con Niveles de Dificultad:** Elige entre niveles de vocabulario (Easy, Normal, Hard). El juego escala orgánicamente integrando quizzes en medio de la acción.
 - **🏆 Sistemas de Progresión (RPG):** Los usuarios ganan XP general y completan misiones para desbloquear Insignias (Badges), Títulos, Avatares y Nuevos Personajes Jugables (cada uno con su propio árbol de habilidades).
 - **📊 Panel de Estadísticas Detalladas:** Revisa un historial pormenorizado de cuántas palabras has aprendido, tu porcentaje de precisión en los tests y tus rachas diarias (Daily Streaks).
@@ -75,15 +75,13 @@ El repositorio está claramente separado en dos monolitos principales, más la c
 │   ├── core/                 # Configuracion raiz de Django (settings.py, middlewares)
 │   └── manage.py             # Script de administracion python
 │
-├── frontend/                 # Archivos SPA (React / Vite)
-│   ├── public/               # Assets estaticos y Exportacion compilada de Godot (`/game/`)
-│   └── src/
-│       ├── components/       # Componentes reusables de React (Botones, Paneles, Modals)
-│       ├── context/          # Manejadores globales de Estado (AuthContext)
-│       ├── views/            # Paginas enteras (Landing, GamePage, ProfilePage, AdminDashboard)
-│       └── utils/            # Hooks, axios interceptors, validadores.
-│
-└── godot_project/         # (Solo si se requiere acceso a la build cruda) Escenas, Nodos, GDScripts.
+└── frontend/                 # Archivos SPA (React / Vite)
+    ├── public/               # Assets estaticos y Exportacion compilada de Godot (`/game/`)
+    └── src/
+        ├── components/       # Componentes reusables de React (Botones, Paneles, Modals)
+        ├── context/          # Manejadores globales de Estado (AuthContext)
+        ├── views/            # Paginas enteras (Landing, GamePage, ProfilePage, AdminDashboard)
+        └── utils/            # Hooks, axios interceptors, validadores.
 ```
 
 ---
