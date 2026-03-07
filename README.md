@@ -15,7 +15,7 @@ En **Misspelt**, tomas el control de diferentes héroes mágicos en un universo 
 Para sobrevivir, tendrás que:
 
 1. **Evadir y Atacar (Survivor Mode):** Usa magia para destruir letras y jefes. Recoge experiencia (XP) para subir de nivel en tiempo real y desbloquear poderosas mejoras exclusivas de cada personaje (Multi-cast, Auras oscuras, etc.).
-2. **Aprender y Asimilar (Quiz Mode):** Eventualmente, entrarás en modo "Concentración". Aquí, pausas el tiempo para asimilar listas de palabras respondiendo mini-quizzes de Vocabulario, Modismos (Idioms) o Phrasal Verbs. Si aciertas, absorbes su conocimiento y obtienes mucha experiencia.
+2. **Aprender y Asimilar (Quiz Mode):** Eventualmente, entrarás en modo "Concentración". Aquí, pausas el tiempo para asimilar listas de palabras respondiendo mini-quizzes de Vocabulario, Modismos (Idioms), Slangs o Phrasal Verbs. Si aciertas, absorbes su conocimiento y obtienes mucha experiencia.
 
 Al final de cada sesión, regresas a la base con estadísticas que miden cuánto inglés has asimilado realmente a lo largo del tiempo.
 
