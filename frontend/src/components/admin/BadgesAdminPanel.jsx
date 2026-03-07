@@ -488,9 +488,7 @@ function BadgesAdminPanel() {
 
                                                     <option value="phrasal_verbs_seen">Phrasal Verbs Vistos</option>
                                                     <option value="slangs_seen">Slangs Vistos</option>
-                                                    <option value="total_slangs_questions">Preguntas de Slangs</option>
                                                     <option value="correct_phrasal_verbs">Phrasal Verbs Correctos</option>
-                                                    <option value="total_phrasal_verbs_questions">Preguntas de Phrasal Verbs</option>
                                                     <option value="current_streak">Racha Actual (Días)</option>
                                                     <option value="longest_streak">Racha Más Larga (Días)</option>
                                                 </select>

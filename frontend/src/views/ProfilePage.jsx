@@ -182,8 +182,8 @@ function ProfilePage() {
     }
 
     const generalAccuracy = getAccuracy(userStats.correct_answers_total, userStats.total_questions_answered);
-    const slangAccuracy = getAccuracy(userStats.correct_slangs, userStats.total_slangs_questions);
-    const pvAccuracy = getAccuracy(userStats.correct_phrasal_verbs, userStats.total_phrasal_verbs_questions);
+    const slangAccuracy = getAccuracy(userStats.correct_slangs, userStats.slangs_seen);
+    const pvAccuracy = getAccuracy(userStats.correct_phrasal_verbs, userStats.phrasal_verbs_seen);
 
     // Find current avatar object
     const currentAvatarObj = userStats.unlocked_avatars?.find(a => a.id === profileData?.current_avatar);
@@ -202,12 +202,12 @@ function ProfilePage() {
                     {!isEditing ? (
                         <button
                             onClick={handleStartEditing}
-                            className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors border-2 border-transparent hover:border-primary"
+                            className="absolute bottom-4 right-4 p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors border-2 border-transparent hover:border-primary"
                         >
                             <EditIcon className="w-4 h-4" />
                         </button>
                     ) : (
-                        <div className="absolute top-4 right-4 flex gap-2">
+                        <div className="absolute bottom-4 right-4 flex gap-2">
                             <button
                                 onClick={handleSaveProfile}
                                 disabled={saving}

@@ -142,9 +142,7 @@ class UserStats(models.Model):
     correct_answers_total = models.IntegerField(default=0)
     total_questions_answered = models.IntegerField(default=0)
     correct_slangs = models.IntegerField(default=0)
-    total_slangs_questions = models.IntegerField(default=0)
     correct_phrasal_verbs = models.IntegerField(default=0)
-    total_phrasal_verbs_questions = models.IntegerField(default=0)
     total_letters_killed = models.IntegerField(default=0)
     total_bosses_killed = models.IntegerField(default=0)
     total_time_played_seconds = models.IntegerField(default=0)
@@ -171,14 +169,14 @@ class UserStats(models.Model):
         return (self.correct_answers_total / self.total_questions_answered) * 100
 
     def get_slang_accuracy_percentage(self):
-        if self.total_slangs_questions == 0:
+        if self.slangs_seen == 0:
             return 0.0
-        return (self.correct_slangs / self.total_slangs_questions) * 100
+        return (self.correct_slangs / self.slangs_seen) * 100
     
     def get_phrasal_verb_accuracy_percentage(self):
-        if self.total_phrasal_verbs_questions == 0:
+        if self.phrasal_verbs_seen == 0:
             return 0.0
-        return (self.correct_phrasal_verbs / self.total_phrasal_verbs_questions) * 100
+        return (self.correct_phrasal_verbs / self.phrasal_verbs_seen) * 100
 
     def __str__(self):
         return f"Estadísticas de {self.user.username}"

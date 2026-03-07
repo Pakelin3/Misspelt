@@ -483,8 +483,10 @@ def submit_game_results(request):
         if w.word_type in match_breakdown["seen"]:
             match_breakdown["seen"][w.word_type] += 1
         stats.words_seen_total += 1
-        if w.word_type == "SLANG": stats.slangs_seen += 1
-        elif w.word_type == "PHRASAL_VERB": stats.phrasal_verbs_seen += 1
+        if w.word_type == "SLANG":
+            stats.slangs_seen += 1
+        elif w.word_type == "PHRASAL_VERB":
+            stats.phrasal_verbs_seen += 1
 
     for w in correct_words:
         if w.word_type in match_breakdown["correct"]:

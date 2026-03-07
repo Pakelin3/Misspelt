@@ -2,9 +2,7 @@ import React, { useContext, useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import useAxios from "@/utils/useAxios";
 import AuthContext from '@/context/AuthContext';
-import DropdownLenguage from "@/components/DropdownLenguage";
-import ThemeButton from "@/components/ThemeButton";
-import { BookIcon, BrainIcon, TrophyIcon, LeafIcon, SwordIcon, GearIcon } from "@/components/PixelIcons"; // <--- Agrega GearIcon
+import { BookIcon, BrainIcon, TrophyIcon, LeafIcon, SwordIcon, GearIcon } from "@/components/PixelIcons";
 
 function Navbar() {
     const { user, logoutUser } = useContext(AuthContext);
@@ -40,7 +38,6 @@ function Navbar() {
         }
     }, [user, api]);
 
-    // Lógica original de rutas activas
     const isActive = (path) => {
         if (path === "/") return location.pathname === "/";
         return location.pathname.startsWith(path);
@@ -49,7 +46,6 @@ function Navbar() {
     const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
     const toggleProfileDropdown = () => setIsProfileDropdownOpen(prev => !prev);
 
-    // Cierre al hacer click fuera
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target) &&
@@ -64,13 +60,11 @@ function Navbar() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // Cerrar menú al cambiar de ruta
     useEffect(() => {
         setIsMobileMenuOpen(false);
         setIsProfileDropdownOpen(false);
     }, [location.pathname]);
 
-    // Lógica de ocultar Navbar
     const noNavbarPaths = ['/login', '/register', '/check-email', '/verify-email/:token'];
     const shouldShowNavbar = !noNavbarPaths.some(path => {
         if (path.includes(':')) {
@@ -80,7 +74,6 @@ function Navbar() {
         return location.pathname === path;
     });
 
-    // Lógica de imagen de perfil
     let finalProfileImageSrc = 'https://ui-avatars.com/api/?name=User&background=random';
     if (user) {
         if (user.current_avatar_url) finalProfileImageSrc = user.current_avatar_url;
@@ -90,9 +83,8 @@ function Navbar() {
 
     if (!shouldShowNavbar) return null;
 
-    // Clases comunes para links de navegación
     const navLinkClass = (path) => `
-        hidden md:flex items-center gap-2 px-2 lg:px-3 py-2 pixel-border-primary-foreground pixel-btn text-decoration-none transition-all
+        flex items-center gap-2 px-2 lg:px-3 py-2 pixel-border-primary-foreground pixel-btn text-decoration-none transition-all
         ${isActive(path)
             ? "bg-primary text-primary-foreground"
             : " text-foreground hover:bg-primary hover:text-primary-foreground"
@@ -146,7 +138,6 @@ function Navbar() {
 
 
                     {user ? (
-                        /* --- USER DROPDOWN (Pixel Style) --- */
                         <div className="relative" ref={profileDropdownRef}>
                             <button
                                 onClick={toggleProfileDropdown}
@@ -178,11 +169,6 @@ function Navbar() {
                                         >
                                             Perfil
                                         </Link>
-
-                                        {/* <div className="px-4 py-1">
-                                        <DropdownLenguage /> 
-                                    </div> */}
-
                                         <button
                                             onClick={logoutUser}
                                             className="w-full text-left flex items-center gap-2 p-2 bg-muted/50 hover:bg-destructive hover:text-destructive-foreground border-2 border-foreground transition-colors pixel-btn"
@@ -195,7 +181,6 @@ function Navbar() {
                             )}
                         </div>
                     ) : (
-                        /* --- AUTH BUTTONS (Pixel Style) --- */
                         <div className="hidden md:flex items-center gap-2">
                             <Link
                                 to="/login"

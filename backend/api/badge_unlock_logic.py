@@ -51,13 +51,13 @@ def check_and_unlock_badges(user):
                     if user_stats.correct_answers_total >= required_value:
                         is_condition_met = True
                 elif condition_type == 'total_slangs_questions':
-                    if user_stats.total_slangs_questions >= required_value:
+                    if user_stats.slangs_seen >= required_value:
                         is_condition_met = True
                 elif condition_type == 'correct_phrasal_verbs':
                     if user_stats.correct_phrasal_verbs >= required_value:
                         is_condition_met = True
                 elif condition_type == 'total_phrasal_verbs_questions':
-                    if user_stats.total_phrasal_verbs_questions >= required_value:
+                    if user_stats.phrasal_verbs_seen >= required_value:
                         is_condition_met = True
                 elif condition_type == 'current_streak':
                     if user_stats.current_streak >= required_value:
