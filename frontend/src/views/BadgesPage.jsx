@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import useAxios from '@/utils/useAxios';
 import AuthContext from '@/context/AuthContext';
-import Navbar from "@/components/Navbar";
 import BadgeCard from "@/components/ui/BadgeCard";
 import { TrophyIcon } from '@/components/PixelIcons';
 
@@ -207,8 +206,6 @@ function BadgesPage() {
     // --- RENDERIZADO ---
     return (
         <div className="min-h-screen bg-background font-sans flex flex-col">
-            <Navbar />
-
             <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-8 md:py-12 mt-16">
 
                 {/* HEADER */}

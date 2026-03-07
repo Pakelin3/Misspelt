@@ -58,9 +58,9 @@ class User(AbstractUser):
 class Profile(models.Model):
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    full_name = models.CharField(max_length=255, blank=True, null=True)
-    bio = models.TextField(blank=True, null=True)
-    image = models.ImageField(default='avatars/default.jpg', upload_to='avatars/', blank=True, null=True)
+    full_name = models.CharField(max_length=100, blank=True, null=True, help_text="Nombre completo del usuario")
+    bio = models.TextField(blank=True, null=True, help_text="Biografía del usuario")
+    image = models.ImageField(default='avatars/default.jpg', upload_to='avatars/', blank=True, null=True, help_text="Imagen del perfil")
     current_avatar = models.ForeignKey(
         'Avatar',
         on_delete=models.SET_NULL, # Si se borra un avatar, el campo se pone a NULL

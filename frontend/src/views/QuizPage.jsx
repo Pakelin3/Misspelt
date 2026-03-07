@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAxios from '@/utils/useAxios';
 import QuizManager from '@/components/quiz/QuizManager';
-import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/Button';
 import { Home } from 'lucide-react';
 
@@ -47,7 +46,6 @@ const QuizPage = () => {
 
     return (
         <div className="min-h-screen bg-background flex flex-col pt-20 pb-10">
-            <Navbar />
 
             <div className="flex-1 flex items-center justify-center px-4">
                 {sessionWords.length > 0 ? (

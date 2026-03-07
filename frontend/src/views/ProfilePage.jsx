@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import useAxios from '@/utils/useAxios';
 import AuthContext from '@/context/AuthContext';
-import Navbar from "@/components/Navbar";
 import { toast } from 'sonner';
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
 
 // ─── Inline Icons ─────────────────────────────────────────────
 const EditIcon = ({ className }) => (
@@ -111,6 +112,65 @@ function ProfilePage() {
         fetchAllData();
     }, [fetchAllData]);
 
+    // --- DRIVER.JS TUTORIAL ---
+    const startTutorial = useCallback(() => {
+        const driverObj = driver({
+            showProgress: true,
+            animate: true,
+            doneBtnText: '¡A Jugar!',
+            nextBtnText: 'Siguiente ➔',
+            prevBtnText: '⬅ Anterior',
+            steps: [
+                {
+                    element: '#tutorial-avatar',
+                    popover: {
+                        title: 'Este eres tú',
+                        description: 'Aquí puedes ver tu avatar actual, tu nivel y título equipado. Puedes editar tu perfil pulsando el icono del lápiz.'
+                    }
+                },
+                {
+                    element: '#tutorial-xp',
+                    popover: {
+                        title: 'Experiencia (XP)',
+                        description: 'Sube de nivel completando partidas y asimilando nuevas palabras. Cada nivel demostrará tu dominio.'
+                    }
+                },
+                {
+                    element: '#tutorial-quick-stats',
+                    popover: {
+                        title: 'Rendimiento Rápido',
+                        description: 'Mantén tu racha diaria viva y colecciona insignias y avatares exclusivos para lucirlos.'
+                    }
+                },
+                {
+                    element: '#tutorial-tabs',
+                    popover: {
+                        title: 'Explora a fondo',
+                        description: 'Navega entre tus estadísticas detalladas, el historial de tus últimas partidas y tu vitrina de insignias desbloqueadas.'
+                    }
+                }
+            ],
+            onDestroyStarted: () => {
+                localStorage.setItem('misspelt_has_seen_dashboard_tour', 'true');
+                driverObj.destroy();
+            }
+        });
+
+        driverObj.drive();
+    }, []);
+
+    useEffect(() => {
+        if (!loading && !error && userStats) {
+            const hasSeenTour = localStorage.getItem('misspelt_has_seen_dashboard_tour');
+            if (!hasSeenTour) {
+                // Small delay to ensure render is complete
+                setTimeout(() => {
+                    startTutorial();
+                }, 500);
+            }
+        }
+    }, [loading, error, userStats, startTutorial]);
+
     const handleStartEditing = () => {
         setEditForm({
             full_name: profileData?.full_name || '',
@@ -164,7 +224,6 @@ function ProfilePage() {
     if (loading) {
         return (
             <div className="min-h-screen bg-background flex flex-col">
-                <Navbar />
                 <div className="flex-1 flex flex-col items-center justify-center gap-4 mt-16">
                     <div className="w-16 h-16 border-4 border-accent border-t-transparent animate-spin rounded-full" />
                     <p className="font-mono text-xs text-muted-foreground animate-pulse">CARGANDO PERFIL...</p>
@@ -176,7 +235,6 @@ function ProfilePage() {
     if (error || !userStats) {
         return (
             <div className="min-h-screen bg-background flex flex-col">
-                <Navbar />
                 <div className="flex-1 flex items-center justify-center mt-16">
                     <p className="text-destructive font-mono">{error || 'Sin datos.'}</p>
                 </div>
@@ -194,8 +252,6 @@ function ProfilePage() {
 
     return (
         <div className="min-h-screen bg-background font-sans flex flex-col">
-            <Navbar />
-
             <div className="flex-1 max-w-5xl w-full mx-auto px-4 py-8 md:py-12 mt-16">
 
                 {/* ═══════════ PLAYER CARD (Hero Section) ═══════════ */}
@@ -229,7 +285,7 @@ function ProfilePage() {
 
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                         {/* Avatar */}
-                        <div className="relative shrink-0 flex flex-col items-center">
+                        <div id="tutorial-avatar" className="relative shrink-0 flex flex-col items-center">
                             <div className="w-28 h-28 pixel-border bg-muted/30 p-1 overflow-hidden flex items-center justify-center">
                                 <img
                                     src={isEditing ? (userStats.unlocked_avatars?.find(a => a.id === editForm.current_avatar)?.image || avatarSrc) : avatarSrc}
@@ -301,7 +357,7 @@ function ProfilePage() {
                             )}
 
                             {/* XP Progress Bar */}
-                            <div className="mt-4 max-w-sm mx-auto md:mx-0">
+                            <div id="tutorial-xp" className="mt-4 max-w-sm mx-auto md:mx-0">
                                 <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1">
                                     <span>XP: {userStats.experience}</span>
                                     <span>Siguiente: {userStats.xp_for_next_level}</span>
@@ -320,7 +376,7 @@ function ProfilePage() {
                         </div>
 
                         {/* Quick Stats (Right Side) */}
-                        <div className="hidden md:grid grid-cols-2 gap-2 shrink-0">
+                        <div id="tutorial-quick-stats" className="hidden md:grid grid-cols-2 gap-2 shrink-0">
                             {[
                                 { label: 'Racha', value: userStats.current_streak, icon: '🔥' },
                                 { label: 'Récord', value: userStats.longest_streak, icon: '⭐' },
@@ -340,7 +396,7 @@ function ProfilePage() {
                 </div>
 
                 {/* ═══════════ TABS ═══════════ */}
-                <div className="flex border-b-2 border-foreground/20 mb-6 overflow-x-auto">
+                <div id="tutorial-tabs" className="flex border-b-2 border-foreground/20 mb-6 overflow-x-auto">
                     <TabButton active={activeTab === 'stats'} onClick={() => setActiveTab('stats')}>
                         📊 Estadísticas
                     </TabButton>
@@ -519,6 +575,15 @@ function ProfilePage() {
                 )}
 
             </div>
+
+            {/* Floating Tutorial Button */}
+            <button
+                onClick={startTutorial}
+                className="fixed bottom-6 right-6 w-14 h-14 bg-accent text-accent-foreground pixel-border flex items-center justify-center text-2xl hover:scale-110 transition-transform z-50 shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:shadow-[6px_6px_0_0_rgba(0,0,0,1)]"
+                title="Ver Tutorial de Nuevo"
+            >
+                ❓
+            </button>
         </div>
     );
 }

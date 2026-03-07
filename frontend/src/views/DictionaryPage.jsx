@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Search, Volume2, ChevronLeft, ChevronRight, X, BookOpen, Lock } from 'lucide-react';
 import useAxios from "@/utils/useAxios";
-import Navbar from "@/components/Navbar";
 import { BookIcon } from '@/components/PixelIcons';
 import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 import VzlaFlag from '@/assets/ve.svg';
 import UsaFlag from '@/assets/us.svg';
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
 
 
 const getTypeBadgeStyle = (type) => {
@@ -89,6 +90,58 @@ function DictionaryPage() {
         }
     }, [wordsPerPage, api]);
 
+    // --- DRIVER.JS TUTORIAL ---
+    const startTutorial = useCallback(() => {
+        const driverObj = driver({
+            showProgress: true,
+            animate: true,
+            doneBtnText: '¡A Leer!',
+            nextBtnText: 'Siguiente ➔',
+            prevBtnText: '⬅ Anterior',
+            steps: [
+                {
+                    element: '#tutorial-dict-controls',
+                    popover: {
+                        title: 'Encuentra lo que buscas',
+                        description: 'Usa la barra para buscar palabras específicas o el menú desplegable para filtrar tu colección por categorías (Jergas, Verbos Frasales, etc.).'
+                    }
+                },
+                {
+                    element: '#tutorial-dict-grid',
+                    popover: {
+                        title: 'Tu Biblioteca',
+                        description: 'Aquí se registran todas las palabras. Las tarjetas iluminadas son las que ya dominas; las que están en gris y borrosas aún debes descubrirlas jugando.'
+                    }
+                },
+                {
+                    element: '#tutorial-dict-pagination',
+                    popover: {
+                        title: 'Navegación',
+                        description: 'A medida que tu vocabulario crezca, usa estos controles para explorar todas las páginas de tu diccionario.'
+                    }
+                }
+            ],
+            onDestroyStarted: () => {
+                localStorage.setItem('misspelt_has_seen_dictionary_tour', 'true');
+                driverObj.destroy();
+            }
+        });
+
+        driverObj.drive();
+    }, []);
+
+    useEffect(() => {
+        if (!loading && !error) {
+            const hasSeenTour = localStorage.getItem('misspelt_has_seen_dictionary_tour');
+            if (!hasSeenTour) {
+                // Pequeño retraso para dejar que React monte el grid completo primero
+                setTimeout(() => {
+                    startTutorial();
+                }, 500);
+            }
+        }
+    }, [loading, error, startTutorial]);
+
     // --- EFECTO DE BÚSQUEDA ---
     useEffect(() => {
         setCurrentPage(1);
@@ -124,7 +177,6 @@ function DictionaryPage() {
 
     return (
         <div className="min-h-screen bg-background font-sans flex flex-col">
-            <Navbar />
 
             <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-8 md:py-12 mt-16">
 
@@ -138,7 +190,7 @@ function DictionaryPage() {
                     </p>
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-4 mb-8 items-center justify-between bg-card/50 p-4 pixel-border">
+                <div id="tutorial-dict-controls" className="flex flex-col md:flex-row gap-4 mb-8 items-center justify-between bg-card/50 p-4 pixel-border">
 
                     <div className="relative w-full md:max-w-md group">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
@@ -187,7 +239,7 @@ function DictionaryPage() {
                     </div>
                 </div>
 
-                <div className="min-h-[400px]">
+                <div id="tutorial-dict-grid" className="min-h-[400px]">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center h-64 gap-4">
                             <div className="w-12 h-12 border-4 border-primary border-t-transparent animate-spin rounded-full"></div>
@@ -249,7 +301,7 @@ function DictionaryPage() {
                 </div>
 
                 {!loading && words.length > 0 && totalPages > 1 && (
-                    <div className="flex justify-center items-center gap-4 mt-12">
+                    <div id="tutorial-dict-pagination" className="flex justify-center items-center gap-4 mt-12">
                         <button
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                             disabled={currentPage === 1}
@@ -274,6 +326,15 @@ function DictionaryPage() {
             </div>
 
             {isModalOpen && <WordDetailModal word={selectedWord} onClose={() => setIsModalOpen(false)} />}
+
+            {/* Floating Tutorial Button */}
+            <button
+                onClick={startTutorial}
+                className="fixed bottom-6 right-6 w-14 h-14 bg-accent text-accent-foreground pixel-border flex items-center justify-center text-2xl hover:scale-110 transition-transform z-50 shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:shadow-[6px_6px_0_0_rgba(0,0,0,1)]"
+                title="Ver Tutorial de Nuevo"
+            >
+                ❓
+            </button>
         </div>
     );
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '@/context/AuthContext';
 import useAxios from '@/utils/useAxios';
@@ -8,6 +8,8 @@ import { Card } from '@/components/ui/Card';
 import { Trophy, Clock, Star, Home, Play, RotateCcw, ArrowLeft } from 'lucide-react';
 import SpriteAnimator from '@/components/ui/SpriteAnimator';
 import QuizManager from '@/components/quiz/QuizManager';
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
 
 const GamePage = () => {
     const navigate = useNavigate();
@@ -56,6 +58,71 @@ const GamePage = () => {
     ];
 
     const currentCharacter = CHARACTERS.find(c => c.id === selectedSkin) || CHARACTERS[0];
+
+    // --- DRIVER.JS TUTORIAL ---
+    const startTutorial = useCallback(() => {
+        const driverObj = driver({
+            showProgress: true,
+            animate: true,
+            doneBtnText: '¡A Jugar!',
+            nextBtnText: 'Siguiente ➔',
+            prevBtnText: '⬅ Anterior',
+            steps: [
+                {
+                    element: 'body', // Sin anclaje, para el tutorial general
+                    popover: {
+                        title: 'Comprendiendo Misspelt',
+                        description: '<img src="/placeholders/gameplay.gif" class="w-full mb-2 pixel-border" /> Escapa de las letras, asimila las palabras y sobrevive. ¡Presta atención a cómo se escriben correctamente!'
+                    }
+                },
+                {
+                    element: '#tutorial-game-heroes',
+                    popover: {
+                        title: 'Decide tu Forma',
+                        description: 'A medida que juegas, desbloquearás nuevos personajes, cada uno con un ataque distinto que cambiará tu forma de jugar.'
+                    }
+                },
+                {
+                    element: '#tutorial-game-stats',
+                    popover: {
+                        title: 'Tus Estadísticas',
+                        description: 'Ten cuidado. Un brujo hace mucho más daño pero muere casi con un toque. ¡Revisa sus barras de vida y velocidad!'
+                    }
+                },
+                {
+                    element: '#tutorial-game-difficulty',
+                    popover: {
+                        title: 'El nivel del Vocabulario',
+                        description: 'Esto no hace que los enemigos peguen más fuerte, sino que hace que las palabras que encuentres sean de listas mucho más complejas (y pagan mejor experiencia).'
+                    }
+                },
+                {
+                    element: '#tutorial-game-start',
+                    popover: {
+                        title: '¡Preparado!',
+                        description: 'Una vez todo listo, comienza para sumergirte en la granja y empezar a matar palabras mal escritas.'
+                    }
+                }
+            ],
+            onDestroyStarted: () => {
+                localStorage.setItem('misspelt_has_seen_game_tour', 'true');
+                driverObj.destroy();
+            }
+        });
+
+        driverObj.drive();
+    }, []);
+
+    useEffect(() => {
+        if (gameState === 'SELECTION') {
+            const hasSeenTour = localStorage.getItem('misspelt_has_seen_game_tour');
+            if (!hasSeenTour) {
+                setTimeout(() => {
+                    startTutorial();
+                }, 500);
+            }
+        }
+    }, [gameState, startTutorial]);
 
     // 1. GESTIÓN DEL NAVBAR
     useEffect(() => {
@@ -239,7 +306,7 @@ const GamePage = () => {
                             <div className="flex-1">
                                 <h2 className="text-2xl font-bold uppercase text-center mb-6 text-foreground">Elige tu Héroe</h2>
 
-                                <div className="grid grid-cols-2 gap-4 mb-6">
+                                <div id="tutorial-game-heroes" className="grid grid-cols-2 gap-4 mb-6">
                                     {CHARACTERS.map((char) => {
                                         const isSelected = selectedSkin === char.id;
                                         return (
@@ -288,7 +355,7 @@ const GamePage = () => {
                                 <div className="absolute bottom-0 left-0 w-2 h-2 bg-foreground"></div>
                                 <div className="absolute bottom-0 right-0 w-2 h-2 bg-foreground"></div>
 
-                                <div>
+                                <div id="tutorial-game-stats">
                                     <h3 className="text-3xl font-black text-primary uppercase mb-2 drop-shadow-sm">
                                         {currentCharacter.name}
                                     </h3>
@@ -321,7 +388,7 @@ const GamePage = () => {
                                         })}
                                     </div>
 
-                                    <div className="mb-6">
+                                    <div id="tutorial-game-difficulty" className="mb-6">
                                         <span className="block font-bold text-sm uppercase mb-2 text-center text-muted-foreground">Dificultad de Palabras</span>
                                         <div className="flex grid-cols-3 gap-2">
                                             {['EASY', 'NORMAL', 'HARD'].map(lvl => (
@@ -352,6 +419,7 @@ const GamePage = () => {
                                     </Button>
                                     <Button
                                         onClick={startGame}
+                                        id="tutorial-game-start"
                                         disabled={isPreparing}
                                         className={`w-full lg:w-2/3 hover:bg-accent  rounded-none h-14 text-xl pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all bg-accent text-accent-foreground ${isPreparing ? 'opacity-70 cursor-not-allowed' : ''}`}
                                     >
@@ -370,6 +438,15 @@ const GamePage = () => {
                             </div>
                         </div>
                     </Card>
+
+                    {/* Floating Tutorial Button */}
+                    <button
+                        onClick={startTutorial}
+                        className="fixed bottom-6 right-6 w-14 h-14 bg-accent text-accent-foreground pixel-border flex items-center justify-center text-2xl hover:scale-110 transition-transform z-50 shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:shadow-[6px_6px_0_0_rgba(0,0,0,1)]"
+                        title="Ver Tutorial de Nuevo"
+                    >
+                        ❓
+                    </button>
                 </div>
             )}
 

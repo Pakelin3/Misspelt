@@ -24,6 +24,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
+    "driver.js": "^1.4.0",
     "gsap": "^3.14.2",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.515.0",
