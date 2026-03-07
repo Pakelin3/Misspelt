@@ -99,7 +99,7 @@ const GamePage = () => {
         };
 
         iframeWindow.handleGameOver = async (finalScore, timeSpentSeconds = 0, lettersKilled = 0, bossesKilled = 0) => {
-            setResults({ xp_earned: finalScore, level: 1 });
+            setResults({ xp_earned: finalScore, level: 1, killCount: lettersKilled });
             setGameState('RESULTS');
 
             try {
@@ -420,8 +420,8 @@ const GamePage = () => {
                 const breakdown = results.breakdown;
 
                 return (
-                    <div className="flex flex-col items-center justify-center h-full animate-in fade-in zoom-in duration-300 p-4">
-                        <Card className="w-full max-w-2xl border-4 border-primary bg-background p-0 overflow-hidden">
+                    <div className="flex flex-col items-center justify-center h-full animate-in rounded-none fade-in zoom-in duration-300 p-4">
+                        <Card className="w-full max-w-2xl rounded-none border-4 border-primary bg-background p-0 overflow-hidden">
                             {/* Header */}
                             <div className="bg-primary text-primary-foreground px-6 py-4 flex items-center justify-center gap-3 border-b-4 border-foreground">
                                 <Trophy className="w-8 h-8 animate-bounce" />
@@ -466,8 +466,8 @@ const GamePage = () => {
                                             <p className="text-[10px] text-muted-foreground uppercase">Letras Vistas</p>
                                         </div>
                                         <div>
-                                            <p className="text-xl font-black text-foreground">{results.breakdown?.correct?.SLANG ? Object.values(results.breakdown.correct).reduce((a, b) => a + b, 0) : 0}</p>
-                                            <p className="text-[10px] text-muted-foreground uppercase">Correctas</p>
+                                            <p className="text-xl font-black text-foreground">{results.killCount}</p>
+                                            <p className="text-[10px] text-muted-foreground uppercase">Palabras Asesinadas</p>
                                         </div>
                                     </div>
                                 </div>

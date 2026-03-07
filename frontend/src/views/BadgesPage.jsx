@@ -74,17 +74,20 @@ function BadgesPage() {
     });
 
     // --- FETCH DE DATOS ---
+    // Fetch Badges
+    const userId = user?.user_id;
+
     const fetchBadgeData = useCallback(async () => {
         setLoading(true);
         setError(null);
-        setInfoMessage(null);
+        setInfoMessage("");
         try {
-            const allBadgesResponse = await api.get('/badges/');
-            const fetchedAllBadges = Array.isArray(allBadgesResponse.data) ? allBadgesResponse.data : (allBadgesResponse.data.results || []);
+            const badgesResponse = await api.get('/badges/');
+            const fetchedAllBadges = badgesResponse.data;
             setAllBadges(fetchedAllBadges);
 
             let currentUserStats = null;
-            if (user && user.user_id) {
+            if (userId) {
                 try {
                     const userStatsResponse = await api.get(`/user-stats/me/`);
                     currentUserStats = userStatsResponse.data;
@@ -108,7 +111,7 @@ function BadgesPage() {
         } finally {
             setLoading(false);
         }
-    }, [api, user]);
+    }, [api, userId]);
 
     useEffect(() => {
         fetchBadgeData();

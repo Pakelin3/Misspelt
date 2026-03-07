@@ -32,7 +32,8 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
             selectedOption: null,
             isChecked: false
         });
-    }, [word, distractors]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [word.id]);
 
     const handleSelect = (option) => {
         if (isChecked) return;
@@ -42,6 +43,7 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
             setTimeout(onSuccess, 1000);
         } else {
             setTimeout(() => {
+                setState(prev => ({ ...prev, selectedOption: null, isChecked: false }));
                 onError();
             }, 1000);
         }
@@ -85,7 +87,7 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
                         >
                             <span>{option.text}</span>
 
-                            {isChecked && option.isCorrect && (
+                            {isChecked && selectedOption?.id === option.id && option.isCorrect && (
                                 <CheckCircle className="absolute top-2 right-2 w-6 h-6 text-white drop-shadow-sm" strokeWidth={3} />
                             )}
                             {isChecked && selectedOption?.id === option.id && !option.isCorrect && (

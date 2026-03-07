@@ -79,8 +79,10 @@ function ProfilePage() {
     const [saving, setSaving] = useState(false);
 
     // ─── FETCH ────────────────────────────────────
+    const userId = user?.user_id;
+
     const fetchAllData = useCallback(async () => {
-        if (!user || !user.user_id) {
+        if (!userId) {
             setError('No hay usuario logueado.');
             setLoading(false);
             return;
@@ -103,7 +105,7 @@ function ProfilePage() {
         } finally {
             setLoading(false);
         }
-    }, [api, user]);
+    }, [api, userId]);
 
     useEffect(() => {
         fetchAllData();
@@ -128,6 +130,7 @@ function ProfilePage() {
 
             await api.patch('/profile/me/', payload);
             await fetchAllData(); // Recargar todo
+            window.dispatchEvent(new Event('profileUpdated'));
             setIsEditing(false);
             toast.success('¡Perfil actualizado!');
         } catch (err) {

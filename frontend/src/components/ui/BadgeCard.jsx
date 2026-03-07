@@ -18,6 +18,35 @@ const CheckIcon = ({ className }) => (
 const BadgeCard = ({ badge, status }) => {
     const { unlocked, progress, showProgress, conditionText } = status;
 
+    const buildRewardText = () => {
+        const parts = [];
+        if (badge.reward_data) {
+            // Manejar tanto string JSON como objeto
+            let rData = badge.reward_data;
+            try {
+                if (typeof rData === 'string') {
+                    rData = JSON.parse(rData);
+                }
+            } catch (e) {
+                console.warn("Invalid reward_data format", e);
+            }
+
+            if (rData.exp > 0) parts.push(`+${rData.exp} XP`);
+            if (rData.title) parts.push(`Título: ${rData.title}`);
+            if (rData.avatar_id) parts.push(`Avatar`);
+        }
+
+        if (parts.length > 0) return parts.join(' | ');
+
+        // Fallback a la descripción de texto plano si no hay reward_data
+        if (badge.reward_description && badge.reward_description !== 'Sin Recompensa') {
+            return badge.reward_description;
+        }
+        return null;
+    };
+
+    const finalRewardText = buildRewardText();
+
     return (
         <div className={`
             relative flex flex-col items-center p-6 transition-all duration-300
@@ -53,9 +82,15 @@ const BadgeCard = ({ badge, status }) => {
                     {badge.title}
                 </h3>
 
-                <p className="font-sans text-lg text-muted-foreground leading-none mb-4 flex-1">
+                <p className="font-sans text-sm text-muted-foreground leading-tight mb-2 flex-1">
                     {conditionText}
                 </p>
+
+                {finalRewardText && (
+                    <div className="text-[10px] font-mono text-accent bg-accent/10 px-2 py-1 mb-4 pixel-border-accent border-2">
+                        🎁 {finalRewardText}
+                    </div>
+                )}
 
                 {/* --- BARRA DE PROGRESO PIXELADA --- */}
                 {showProgress && !unlocked && (

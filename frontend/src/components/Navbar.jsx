@@ -17,10 +17,12 @@ function Navbar() {
     const [userStats, setUserStats] = useState(null);
     const [profileData, setProfileData] = useState(null);
 
+    const userId = user?.user_id;
+
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                if (user && user.user_id) {
+                if (userId) {
                     const [statsRes, profileRes] = await Promise.all([
                         api.get('/user-stats/me/'),
                         api.get('/profile/me/')
@@ -33,10 +35,17 @@ function Navbar() {
             }
         };
 
-        if (user) {
+        if (userId) {
             fetchUserData();
         }
-    }, [user, api]);
+
+        const handleProfileUpdate = () => {
+            if (userId) fetchUserData();
+        };
+
+        window.addEventListener('profileUpdated', handleProfileUpdate);
+        return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
+    }, [userId, api]);
 
     const isActive = (path) => {
         if (path === "/") return location.pathname === "/";
@@ -75,7 +84,15 @@ function Navbar() {
     });
 
     let finalProfileImageSrc = 'https://ui-avatars.com/api/?name=User&background=random';
-    if (user) {
+
+    if (userStats && profileData && profileData.current_avatar) {
+        const avatarObj = userStats.unlocked_avatars?.find(a => a.id === profileData.current_avatar);
+        if (avatarObj && avatarObj.image) {
+            finalProfileImageSrc = avatarObj.image;
+        } else if (user && user.username) {
+            finalProfileImageSrc = `https://ui-avatars.com/api/?name=${user.username}&background=random`;
+        }
+    } else if (user) {
         if (user.current_avatar_url) finalProfileImageSrc = user.current_avatar_url;
         else if (user.profile_image_url) finalProfileImageSrc = user.profile_image_url;
         else finalProfileImageSrc = `https://ui-avatars.com/api/?name=${user.username}&background=random`;

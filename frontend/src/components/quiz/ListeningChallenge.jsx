@@ -3,13 +3,17 @@ import { Volume2, Mic } from 'lucide-react';
 import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 
 const ListeningChallenge = ({ word, onSuccess, onError }) => {
-    const [{ inputValue, isPlaying, feedback, voices }, setState] = useState({
+    const [{ inputValue, isPlaying, feedback, voices, isRecording, isProcessingSTT }, setState] = useState({
         inputValue: "",
         isPlaying: false,
         feedback: null,
-        voices: []
+        voices: [],
+        isRecording: false,
+        isProcessingSTT: false
     });
     const inputRef = useRef(null);
+    const mediaRecorderRef = useRef(null);
+    const audioChunksRef = useRef([]);
 
     useEffect(() => {
         setState(prev => ({ ...prev, inputValue: "", feedback: null }));
@@ -91,20 +95,110 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
         }
     };
 
-    const checkAnswer = (e) => {
-        e.preventDefault();
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const mediaRecorder = new MediaRecorder(stream);
+            mediaRecorderRef.current = mediaRecorder;
+            audioChunksRef.current = [];
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    audioChunksRef.current.push(event.data);
+                }
+            };
+
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/mpeg' });
+                await processAudioWithElevenLabs(audioBlob);
+
+                // Stop all tracks to release the microphone
+                stream.getTracks().forEach(track => track.stop());
+            };
+
+            mediaRecorder.start();
+            setState(prev => ({ ...prev, isRecording: true }));
+        } catch (error) {
+            console.error("Error accessing microphone:", error);
+            alert("No se pudo acceder al micrófono. Por favor, revisa los permisos.");
+        }
+    };
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+            mediaRecorderRef.current.stop();
+            setState(prev => ({ ...prev, isRecording: false, isProcessingSTT: true }));
+        }
+    };
+
+    const toggleRecording = () => {
+        if (isRecording) {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+    };
+
+    const processAudioWithElevenLabs = async (audioBlob) => {
+        try {
+            const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
+            if (!apiKey) throw new Error("API Key no encontrada");
+
+            const formData = new FormData();
+            formData.append('file', audioBlob, 'recording.mp3');
+            formData.append('model_id', 'scribe_v1');
+
+            console.log("🎙️ Enviando audio a ElevenLabs STT...");
+
+            const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
+                method: 'POST',
+                headers: {
+                    'xi-api-key': apiKey
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail?.message || "Error en la transcripción");
+            }
+
+            const data = await response.json();
+            const transcribedText = data.text || "";
+
+            console.log("📝 Texto transcrito:", transcribedText);
+            let cleanTranscription = transcribedText.replace(/\s*\[.*?\]\s*|\s*\(.*?\)\s*/g, ' ');
+            cleanTranscription = cleanTranscription.replace(/[.,!?]/g, '').trim();
+
+            setState(prev => ({ ...prev, inputValue: cleanTranscription, isProcessingSTT: false }));
+
+            setTimeout(() => {
+                const formEvent = new Event('submit', { bubbles: true, cancelable: true });
+                checkAnswer(formEvent, cleanTranscription);
+            }, 100);
+
+        } catch (error) {
+            console.error("❌ Error en ElevenLabs STT:", error);
+            alert("Error al transcribir el audio: " + error.message);
+            setState(prev => ({ ...prev, isProcessingSTT: false }));
+        }
+    };
+
+    const checkAnswer = (e, forcedInput = null) => {
+        if (e && e.preventDefault) e.preventDefault();
         if (feedback) return;
 
-        const cleanInput = inputValue.trim().toLowerCase();
+        const inputToCheck = forcedInput !== null ? forcedInput : inputValue;
+        const cleanInput = inputToCheck.trim().toLowerCase();
         const cleanTarget = word.text.trim().toLowerCase();
 
         const isSynonym = word.substitutes && word.substitutes.some(s => s.toLowerCase() === cleanInput);
 
         if (cleanInput === cleanTarget || isSynonym) {
-            setState(prev => ({ ...prev, feedback: 'correct' }));
+            setState(prev => ({ ...prev, feedback: 'correct', inputValue: inputToCheck }));
             setTimeout(onSuccess, 1000);
         } else {
-            setState(prev => ({ ...prev, feedback: 'wrong' }));
+            setState(prev => ({ ...prev, feedback: 'wrong', inputValue: inputToCheck }));
             setTimeout(() => {
                 setState(prev => ({ ...prev, feedback: null }));
                 onError();
@@ -115,30 +209,60 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
     return (
         <div className="flex flex-col items-center space-y-8 w-full">
             <div className="text-center space-y-4 bg-muted p-8 border-4 border-primary pixel-border shadow-[4px_4px_0px_0px_rgba(var(--primary),0.3)] w-full">
-                <h3 className="text-xl font-pixel text-primary uppercase tracking-widest mb-2">Escucha y Escribe</h3>
+                <h3 className="text-xl font-pixel text-primary uppercase tracking-widest mb-2">Escucha y Responde</h3>
 
-                <button
-                    onClick={playAudio}
-                    className={`
-            mx-auto w-24 h-24 flex items-center justify-center border-4 transition-all pixel-btn
-            ${isPlaying
-                            ? 'bg-primary text-primary-foreground border-primary scale-110 shadow-none translate-y-[4px]'
-                            : 'bg-background text-primary border-primary hover:scale-105 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
-                        }
-          `}
-                >
-                    <Volume2 size={40} className={isPlaying ? 'animate-pulse' : ''} />
-                </button>
-                <p className="text-sm font-pixel text-muted-foreground mt-4 uppercase">Click para escuchar</p>
+                <div className="flex justify-center gap-6">
+                    {/* Botón de Escuchar */}
+                    <div className="flex flex-col items-center">
+                        <button
+                            type="button"
+                            onClick={playAudio}
+                            disabled={isProcessingSTT || isRecording}
+                            className={`
+                    w-20 h-20 md:w-24 md:h-24 flex items-center justify-center border-4 transition-all pixel-btn
+                    ${isPlaying
+                                    ? 'bg-primary text-primary-foreground border-primary scale-110 shadow-none translate-y-[4px]'
+                                    : 'bg-background text-primary border-primary hover:scale-105 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+                                }
+                    ${(isProcessingSTT || isRecording) ? 'opacity-50 grayscale cursor-not-allowed' : ''}
+                `}
+                        >
+                            <Volume2 size={36} className={isPlaying ? 'animate-pulse' : ''} />
+                        </button>
+                        <p className="text-[10px] md:text-sm font-pixel text-muted-foreground mt-4 uppercase">Escuchar</p>
+                    </div>
+
+                    {/* Botón de Hablar (STT) */}
+                    <div className="flex flex-col items-center">
+                        <button
+                            type="button"
+                            onClick={toggleRecording}
+                            disabled={isPlaying || isProcessingSTT}
+                            className={`
+                    w-20 h-20 md:w-24 md:h-24 flex items-center justify-center border-4 transition-all pixel-btn
+                    ${isRecording
+                                    ? 'bg-destructive text-destructive-foreground border-destructive animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.6)] translate-y-[2px]'
+                                    : 'bg-background text-destructive border-destructive hover:scale-105 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+                                }
+                    ${(isPlaying || isProcessingSTT) ? 'opacity-50 grayscale cursor-not-allowed' : ''}
+                `}
+                        >
+                            <Mic size={36} />
+                        </button>
+                        <p className="text-[10px] md:text-sm font-pixel text-muted-foreground mt-4 uppercase">
+                            {isRecording ? "Grabando..." : "Responder Hablando"}
+                        </p>
+                    </div>
+                </div>
             </div>
 
-            <form onSubmit={checkAnswer} className="w-full relative group">
+            <form onSubmit={(e) => checkAnswer(e)} className="w-full relative group">
                 <input
                     ref={inputRef}
                     type="text"
-                    value={inputValue}
+                    value={isProcessingSTT ? "Traduciendo voz..." : inputValue}
                     onChange={(e) => setState(prev => ({ ...prev, inputValue: e.target.value }))}
-                    disabled={feedback === 'correct'}
+                    disabled={feedback === 'correct' || isProcessingSTT || isRecording}
                     placeholder="Escribe lo que escuchas..."
                     autoCapitalize="off"
                     autoComplete="off"
