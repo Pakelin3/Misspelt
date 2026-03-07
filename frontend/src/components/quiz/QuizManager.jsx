@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { X, Trophy, AlertCircle } from 'lucide-react';
 import { PixelHeartIcon } from '@/components/PixelIcons';
@@ -45,9 +45,14 @@ const QuizManager = ({ words = EMPTY_WORDS, allWords = EMPTY_ALL_WORDS, onComple
     const [currentWord, setCurrentWord] = useState(null);
     const [gameType, setGameType] = useState('multi');
 
+    // Use a ref to track the words array to avoid re-triggering the effect on parent re-renders
+    const wordsRef = useRef(words);
+    wordsRef.current = words;
+
     useEffect(() => {
-        if (words.length > 0 && currentIndex < words.length) {
-            const word = words[currentIndex];
+        const currentWords = wordsRef.current;
+        if (currentWords.length > 0 && currentIndex < currentWords.length) {
+            const word = currentWords[currentIndex];
             setCurrentWord(word);
 
             const availableTypes = ['multi', 'listening'];
@@ -60,10 +65,10 @@ const QuizManager = ({ words = EMPTY_WORDS, allWords = EMPTY_ALL_WORDS, onComple
             const randomType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
             setGameType(randomType);
 
-        } else if (currentIndex >= words.length && words.length > 0) {
+        } else if (currentIndex >= currentWords.length && currentWords.length > 0) {
             handleWin();
         }
-    }, [currentIndex, words]);
+    }, [currentIndex]);
 
     const handleWin = () => {
         setGameStatus('won');

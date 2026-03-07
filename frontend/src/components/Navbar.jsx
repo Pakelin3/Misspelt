@@ -17,21 +17,26 @@ function Navbar() {
 
     const api = useAxios();
     const [userStats, setUserStats] = useState(null);
+    const [profileData, setProfileData] = useState(null);
 
     useEffect(() => {
-        const fetchUserStats = async () => {
+        const fetchUserData = async () => {
             try {
                 if (user && user.user_id) {
-                    const response = await api.get('/user-stats/me/');
-                    setUserStats(response.data);
+                    const [statsRes, profileRes] = await Promise.all([
+                        api.get('/user-stats/me/'),
+                        api.get('/profile/me/')
+                    ]);
+                    setUserStats(statsRes.data);
+                    setProfileData(profileRes.data);
                 }
             } catch (error) {
-                console.error("Error fetching user stats in Navbar:", error);
+                console.error("Error fetching user data in Navbar:", error);
             }
         };
 
         if (user) {
-            fetchUserStats();
+            fetchUserData();
         }
     }, [user, api]);
 
@@ -76,7 +81,7 @@ function Navbar() {
     });
 
     // Lógica de imagen de perfil
-    let finalProfileImageSrc = 'https://ui-avatars.com/api/?name=User&background=random'; // Fallback más limpio
+    let finalProfileImageSrc = 'https://ui-avatars.com/api/?name=User&background=random';
     if (user) {
         if (user.current_avatar_url) finalProfileImageSrc = user.current_avatar_url;
         else if (user.profile_image_url) finalProfileImageSrc = user.profile_image_url;
@@ -87,10 +92,10 @@ function Navbar() {
 
     // Clases comunes para links de navegación
     const navLinkClass = (path) => `
-        flex items-center gap-1.5 lg:gap-2 px-2 lg:px-3 py-2 font-sans rounded-sm transition-colors whitespace-nowrap
+        hidden md:flex items-center gap-2 px-2 lg:px-3 py-2 pixel-border-primary-foreground pixel-btn text-decoration-none transition-all
         ${isActive(path)
             ? "bg-primary text-primary-foreground"
-            : "text-foreground hover:bg-primary/20 hover:text-foreground"
+            : " text-foreground hover:bg-primary hover:text-primary-foreground"
         }
     `;
 
@@ -134,14 +139,11 @@ function Navbar() {
                     {/* Botón JUGAR destacado */}
                     <Link
                         to="/play"
-                        className="hidden md:flex items-center gap-2 bg-primary text-primary-foreground px-3 lg:px-4 py-2 font-mono text-[10px] sm:text-xs pixel-border-primary pixel-btn text-decoration-none"
+                        className="hidden md:flex items-center gap-2 bg-primary text-primary-foreground px-3 lg:px-4 py-2 font-mono text-[10px] sm:text-xs pixel-border-primary-foreground pixel-btn text-decoration-none"
                     >
                         <SwordIcon className="w-4 h-4 shrink-0" /> <span className="hidden lg:inline">JUGAR</span>
                     </Link>
 
-                    {/* <div className="hidden md:block">
-                        <ThemeButton /> 
-                    </div> */}
 
                     {user ? (
                         /* --- USER DROPDOWN (Pixel Style) --- */
@@ -164,28 +166,31 @@ function Navbar() {
                                 <div className="absolute right-0 mt-2 w-48 bg-card pixel-border z-50 p-1 animate-in fade-in zoom-in-95 duration-200">
                                     <div className="px-4 py-2 border-b-2 border-muted mb-1">
                                         <p className="font-mono text-[10px] text-muted-foreground">
-                                            Nivel {userStats?.level || 1} • Granjero
+                                            Nivel {userStats?.level || 1} • {profileData?.current_title || 'Aventurero'}
                                         </p>
                                     </div>
 
-                                    <Link
-                                        to="/profile"
-                                        onClick={() => setIsProfileDropdownOpen(false)}
-                                        className="flex items-center px-4 py-2 font-sans text-lg hover:bg-primary hover:text-primary-foreground transition-colors rounded-sm"
-                                    >
-                                        Perfil
-                                    </Link>
+                                    <div className="py-2">
+                                        <Link
+                                            to="/profile"
+                                            onClick={() => setIsProfileDropdownOpen(false)}
+                                            className="flex items-center mb-1 gap-2 p-2 bg-muted/50 hover:bg-primary hover:text-primary-foreground border-2 border-foreground transition-colors pixel-btn"
+                                        >
+                                            Perfil
+                                        </Link>
 
-                                    {/* <div className="px-4 py-1">
+                                        {/* <div className="px-4 py-1">
                                         <DropdownLenguage /> 
                                     </div> */}
 
-                                    <button
-                                        onClick={logoutUser}
-                                        className="w-full text-left flex items-center px-4 py-2 font-sans text-lg text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors rounded-sm"
-                                    >
-                                        Cerrar Sesión
-                                    </button>
+                                        <button
+                                            onClick={logoutUser}
+                                            className="w-full text-left flex items-center gap-2 p-2 bg-muted/50 hover:bg-destructive hover:text-destructive-foreground border-2 border-foreground transition-colors pixel-btn"
+                                        >
+                                            Cerrar Sesión
+                                        </button>
+                                    </div>
+
                                 </div>
                             )}
                         </div>

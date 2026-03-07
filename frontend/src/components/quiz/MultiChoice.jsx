@@ -63,7 +63,7 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
                     let btnClass = "bg-background border-primary text-foreground hover:bg-muted";
 
                     if (isChecked) {
-                        if (option.isCorrect) {
+                        if (selectedOption?.id === option.id && option.isCorrect) {
                             btnClass = "bg-green-500 border-green-700 text-white shadow-none translate-y-[4px]";
                         } else if (selectedOption?.id === option.id && !option.isCorrect) {
                             btnClass = "bg-destructive border-red-800 text-white shadow-none translate-y-[4px]";

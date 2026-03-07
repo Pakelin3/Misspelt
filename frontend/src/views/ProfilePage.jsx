@@ -498,7 +498,7 @@ function ProfilePage() {
                                             )}
                                         </div>
                                         <h4 className="font-mono text-[11px] font-bold text-foreground leading-tight mb-1">{badge.title}</h4>
-                                        <p className="text-[9px] text-muted-foreground leading-tight">{badge.reward_description}</p>
+                                        {/* <p className="text-[9px] text-muted-foreground leading-tight">{badge.reward_description}</p> */}
                                         <div className={`
                                             mt-2 px-2 py-0.5 text-[8px] font-mono font-bold uppercase border
                                             ${badge.category === 'LEGENDARY' ? 'border-yellow-500 text-yellow-500 bg-yellow-500/10' :

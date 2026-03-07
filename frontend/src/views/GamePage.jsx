@@ -41,11 +41,11 @@ const GamePage = () => {
         {
             id: 'farmer', name: 'Campesino', sprite: '/game/skins/farmer.png',
             stats: { hp: 120, dmg: 8, spd: 300 },
-            lore: "Cansado de que las plagas arruinaran sus cosechas, tomó su horca y aprendió a deletrear hechizos básicos para defender su granja."
+            lore: "Cansado de que las plagas arruinaran sus cosechas, tomó su guadaña y aprendió a deletrear hechizos básicos para defender su granja."
         },
         {
             id: 'warlock', name: 'Brujo', sprite: '/game/skins/warlock.png',
-            stats: { hp: 80, dmg: 12, spd: 200 },
+            stats: { hp: 20, dmg: 12, spd: 200 },
             lore: "Hizo un pacto con entidades oscuras a cambio de conocimiento prohibido. Su magia es destructiva, pero su fragilidad física es su mayor debilidad."
         },
         {
@@ -297,27 +297,28 @@ const GamePage = () => {
                                     </p>
 
                                     <div className="space-y-3 mb-8">
-                                        <div className="flex items-center justify-between">
-                                            <span className="font-bold text-sm uppercase">Salud (HP)</span>
-                                            <div className="flex flex-1 mx-4 h-4 bg-background border-2 border-foreground">
-                                                <div className="h-full bg-red-500" style={{ width: `${(currentCharacter.stats.hp / 200) * 100}%` }}></div>
-                                            </div>
-                                            <span className="text-sm">{currentCharacter.stats.hp}</span>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="font-bold text-sm uppercase">Daño (DMG)</span>
-                                            <div className="flex flex-1 mx-4 h-4 bg-background border-2 border-foreground">
-                                                <div className="h-full bg-orange-500" style={{ width: `${(currentCharacter.stats.dmg / 20) * 100}%` }}></div>
-                                            </div>
-                                            <span className="text-sm">{currentCharacter.stats.dmg}</span>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="font-bold text-sm uppercase">Velocidad</span>
-                                            <div className="flex flex-1 mx-4 h-4 bg-background border-2 border-foreground">
-                                                <div className="h-full bg-blue-500" style={{ width: `${(currentCharacter.stats.spd / 500) * 100}%` }}></div>
-                                            </div>
-                                            <span className="text-sm">{currentCharacter.stats.spd}</span>
-                                        </div>
+                                        {[
+                                            { label: 'HP', value: currentCharacter.stats.hp, max: 200, color: 'bg-red-500' },
+                                            { label: 'DMG', value: currentCharacter.stats.dmg, max: 20, color: 'bg-orange-500' },
+                                            { label: 'SPD', value: currentCharacter.stats.spd, max: 500, color: 'bg-blue-500' },
+                                        ].map(stat => {
+                                            const filled = Math.round((stat.value / stat.max) * 10);
+                                            return (
+                                                <div key={stat.label} className="flex items-center gap-3">
+                                                    <span className="font-bold text-xs uppercase w-10 text-muted-foreground">{stat.label}</span>
+                                                    <div className="flex gap-1 flex-1">
+                                                        {[...Array(10)].map((_, i) => (
+                                                            <div
+                                                                key={`${stat.label}-${i}`}
+                                                                className={`w-3 h-3 border-2 border-foreground/60 transition-all duration-300 ${i < filled ? stat.color : 'bg-background'
+                                                                    }`}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                    <span className="text-xs font-bold w-8 text-right text-foreground">{stat.value}</span>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
 
                                     <div className="mb-6">
@@ -352,7 +353,7 @@ const GamePage = () => {
                                     <Button
                                         onClick={startGame}
                                         disabled={isPreparing}
-                                        className={`w-full lg:w-2/3 rounded-none h-14 text-xl pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all bg-accent text-accent-foreground ${isPreparing ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                        className={`w-full lg:w-2/3 hover:bg-accent  rounded-none h-14 text-xl pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all bg-accent text-accent-foreground ${isPreparing ? 'opacity-70 cursor-not-allowed' : ''}`}
                                     >
                                         {isPreparing ? (
                                             <>
@@ -403,43 +404,117 @@ const GamePage = () => {
             )}
 
             {/* VISTA C: RESULTADOS */}
-            {gameState === 'RESULTS' && results && (
-                <div className="flex flex-col items-center justify-center h-full animate-in fade-in zoom-in duration-300 p-4">
-                    <Card className="w-full max-w-lg border-8 border-double border-primary bg-background p-8 text-center space-y-8">
-                        <Trophy className="w-20 h-20 text-yellow-500 mx-auto animate-bounce" />
-                        <h2 className="text-4xl font-bold uppercase italic text-primary drop-shadow-sm">Resumen de Partida</h2>
+            {gameState === 'RESULTS' && results && (() => {
+                const totalQuestions = Array.from(seenWordsRef.current).length;
+                const correctAnswers = Array.from(correctWordsRef.current).length;
+                const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+                const accColor = accuracy >= 80 ? 'text-green-500' : accuracy >= 50 ? 'text-yellow-500' : 'text-red-500';
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-muted p-4 border-4 border-muted-foreground">
-                                <Star className="text-primary mx-auto mb-2" />
-                                <p className="text-sm uppercase font-bold text-muted-foreground">XP Ganada</p>
-                                <p className="text-3xl font-black text-foreground">+{results.xp_earned}</p>
-                            </div>
-                            <div className="bg-muted p-4 border-4 border-muted-foreground">
-                                <Trophy className="text-primary mx-auto mb-2" />
-                                <p className="text-sm uppercase font-bold text-muted-foreground">Nivel Actual</p>
-                                <p className="text-3xl font-black text-foreground">{results.level}</p>
-                            </div>
-                        </div>
+                const formatTime = (s) => {
+                    if (!s) return '0:00';
+                    const mins = Math.floor(s / 60);
+                    const secs = Math.floor(s % 60);
+                    return `${mins}:${secs.toString().padStart(2, '0')}`;
+                };
 
-                        <div className="flex flex-col gap-4">
-                            <Button
-                                onClick={() => setGameState('SELECTION')}
-                                className="h-14 text-xl pixel-btn rounded-none"
-                            >
-                                <RotateCcw className="mr-2" /> VOLVER AL MENÚ
-                            </Button>
-                            <Button
-                                variant="outline"
-                                onClick={() => navigate('/')}
-                                className="h-14 text-xl pixel-btn rounded-none"
-                            >
-                                <Home className="mr-2" /> IR AL HOME
-                            </Button>
-                        </div>
-                    </Card>
-                </div>
-            )}
+                const breakdown = results.breakdown;
+
+                return (
+                    <div className="flex flex-col items-center justify-center h-full animate-in fade-in zoom-in duration-300 p-4">
+                        <Card className="w-full max-w-2xl border-4 border-primary bg-background p-0 overflow-hidden">
+                            {/* Header */}
+                            <div className="bg-primary text-primary-foreground px-6 py-4 flex items-center justify-center gap-3 border-b-4 border-foreground">
+                                <Trophy className="w-8 h-8 animate-bounce" />
+                                <h2 className="text-2xl md:text-3xl font-black uppercase tracking-wider">Resumen de Partida</h2>
+                            </div>
+
+                            <div className="p-6 space-y-6">
+                                {/* Main Stats Grid */}
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    <div className="bg-muted/50 p-4 border-2 border-foreground/30 text-center">
+                                        <Star className="w-5 h-5 text-yellow-500 mx-auto mb-1" />
+                                        <p className="text-[10px] uppercase font-bold text-muted-foreground">XP Ganada</p>
+                                        <p className="text-2xl font-black text-primary">+{results.xp_earned}</p>
+                                    </div>
+                                    <div className="bg-muted/50 p-4 border-2 border-foreground/30 text-center">
+                                        <Trophy className="w-5 h-5 text-primary mx-auto mb-1" />
+                                        <p className="text-[10px] uppercase font-bold text-muted-foreground">Nivel</p>
+                                        <p className="text-2xl font-black text-foreground">{results.level}</p>
+                                    </div>
+                                    <div className="bg-muted/50 p-4 border-2 border-foreground/30 text-center">
+                                        <Clock className="w-5 h-5 text-blue-500 mx-auto mb-1" />
+                                        <p className="text-[10px] uppercase font-bold text-muted-foreground">Tiempo</p>
+                                        <p className="text-2xl font-black text-foreground">{formatTime(results.time_spent)}</p>
+                                    </div>
+                                    <div className="bg-muted/50 p-4 border-2 border-foreground/30 text-center">
+                                        <span className="text-lg block mb-1">🎯</span>
+                                        <p className="text-[10px] uppercase font-bold text-muted-foreground">Precisión</p>
+                                        <p className={`text-2xl font-black ${accColor}`}>{accuracy}%</p>
+                                    </div>
+                                </div>
+
+                                {/* Combat Stats */}
+                                <div className="bg-muted/20 border-2 border-foreground/20 p-4">
+                                    <p className="text-[10px] font-bold uppercase text-muted-foreground mb-3 tracking-wider">⚔️ Combate</p>
+                                    <div className="grid grid-cols-3 gap-4 text-center">
+                                        <div>
+                                            <p className="text-xl font-black text-foreground">{correctAnswers}/{totalQuestions}</p>
+                                            <p className="text-[10px] text-muted-foreground uppercase">Preguntas</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xl font-black text-foreground">{results.breakdown?.seen?.SLANG ? Object.values(results.breakdown.seen).reduce((a, b) => a + b, 0) : 0}</p>
+                                            <p className="text-[10px] text-muted-foreground uppercase">Letras Vistas</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xl font-black text-foreground">{results.breakdown?.correct?.SLANG ? Object.values(results.breakdown.correct).reduce((a, b) => a + b, 0) : 0}</p>
+                                            <p className="text-[10px] text-muted-foreground uppercase">Correctas</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Word Breakdown */}
+                                {breakdown && (
+                                    <div className="bg-muted/20 border-2 border-foreground/20 p-4">
+                                        <p className="text-[10px] font-bold uppercase text-muted-foreground mb-3 tracking-wider">📚 Desglose por tipo</p>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                            {[
+                                                { label: 'Slangs', key: 'SLANG', color: 'text-yellow-500' },
+                                                { label: 'Idioms', key: 'IDIOM', color: 'text-purple-500' },
+                                                { label: 'P. Verbs', key: 'PHRASAL_VERB', color: 'text-blue-500' },
+                                                { label: 'Vocab', key: 'VOCABULARY', color: 'text-emerald-500' },
+                                            ].map(cat => (
+                                                <div key={cat.key} className="text-center p-2 bg-background border border-foreground/10">
+                                                    <p className={`text-lg font-black ${cat.color}`}>
+                                                        {breakdown.correct?.[cat.key] || 0}/{breakdown.seen?.[cat.key] || 0}
+                                                    </p>
+                                                    <p className="text-[9px] text-muted-foreground uppercase">{cat.label}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Buttons */}
+                                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                                    <Button
+                                        onClick={() => setGameState('SELECTION')}
+                                        className="flex-1 h-12 text-base pixel-btn rounded-none shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all"
+                                    >
+                                        <RotateCcw className="mr-2 w-5 h-5" /> JUGAR DE NUEVO
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => navigate('/')}
+                                        className="flex-1 h-12 text-base pixel-btn rounded-none border-2 border-foreground hover:bg-muted"
+                                    >
+                                        <Home className="mr-2 w-5 h-5" /> IR AL HOME
+                                    </Button>
+                                </div>
+                            </div>
+                        </Card>
+                    </div>
+                );
+            })()}
         </div>
     );
 };
