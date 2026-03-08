@@ -230,7 +230,7 @@ from api.models import GameHistory
 class GameHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = GameHistory
-        fields = ['id', 'game_mode', 'played_at', 'score', 'correct_in_game', 'total_questions_in_game', 'time_spent_seconds', 'letters_killed', 'bosses_killed']
+        fields = ['id', 'game_mode', 'played_at', 'score', 'correct_in_game', 'total_questions_in_game', 'time_spent_seconds', 'letters_killed', 'bosses_killed', 'match_breakdown', 'ai_evaluation']
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- MODELO PROFILE UPDATE ---

@@ -42,7 +42,7 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
             if (!apiKey) throw new Error("API Key no encontrada");
 
             const elevenlabs = new ElevenLabsClient({ apiKey });
-            const voiceId = "21m00Tcm4TlvDq8ikWAM"; // Rachel
+            const voiceId = "GBv7mTt0atIp3Br8iCZE";
 
             const audioStream = await elevenlabs.textToSpeech.convert(voiceId, {
                 text: word.text,

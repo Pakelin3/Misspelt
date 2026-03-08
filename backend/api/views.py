@@ -532,6 +532,7 @@ def submit_game_results(request):
     bosses_killed = data.get('bosses_killed', 0)
     seen_word_ids = data.get('seen_word_ids', [])
     correct_word_ids = data.get('correct_word_ids', [])
+    ai_evaluation = data.get('ai_evaluation', None)
 
     try:
         stats = UserStats.objects.get(user=user)
@@ -604,7 +605,8 @@ def submit_game_results(request):
         time_spent_seconds=time_spent,
         match_breakdown=match_breakdown,
         letters_killed=letters_killed,
-        bosses_killed=bosses_killed
+        bosses_killed=bosses_killed,
+        ai_evaluation=ai_evaluation
     )
 
     newly_unlocked = check_and_unlock_badges(user)

@@ -58,7 +58,7 @@ const QuizPage = () => {
                 ) : (
                     <div className="text-center p-8 bg-card border-4 border-primary pixel-border">
                         <p className="text-xl font-bold mb-6">No hay palabras disponibles para practicar.</p>
-                        <Button onClick={() => navigate('/dictionary')} className="pixel-btn">
+                        <Button onClick={() => navigate('/dictionary')} className="pixel-btn rounded-none">
                             <Home className="mr-2" /> IR AL DICCIONARIO
                         </Button>
                     </div>
