@@ -534,6 +534,9 @@ function ProfilePage() {
                                             {/* AI Evaluation */}
                                             {game.ai_evaluation && (() => {
                                                 const aiEval = game.ai_evaluation.evaluacion || game.ai_evaluation;
+                                                const quality = aiEval.calidad || 0;
+                                                const qualityColor = quality >= 80 ? 'text-green-500' : quality >= 50 ? 'text-yellow-500' : 'text-red-500';
+
                                                 return (
                                                     <div className="mt-2 pt-3 border-t-2 border-dashed border-foreground/20">
                                                         <div className="flex items-center gap-2 mb-2">
@@ -550,7 +553,7 @@ function ProfilePage() {
                                                             <div className="flex gap-4">
                                                                 <div>
                                                                     <p className="text-[10px] uppercase font-mono text-muted-foreground mb-1">Calidad</p>
-                                                                    <div className="text-base font-bold text-accent">{aiEval.calidad}/100</div>
+                                                                    <div className={`text-base font-bold ${qualityColor}`}>{quality}/100</div>
                                                                 </div>
                                                                 <div>
                                                                     <p className="text-[10px] uppercase font-mono text-muted-foreground mb-1">Feedback</p>
