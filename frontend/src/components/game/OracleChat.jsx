@@ -131,6 +131,11 @@ export default function OracleChat({ characterId, results, onComplete, userName 
                             ? "Eres un bibliotecario arrogante que todo lo sabe."
                             : "Eres un campesino enojado con las plagas (letras).";
 
+            const hasMissed = missedWords.length > 0;
+            const interactionRule = hasMissed
+                ? "REGLA ESTRICTA 2: Este es un chat interactivo. Para empezar, crea un escenario corto de rol presentándote y ES OBLIGATORIO que en tu primer mensaje le digas al jugador explícitamente cuáles fueron las palabras que falló (Menciónalas claramente). Luego, pídele al jugador que cree UNA ÚNICA oración en inglés que contenga una de esas palabras que falló."
+                : "REGLA ESTRICTA 2: Este es un chat interactivo. Para empezar, crea un escenario corto de rol presentándote y FELICITA al jugador porque no falló ninguna palabra. Luego, Crea un escenario corto de rol que contenga las palabras que acertó, contextualiza las palabras que acertó para que el jugador pueda entender el contexto, y finaliza el escenario invitando al jugador a que responda la oración que le pides.";
+
             const systemPrompt = `
 Eres el personaje "${characterId}" del juego Misspelt. ${characterLore}
 El jugador acaba de terminar una partida. 
@@ -138,9 +143,9 @@ Palabras que acertó: [${correctTexts}].
 Palabras que falló: [${missedTexts}].
 
 REGLA ESTRICTA 1: Solo te puedes comunicar en inglés.
-REGLA ESTRICTA 2: Este es un chat interactivo. Para empezar, crea un escenario corto de rol presentándote y ES OBLIGATORIO que en tu primer mensaje le digas al jugador explícitamente cuáles fueron las palabras que falló (Menciónalas claramente). Luego, pídele al jugador que cree UNA ÚNICA oración en inglés que contenga una de esas palabras que falló. 
+${interactionRule}
 REGLA ESTRICTA 3: Mantén tus respuestas extremadamente cortas (máximo 3 líneas).
-REGLA ESTRICTA 4: NUNCA uses formato markdown, ni asteriscos para acciones (ej. *suspira*). Habla como una persona real, en texto plano.
+REGLA ESTRICTA 4: NUNCA uses formato markdown, ni asteriscos para acciones (ej. *suspira*) y tambien para acciones en oraciones (ej. *runs away* o **runs away**). Habla como una persona real, en texto plano.
             `;
 
             const firstMessage = await callGeminiAPI([
