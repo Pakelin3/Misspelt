@@ -8,17 +8,20 @@ import { Card } from '@/components/ui/Card';
 import { Trophy, Clock, Star, Home, Play, RotateCcw, ArrowLeft, X, Sparkles, Lock } from 'lucide-react';
 import SpriteAnimator from '@/components/ui/SpriteAnimator';
 import QuizManager from '@/components/quiz/QuizManager';
+import OracleChat from '@/components/game/OracleChat'; // [NEW] Added OracleChat
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
 
 const GamePage = () => {
     const navigate = useNavigate();
     const api = useAxios();
-    const { fetchUserData } = useContext(AuthContext);
+    const { user, fetchUserData } = useContext(AuthContext);
 
     // --- MÁQUINA DE ESTADOS DEL JUEGO ---
+    // 'SELECTION' | 'PLAYING' | 'AI_EVALUATION' | 'RESULTS'
     const [gameState, setGameState] = useState('SELECTION');
     const [results, setResults] = useState(null);
+    const [pendingGameData, setPendingGameData] = useState(null); // [NEW] Save game data until AI is done
     const [selectedSkin, setSelectedSkin] = useState('mage');
     const [difficulty, setDifficulty] = useState('NORMAL');
     const [unlockedCharacters, setUnlockedCharacters] = useState(['mage']);
@@ -222,52 +225,23 @@ const GamePage = () => {
         };
 
         iframeWindow.handleGameOver = async (finalScore, timeSpentSeconds = 0, lettersKilled = 0, bossesKilled = 0) => {
-            setResults({ xp_earned: finalScore, level: 1, killCount: lettersKilled });
-            setGameState('RESULTS');
+            // Transform Set to array with word texts
+            const currentWords = sessionWordsRef.current;
+            const correctWordsArr = Array.from(correctWordsRef.current).map(id => currentWords.find(w => w.id === id) || id);
+            const seenWordsArr = Array.from(seenWordsRef.current).map(id => currentWords.find(w => w.id === id) || id);
 
-            try {
-                const response = await api.post('/game/submit-results/', {
-                    xp_earned: finalScore,
-                    time_spent: timeSpentSeconds,
-                    letters_killed: lettersKilled,
-                    bosses_killed: bossesKilled,
-                    seen_word_ids: Array.from(seenWordsRef.current),
-                    correct_word_ids: Array.from(correctWordsRef.current),
-                    score: finalScore * 10,
-                    correct_answers: Array.from(correctWordsRef.current).length,
-                    total_questions: Array.from(seenWordsRef.current).length,
-                    game_mode: 'SURVIVOR'
-                });
+            setPendingGameData({
+                finalScore,
+                timeSpentSeconds,
+                lettersKilled,
+                bossesKilled,
+                seen_word_ids: Array.from(seenWordsRef.current),
+                correct_word_ids: Array.from(correctWordsRef.current),
+                seen_words: seenWordsArr,
+                correct_words: correctWordsArr
+            });
 
-                if (fetchUserData) await fetchUserData();
-
-                setResults((prev) => ({
-                    ...prev,
-                    new_total_xp: response.data?.new_xp || 0,
-                    level: response.data?.new_level || 1,
-                    time_spent: response.data?.time_spent || timeSpentSeconds,
-                    breakdown: response.data?.match_breakdown
-                }));
-
-                const finalCorrectAnswers = Array.from(correctWordsRef.current).length;
-                if (finalCorrectAnswers > 0) {
-                    toast.success('Nuevas palabras añadidas al diccionario', {
-                        description: `Has aprendido o repasado ${finalCorrectAnswers} palabra${finalCorrectAnswers === 1 ? '' : 's'}.`,
-                    });
-                }
-
-                if (response.data?.badges_unlocked && response.data.badges_unlocked.length > 0) {
-                    response.data.badges_unlocked.forEach(badge => {
-                        toast('¡Insignia Desbloqueada!', {
-                            description: badge.title,
-                            icon: badge.image ? <img src={badge.image} alt={badge.title} className="w-8 h-8 rounded-full pixel-rendering" /> : <Trophy className="w-6 h-6 text-yellow-500" />,
-                            duration: 5000,
-                        });
-                    });
-                }
-            } catch (error) {
-                console.error("Error al guardar partida (API):", error);
-            }
+            setGameState('AI_EVALUATION');
         };
 
         iframeWindow.onGodotExit = () => {
@@ -277,6 +251,61 @@ const GamePage = () => {
         iframeWindow.handleExitGame = () => {
             setGameState('SELECTION');
         };
+    };
+
+    const handleOracleComplete = async (aiEvaluationJSON) => {
+        if (!pendingGameData) {
+            setGameState('SELECTION');
+            return;
+        }
+
+        setResults({ xp_earned: pendingGameData.finalScore, level: 1, killCount: pendingGameData.lettersKilled, ai_evaluation: aiEvaluationJSON?.evaluacion });
+        setGameState('RESULTS');
+
+        try {
+            const response = await api.post('/game/submit-results/', {
+                xp_earned: pendingGameData.finalScore,
+                time_spent: pendingGameData.timeSpentSeconds,
+                letters_killed: pendingGameData.lettersKilled,
+                bosses_killed: pendingGameData.bossesKilled,
+                seen_word_ids: pendingGameData.seen_word_ids,
+                correct_word_ids: pendingGameData.correct_word_ids,
+                score: pendingGameData.finalScore * 10,
+                correct_answers: pendingGameData.correct_word_ids.length,
+                total_questions: pendingGameData.seen_word_ids.length,
+                game_mode: 'SURVIVOR',
+                ai_evaluation: aiEvaluationJSON?.evaluacion
+            });
+
+            if (fetchUserData) await fetchUserData();
+
+            setResults((prev) => ({
+                ...prev,
+                new_total_xp: response.data?.new_xp || 0,
+                level: response.data?.new_level || 1,
+                time_spent: response.data?.time_spent || pendingGameData.timeSpentSeconds,
+                breakdown: response.data?.match_breakdown
+            }));
+
+            const finalCorrectAnswers = pendingGameData.correct_word_ids.length;
+            if (finalCorrectAnswers > 0) {
+                toast.success('Nuevas palabras añadidas al diccionario', {
+                    description: `Has aprendido o repasado ${finalCorrectAnswers} palabra${finalCorrectAnswers === 1 ? '' : 's'}.`,
+                });
+            }
+
+            if (response.data?.badges_unlocked && response.data.badges_unlocked.length > 0) {
+                response.data.badges_unlocked.forEach(badge => {
+                    toast('¡Insignia Desbloqueada!', {
+                        description: badge.title,
+                        icon: badge.image ? <img src={badge.image} alt={badge.title} className="w-8 h-8 rounded-full pixel-rendering" /> : <Trophy className="w-6 h-6 text-yellow-500" />,
+                        duration: 5000,
+                    });
+                });
+            }
+        } catch (error) {
+            console.error("Error al guardar partida con AI Eval (API):", error);
+        }
     };
 
     const sendToGodot = (success) => {
@@ -623,6 +652,18 @@ const GamePage = () => {
                             </div>
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* VISTA A.5: ORACLE CHAT */}
+            {gameState === 'AI_EVALUATION' && pendingGameData && (
+                <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-500">
+                    <OracleChat
+                        characterId={selectedSkin}
+                        results={pendingGameData}
+                        onComplete={handleOracleComplete}
+                        userName={user?.username || 'Jugador'}
+                    />
                 </div>
             )}
 

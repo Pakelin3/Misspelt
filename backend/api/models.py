@@ -254,6 +254,7 @@ class GameHistory(models.Model):
     letters_killed = models.IntegerField(default=0)
     bosses_killed = models.IntegerField(default=0)
     match_breakdown = models.JSONField(default=dict, blank=True)
+    ai_evaluation = models.JSONField(default=dict, blank=True, null=True, help_text="Resultados de la evaluación de la IA")
 
     def __str__(self):
         return f"{self.user.username} - {self.get_game_mode_display()} - {self.played_at}"

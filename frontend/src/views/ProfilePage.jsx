@@ -482,52 +482,85 @@ function ProfilePage() {
                                     const isSurvivor = game.game_mode === 'SURVIVOR';
 
                                     return (
-                                        <div key={game.id} className="bg-card pixel-border p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 hover:bg-muted/20 transition-colors">
-                                            {/* Mode Icon */}
-                                            <div className={`
-                                                w-12 h-12 flex items-center justify-center text-2xl border-2 shrink-0
-                                                ${isSurvivor ? 'border-red-500/50 bg-red-500/10' : 'border-blue-500/50 bg-blue-500/10'}
-                                            `}>
-                                                {isSurvivor ? '⚔️' : '🧠'}
-                                            </div>
-
-                                            {/* Details */}
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 border ${isSurvivor ? 'border-red-500/50 text-red-500' : 'border-blue-500/50 text-blue-500'}`}>
-                                                        {isSurvivor ? 'SURVIVOR' : 'QUIZ'}
-                                                    </span>
-                                                    <span className="text-[10px] text-muted-foreground font-mono">{formatDate(game.played_at)}</span>
+                                        <div key={game.id} className="bg-card pixel-border p-4 flex flex-col gap-4 hover:bg-muted/20 transition-colors">
+                                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                                {/* Mode Icon */}
+                                                <div className={`
+                                                    w-12 h-12 flex items-center justify-center text-2xl border-2 shrink-0
+                                                    ${isSurvivor ? 'border-red-500/50 bg-red-500/10' : 'border-blue-500/50 bg-blue-500/10'}
+                                                `}>
+                                                    {isSurvivor ? '⚔️' : '🧠'}
                                                 </div>
-                                                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-mono text-muted-foreground">
-                                                    {game.total_questions_in_game > 0 && (
-                                                        <span>Preguntas: <span className="text-foreground font-bold">{game.correct_in_game}/{game.total_questions_in_game}</span></span>
-                                                    )}
-                                                    {game.time_spent_seconds > 0 && (
-                                                        <span>Tiempo: <span className="text-foreground font-bold">{formatTime(game.time_spent_seconds)}</span></span>
-                                                    )}
-                                                    {isSurvivor && game.letters_killed > 0 && (
-                                                        <span>Letras: <span className="text-foreground font-bold">{game.letters_killed}</span></span>
-                                                    )}
-                                                    {isSurvivor && game.bosses_killed > 0 && (
-                                                        <span>Jefes: <span className="text-foreground font-bold">{game.bosses_killed}</span></span>
-                                                    )}
-                                                </div>
-                                            </div>
 
-                                            {/* Score & Accuracy */}
-                                            <div className="flex items-center gap-4 shrink-0">
-                                                {game.total_questions_in_game > 0 && (
-                                                    <div className="text-right">
-                                                        <p className={`font-mono text-lg font-bold ${accColor}`}>{accuracy.toFixed(0)}%</p>
-                                                        <p className="text-[9px] font-mono text-muted-foreground uppercase">Precisión</p>
+                                                {/* Details */}
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 border ${isSurvivor ? 'border-red-500/50 text-red-500' : 'border-blue-500/50 text-blue-500'}`}>
+                                                            {isSurvivor ? 'SURVIVOR' : 'QUIZ'}
+                                                        </span>
+                                                        <span className="text-[10px] text-muted-foreground font-mono">{formatDate(game.played_at)}</span>
                                                     </div>
-                                                )}
-                                                <div className="text-right">
-                                                    <p className="font-mono text-lg font-bold text-accent">+{game.score}</p>
-                                                    <p className="text-[9px] font-mono text-muted-foreground uppercase">XP</p>
+                                                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-mono text-muted-foreground">
+                                                        {game.total_questions_in_game > 0 && (
+                                                            <span>Preguntas: <span className="text-foreground font-bold">{game.correct_in_game}/{game.total_questions_in_game}</span></span>
+                                                        )}
+                                                        {game.time_spent_seconds > 0 && (
+                                                            <span>Tiempo: <span className="text-foreground font-bold">{formatTime(game.time_spent_seconds)}</span></span>
+                                                        )}
+                                                        {isSurvivor && game.letters_killed > 0 && (
+                                                            <span>Letras: <span className="text-foreground font-bold">{game.letters_killed}</span></span>
+                                                        )}
+                                                        {isSurvivor && game.bosses_killed > 0 && (
+                                                            <span>Jefes: <span className="text-foreground font-bold">{game.bosses_killed}</span></span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Score & Accuracy */}
+                                                <div className="flex items-center gap-4 shrink-0">
+                                                    {game.total_questions_in_game > 0 && (
+                                                        <div className="text-right">
+                                                            <p className={`font-mono text-lg font-bold ${accColor}`}>{accuracy.toFixed(0)}%</p>
+                                                            <p className="text-[9px] font-mono text-muted-foreground uppercase">Precisión</p>
+                                                        </div>
+                                                    )}
+                                                    <div className="text-right">
+                                                        <p className="font-mono text-lg font-bold text-accent">+{game.score}</p>
+                                                        <p className="text-[9px] font-mono text-muted-foreground uppercase">XP</p>
+                                                    </div>
                                                 </div>
                                             </div>
+
+                                            {/* AI Evaluation */}
+                                            {game.ai_evaluation && (() => {
+                                                const aiEval = game.ai_evaluation.evaluacion || game.ai_evaluation;
+                                                return (
+                                                    <div className="mt-2 pt-3 border-t-2 border-dashed border-foreground/20">
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <span className="text-sm">🔮</span>
+                                                            <span className="text-[11px] font-mono font-bold uppercase text-primary tracking-wider">Evaluación del Oráculo</span>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                            <div className="md:col-span-2">
+                                                                <p className="text-sm leading-relaxed border-l-2 border-primary pl-3 italic text-foreground/90">
+                                                                    "{aiEval.feedback_general}"
+                                                                </p>
+                                                            </div>
+                                                            <div className="flex gap-4">
+                                                                <div>
+                                                                    <p className="text-[10px] uppercase font-mono text-muted-foreground mb-1">Calidad</p>
+                                                                    <div className="text-base font-bold text-accent">{aiEval.calidad}/100</div>
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-[10px] uppercase font-mono text-muted-foreground mb-1">Feedback</p>
+                                                                    <div className="text-sm font-bold text-foreground">{aiEval.consistencia}</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()}
                                         </div>
                                     );
                                 })}
