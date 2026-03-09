@@ -124,23 +124,30 @@ export default function OracleChat({ characterId, results, onComplete, userName 
 
             const characterLore =
                 characterId === "mage"
-                    ? "Eres un mago sabio pero estricto."
+                    ? "You are a wise but strict mage."
                     : characterId === "warlock"
-                        ? "Eres un brujo desquiciado y sarcástico que odia el fracaso."
+                        ? "You are a deranged and sarcastic warlock who hates failure."
                         : characterId === "erudit"
-                            ? "Eres un bibliotecario arrogante que todo lo sabe."
-                            : "Eres un campesino enojado con las plagas (letras).";
+                            ? "You are an arrogant librarian who knows everything."
+                            : "You are an angry farmer with a hatred for pests (letters).";
+
+            const hasMissed = missedWords.length > 0;
+            const interactionRule = hasMissed
+                ? "STRICT RULE 2: This is an interactive role-play chat. In your first message, explicitly mention the words the player failed. Then, construct a short, SIMPLE role-playing scenario where a problem arises involving those failed words. Ask the player what they would do or say next, challenging them to use the failed words correctly."
+                : "STRICT RULE 2: This is an interactive role-play chat. In your first message, CONGRATULATE the player for a perfect game. Then, construct a short, SIMPLE role-playing scenario involving the words they got right. Present a basic situation and ask the player how they would react using those words.";
 
             const systemPrompt = `
-Eres el personaje "${characterId}" del juego Misspelt. ${characterLore}
-El jugador acaba de terminar una partida. 
-Palabras que acertó: [${correctTexts}]. 
-Palabras que falló: [${missedTexts}].
+You are the character "${characterId}" from the game Misspelt. ${characterLore}
+The player has just finished a game.
+Words they got right: [${correctTexts}].
+Words they failed: [${missedTexts}].
 
-REGLA ESTRICTA 1: Solo te puedes comunicar en inglés.
-REGLA ESTRICTA 2: Este es un chat interactivo. Para empezar, crea un escenario corto de rol presentándote y ES OBLIGATORIO que en tu primer mensaje le digas al jugador explícitamente cuáles fueron las palabras que falló (Menciónalas claramente). Luego, pídele al jugador que cree UNA ÚNICA oración en inglés que contenga una de esas palabras que falló. 
-REGLA ESTRICTA 3: Mantén tus respuestas extremadamente cortas (máximo 3 líneas).
-REGLA ESTRICTA 4: NUNCA uses formato markdown, ni asteriscos para acciones (ej. *suspira*). Habla como una persona real, en texto plano.
+STRICT RULE 1: You MUST communicate ENTIRELY in English, unless the player explicitly asks you to speak in another language.
+${interactionRule}
+STRICT RULE 3: IMPORTANT! Use very SIMPLE and BASIC English vocabulary (A2 to B1 level). Avoid complex metaphors, ancient words, or overly difficult grammar. Make your scenarios very easy to understand for an English learner.
+STRICT RULE 4: Keep your responses extremely short (maximum 3 lines).
+STRICT RULE 5: NEVER use markdown format or asterisks for actions. Speak like a real person, in plain text.
+STRICT RULE 6: The chat has a maximum of 5 turns. However, YOU CAN DECIDE TO END THE CONVERSATION EARLY if you are fully satisfied with the player's English response or if you are completely frustrated. To end the conversation, write your farewell text in English, and IMMEDIATELY AFTER INCLUDE a JSON object EXACTLY like this: {"evaluacion": {"feedback_general": "your critical and severe evaluation of their grammar, consistency, and creativity in Spanish", "calidad": 60, "consistencia": "Bad or Good"}}. Note: The feedback_general inside the JSON should be in Spanish to help the user understand their final score.
             `;
 
             const firstMessage = await callGeminiAPI([
@@ -174,7 +181,7 @@ REGLA ESTRICTA 4: NUNCA uses formato markdown, ni asteriscos para acciones (ej. 
                     role: "user",
                     parts: [
                         {
-                            text: `Eres el personaje ${characterId} de Misspelt. Sigue el rol.`,
+                            text: `You are the character ${characterId} from Misspelt. Follow the role.`,
                         },
                     ],
                 },
@@ -189,7 +196,7 @@ REGLA ESTRICTA 4: NUNCA uses formato markdown, ni asteriscos para acciones (ej. 
                             text:
                                 userText +
                                 (isLastTurn
-                                    ? '\n[SISTEMA]: Este es tu ÚLTIMO turno obligatorio. Despídete del jugador brevemente en tu personaje, evalúa toda su actuación, y LUEGO DE TU TEXTO DE DESPEDIDA, ESPACIO, Y ESCRIBE UN OBJETO JSON EXACTAMENTE CON ESTA ESTRUCTURA (sin marcas markdown de \`\`\`json): \n{"evaluacion": {"feedback_general": "tu evaluación breve", "calidad": 85, "consistencia": "Buena"}}'
+                                    ? '\n[SYSTEM]: This is your LAST mandatory turn. Say goodbye to the player briefly in your character, evaluate their entire performance, and AFTER YOUR FAREWELL TEXT, SPACE, AND WRITE A JSON OBJECT EXACTLY WITH THIS STRUCTURE (without markdown \`\`\`json marks): \n{"evaluacion": {"feedback_general": "your brief evaluation", "calidad": 85, "consistencia": "Good"}}'
                                     : ""),
                         },
                     ],
@@ -199,15 +206,24 @@ REGLA ESTRICTA 4: NUNCA uses formato markdown, ni asteriscos para acciones (ej. 
             let replyText = await callGeminiAPI(chatHistory);
             replyText = replyText.replace(/\*/g, '');
 
-            if (isLastTurn) {
-                try {
-                    const cleanReplyNoBlocks = replyText.replace(/```json/gi, '').replace(/```/g, '');
-                    const jsonMatch = cleanReplyNoBlocks.match(/\{[\s\S]*\}/);
+            let jsonStr = null;
+            let chatMsg = replyText;
 
-                    if (jsonMatch) {
-                        const jsonStr = jsonMatch[0];
-                        const chatMsg = cleanReplyNoBlocks.replace(jsonStr, '').trim();
+            try {
+                const cleanReplyNoBlocks = replyText.replace(/```json/gi, '').replace(/```/g, '');
+                const jsonMatch = cleanReplyNoBlocks.match(/\{[\s\S]*\}/);
 
+                if (jsonMatch) {
+                    jsonStr = jsonMatch[0];
+                    chatMsg = cleanReplyNoBlocks.replace(jsonStr, '').trim();
+                }
+            } catch (e) {
+                console.error("Error parseando regex:", e);
+            }
+
+            if (jsonStr || isLastTurn) {
+                if (jsonStr) {
+                    try {
                         const aiEvalJSON = JSON.parse(jsonStr);
 
                         setMessages((prev) => [
@@ -222,17 +238,16 @@ REGLA ESTRICTA 4: NUNCA uses formato markdown, ni asteriscos para acciones (ej. 
 
                         setIsThinking(false);
                         return;
+                    } catch (e) {
+                        console.error("Error parseando el JSON devuelto por la IA:", e);
                     }
-                } catch (e) {
-                    console.error("Error parseando el JSON devuelto por la IA:", e);
                 }
 
-                // Fallback si no mandó un JSON válido
                 onComplete({
                     evaluacion: {
                         feedback_general: replyText.substring(0, 150) + "...",
-                        calidad: 0,
-                        consistencia: "Desconocida",
+                        calidad: Math.floor(Math.random() * 40),
+                        consistencia: "Inconsistente",
                     },
                 });
             } else {
@@ -298,16 +313,15 @@ REGLA ESTRICTA 4: NUNCA uses formato markdown, ni asteriscos para acciones (ej. 
             {/* Header */}
             <div className="flex items-center justify-between bg-primary p-4 border-b-4 border-foreground">
                 <div className="flex items-center gap-3 text-primary-foreground">
-                    <div className="w-12 h-12 border-2 border-background overflow-hidden pixel-rendering bg-muted bg-[url('/stone-pattern.png')] bg-cover flex items-end justify-center">
-                        <div className="scale-[2.5] origin-bottom pb-2">
-                            <SpriteAnimator
-                                spriteSheet={`/game/skins/${characterId}.png`}
-                                frameWidth={16}
-                                frameHeight={16}
-                                fps={6}
-                                scale={1}
-                            />
-                        </div>
+                    <div className="w-12 h-12 border-2 border-background overflow-hidden pixel-rendering bg-muted bg-[url('/stone-pattern.png')] bg-cover flex items-center justify-center">
+                        <SpriteAnimator
+                            src={`/public/game/skins/${characterId}.png`}
+                            frameWidth={12}
+                            frameHeight={12}
+                            frameCount={4}
+                            fps={4}
+                            scale={3}
+                        />
                     </div>
                     <div>
                         <h2 className="font-black text-xl uppercase tracking-widest">
@@ -333,17 +347,20 @@ REGLA ESTRICTA 4: NUNCA uses formato markdown, ni asteriscos para acciones (ej. 
                     >
                         {ttsEnabled ? <Volume2 size={24} /> : <VolumeX size={24} />}
                     </button>
-                    {/* Botón de skip directo por si el usuario se desespera */}
                     <button
-                        onClick={() =>
+                        onClick={() => {
+                            if (audioRef.current) {
+                                audioRef.current.pause();
+                                audioRef.current.src = "";
+                            }
                             onComplete({
                                 evaluacion: {
                                     feedback_general: "Conversación omitida.",
                                     calidad: 0,
                                     consistencia: "N/A",
                                 },
-                            })
-                        }
+                            });
+                        }}
                         className="p-2 border-2 text-primary-foreground border-transparent hover:bg-background hover:text-foreground transition-colors"
                         title="Omitir Oráculo"
                     >

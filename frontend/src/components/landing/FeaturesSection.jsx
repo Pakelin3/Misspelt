@@ -20,7 +20,7 @@ const features = [
   {
     icon: HeartIcon,
     title: "SISTEMA DE VIDAS",
-    description: "Cuidado con los errores. Tienes 5 corazones diarios para mantener tu granja a salvo.",
+    description: "Cuidado con los errores. Tienes 3 corazones diarios para mantener tu granja a salvo.",
   },
 ];
 

@@ -8,7 +8,7 @@ import { TrophyIcon } from '@/components/PixelIcons';
 const CATEGORY_CONFIG = [
     {
         key: 'LEGENDARY',
-        label: 'LEGENDARIAS',
+        label: 'Legendarias',
         emoji: '👑',
         borderColor: 'border-yellow-500',
         bgColor: 'bg-yellow-500/10',
@@ -18,7 +18,7 @@ const CATEGORY_CONFIG = [
     },
     {
         key: 'EPIC',
-        label: 'ÉPICAS',
+        label: 'Épicas',
         emoji: '💜',
         borderColor: 'border-purple-500',
         bgColor: 'bg-purple-500/10',
@@ -28,7 +28,7 @@ const CATEGORY_CONFIG = [
     },
     {
         key: 'RARE',
-        label: 'RARAS',
+        label: 'Raras',
         emoji: '💎',
         borderColor: 'border-blue-500',
         bgColor: 'bg-blue-500/10',
@@ -38,7 +38,7 @@ const CATEGORY_CONFIG = [
     },
     {
         key: 'BASIC',
-        label: 'BÁSICAS',
+        label: 'Básicas',
         emoji: '⭐',
         borderColor: 'border-stone-400',
         bgColor: 'bg-stone-400/10',
