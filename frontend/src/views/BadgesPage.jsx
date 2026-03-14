@@ -4,7 +4,6 @@ import AuthContext from '@/context/AuthContext';
 import BadgeCard from "@/components/ui/BadgeCard";
 import { TrophyIcon } from '@/components/PixelIcons';
 
-// Configuración de categorías con colores temáticos RPG
 const CATEGORY_CONFIG = [
     {
         key: 'LEGENDARY',
@@ -48,7 +47,6 @@ const CATEGORY_CONFIG = [
     },
 ];
 
-// Chevron icon para el acordeón
 const ChevronIcon = ({ open }) => (
     <svg
         className={`w-5 h-5 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
@@ -72,8 +70,6 @@ function BadgesPage() {
         LEGENDARY: true, EPIC: true, RARE: true, BASIC: true
     });
 
-    // --- FETCH DE DATOS ---
-    // Fetch Badges
     const userId = user?.user_id;
 
     const fetchBadgeData = useCallback(async () => {
@@ -81,8 +77,8 @@ function BadgesPage() {
         setError(null);
         setInfoMessage("");
         try {
-            const badgesResponse = await api.get('/badges/');
-            const fetchedAllBadges = badgesResponse.data;
+            const badgesResponse = await api.get('/badges/?limit=100');
+            const fetchedAllBadges = Array.isArray(badgesResponse.data) ? badgesResponse.data : (badgesResponse.data.results || []);
             setAllBadges(fetchedAllBadges);
 
             let currentUserStats = null;
@@ -192,18 +188,15 @@ function BadgesPage() {
         return { unlocked: isUnlocked, progress: Math.floor(progress), showProgress: showProgress, conditionText: conditionText };
     };
 
-    // --- AGRUPAR BADGES POR CATEGORÍA ---
     const groupedBadges = CATEGORY_CONFIG.map(cat => {
         const badges = allBadges.filter(b => (b.category || 'BASIC') === cat.key);
         const unlockedCount = badges.filter(b => getBadgeStatus(b).unlocked).length;
         return { ...cat, badges, unlockedCount, totalCount: badges.length };
     }).filter(group => group.badges.length > 0);
 
-    // Resumen global
     const totalBadges = allBadges.length;
     const totalUnlocked = allBadges.filter(b => getBadgeStatus(b).unlocked).length;
 
-    // --- RENDERIZADO ---
     return (
         <div className="min-h-screen bg-background font-sans flex flex-col">
             <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-8 md:py-12 mt-16">

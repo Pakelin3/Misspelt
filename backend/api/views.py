@@ -204,6 +204,16 @@ class WordPagination(PageNumberPagination):
     page_size_query_param = 'limit'
     max_page_size = 100
 
+class AvatarPagination(PageNumberPagination):
+    page_size = 15
+    page_size_query_param = 'limit'
+    max_page_size = 100
+
+class BadgePagination(PageNumberPagination):
+    page_size = 12
+    page_size_query_param = 'limit'
+    max_page_size = 100
+
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA PALABRAS (CRUD) ---
 # * --------------------------------------------------------------------------------------------------
@@ -319,7 +329,14 @@ class WordViewSet(viewsets.ModelViewSet):
 class BadgeViewSet(viewsets.ModelViewSet): 
     queryset = Badge.objects.all().order_by('title') 
     serializer_class = BadgeSerializer 
-    pagination_class = None
+    pagination_class = BadgePagination
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search_param = self.request.query_params.get('search')
+        if search_param:
+            queryset = queryset.filter(title__icontains=search_param)
+        return queryset
     #permission_classes = [IsAuthenticated, IsAdminUser]
 
 # * --------------------------------------------------------------------------------------------------
@@ -328,7 +345,14 @@ class BadgeViewSet(viewsets.ModelViewSet):
 class AvatarViewSet(viewsets.ModelViewSet): 
     queryset = Avatar.objects.all().order_by('name') 
     serializer_class = AvatarSerializer 
-    pagination_class = None
+    pagination_class = AvatarPagination
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search_param = self.request.query_params.get('search')
+        if search_param:
+            queryset = queryset.filter(name__icontains=search_param)
+        return queryset
     # Restringir permisos solo a administradores, ya que el CRUD es para gestión
     #permission_classes = [IsAuthenticated, IsAdminUser]
 

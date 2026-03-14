@@ -582,7 +582,7 @@ function ProfilePage() {
                                 <p className="text-xs mt-1">¡Sigue jugando para ganar tus primeras insignias!</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
                                 {userStats.unlocked_badges.map(badge => (
                                     <div key={badge.id} className="bg-card pixel-border p-4 flex flex-col items-center text-center hover:-translate-y-1 transition-transform">
                                         <div className="w-16 h-16 mb-3 flex items-center justify-center">
@@ -599,7 +599,7 @@ function ProfilePage() {
                                             ${badge.category === 'LEGENDARY' ? 'border-yellow-500 text-yellow-500 bg-yellow-500/10' :
                                                 badge.category === 'EPIC' ? 'border-purple-500 text-purple-500 bg-purple-500/10' :
                                                     badge.category === 'RARE' ? 'border-blue-500 text-blue-500 bg-blue-500/10' :
-                                                        'border-stone-400 text-stone-400 bg-stone-400/10'}
+                                                        'border-stone-700 text-stone-700 bg-stone-700/10'}
                                         `}>
                                             {badge.category}
                                         </div>

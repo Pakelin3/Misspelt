@@ -16,35 +16,62 @@ function BadgesAdminPanel() {
     const [avatars, setAvatars] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Paginación
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+
+    // Filtros
     const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 
     // Estado del Formulario
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingBadge, setEditingBadge] = useState(null);
 
-    // Estado de los campos del formulario
+    // Form Data
     const [formData, setFormData] = useState({
         title: '',
         description: '',
-        category: 'BASIC',
+        category: 'BASIC', // Kept from original, as it's likely needed
         xp_reward: 50,
-        avatar_reward: '',
-        title_reward: '',
-        condition_type: 'correct_slangs',
-        condition_value: 10,
-        condition_description: '',
-        reward_description: '',
-        image: null // File object
+        avatar_reward: '', // Kept from original
+        title_reward: '', // Kept from original
+        condition_type: 'correct_slangs', // Kept from original
+        condition_value: 10, // Kept from original
+        condition_description: '', // Kept from original
+        reward_description: '', // Kept from original
+        is_secret: false, // Added from user's snippet
+        image: null
     });
     const [previewUrl, setPreviewUrl] = useState(null);
 
+    // --- EFECTO DEBOUNCE ---
+    useEffect(() => {
+        const timerId = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+            setCurrentPage(1); // Reset page on new search
+        }, 500);
+
+        return () => {
+            clearTimeout(timerId);
+        };
+    }, [searchTerm]);
+
     // --- FETCH DATA ---
-    const fetchBadges = useCallback(async () => {
+    const fetchBadges = useCallback(async (page, search) => {
         setLoading(true);
         try {
-            const response = await api.get(`/badges/`);
-            const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
-            setBadges(data);
+            const searchParam = search ? `&search=${search}` : '';
+            const response = await api.get(`/badges/?page=${page}${searchParam}`);
+            
+            if (response.data.results) {
+                setBadges(response.data.results);
+                setTotalCount(response.data.count);
+                setTotalPages(Math.ceil(response.data.count / 12));
+            } else {
+                setBadges(Array.isArray(response.data) ? response.data : []);
+            }
         } catch (err) {
             console.error("Error fetching badges:", err);
             toast.error("Error", { description: "No se pudieron cargar las insignias." });
@@ -64,9 +91,9 @@ function BadgesAdminPanel() {
     }, [api]);
 
     useEffect(() => {
-        fetchBadges();
+        fetchBadges(currentPage, debouncedSearchTerm);
         fetchAvatars();
-    }, [fetchBadges, fetchAvatars]);
+    }, [fetchBadges, fetchAvatars, currentPage, debouncedSearchTerm]);
 
     // --- MANEJADORES DEL FORMULARIO ---
     const handleOpenForm = (badge = null) => {
@@ -190,15 +217,15 @@ function BadgesAdminPanel() {
                 await api.patch(`/badges/${editingBadge.id}/`, dataToSend, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
-                toast.success('¡Actualizado!');
+                toast.success('¡Insignia Actualizada!');
             } else {
                 await api.post('/badges/', dataToSend, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
-                toast.success('¡Creado!');
+                toast.success('¡Insignia Creada!');
             }
             setIsFormOpen(false);
-            fetchBadges();
+            fetchBadges(currentPage, debouncedSearchTerm);
         } catch (err) {
             console.error(err);
             let errorMessage = 'No se pudo guardar la insignia.';
@@ -358,12 +385,37 @@ function BadgesAdminPanel() {
                         })}
                     </div>
                 )}
+
+                {/* Controles de Paginación */}
+                {!loading && totalPages > 1 && (
+                    <div className="flex justify-between items-center mt-6 pt-4 border-t-4 border-foreground w-full">
+                        <Button
+                            variant="outline"
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="pixel-btn h-10 border-2 border-foreground rounded-none bg-accent hover:bg-accent/80 text-accent-foreground disabled:opacity-50"
+                        >
+                            ANTERIOR
+                        </Button>
+                        <span className="font-mono text-sm uppercase bg-foreground text-background px-3 py-1 font-bold">
+                            PÁG {currentPage} DE {totalPages}
+                        </span>
+                        <Button
+                            variant="outline"
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className="pixel-btn h-10 border-2 border-foreground rounded-none bg-accent hover:bg-accent/80 text-accent-foreground disabled:opacity-50"
+                        >
+                            SIGUIENTE
+                        </Button>
+                    </div>
+                )}
             </div>
 
             {/* --- MODAL FORMULARIO --- */}
             {isFormOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                    <div className="bg-card w-full max-w-2xl border-4 border-foreground shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+                    <div className="bg-card w-full max-w-4xl border-4 border-foreground shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
                         {/* Header */}
                         <div className="bg-primary text-primary-foreground p-3 flex justify-between items-center border-b-4 border-foreground shrink-0">
                             <h3 className="font-bold text-lg uppercase flex items-center gap-2">
@@ -374,7 +426,7 @@ function BadgesAdminPanel() {
                             </button>
                         </div>
 
-                        {/* Body Scrollable */}
+                        {/* Body */}
                         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto custom-scrollbar flex-1">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 {/* Columna Izquierda: Imagen */}

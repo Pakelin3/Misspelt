@@ -41,8 +41,12 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
             const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
             if (!apiKey) throw new Error("API Key no encontrada");
 
-            const elevenlabs = new ElevenLabsClient({ apiKey });
-            const voiceId = "GBv7mTt0atIp3Br8iCZE";
+            const elevenlabs = new ElevenLabsClient({
+                apiKey: apiKey
+            });
+
+
+            const voiceId = "IKne3meq5aSn9XLyUdCD";
 
             const audioStream = await elevenlabs.textToSpeech.convert(voiceId, {
                 text: word.text,

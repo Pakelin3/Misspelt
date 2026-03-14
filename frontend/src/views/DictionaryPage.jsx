@@ -377,7 +377,8 @@ const WordDetailModal = ({ word, onClose }) => {
                 apiKey: apiKey
             });
 
-            const voiceId = "21m00Tcm4TlvDq8ikWAM";
+
+            const voiceId = "IKne3meq5aSn9XLyUdCD";
 
             const audioStream = await elevenlabs.textToSpeech.convert(voiceId, {
                 text: text,
