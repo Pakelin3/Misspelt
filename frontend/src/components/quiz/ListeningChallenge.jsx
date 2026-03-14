@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Volume2, Mic } from 'lucide-react';
+import { PixelVolume3Icon, PixelMicIcon } from '@/components/PixelIcons';
 import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 
 const ListeningChallenge = ({ word, onSuccess, onError }) => {
@@ -41,8 +41,12 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
             const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
             if (!apiKey) throw new Error("API Key no encontrada");
 
-            const elevenlabs = new ElevenLabsClient({ apiKey });
-            const voiceId = "GBv7mTt0atIp3Br8iCZE";
+            const elevenlabs = new ElevenLabsClient({
+                apiKey: apiKey
+            });
+
+
+            const voiceId = "IKne3meq5aSn9XLyUdCD";
 
             const audioStream = await elevenlabs.textToSpeech.convert(voiceId, {
                 text: word.text,
@@ -227,7 +231,7 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
                     ${(isProcessingSTT || isRecording) ? 'opacity-50 grayscale cursor-not-allowed' : ''}
                 `}
                         >
-                            <Volume2 size={36} className={isPlaying ? 'animate-pulse' : ''} />
+                            <PixelVolume3Icon className={`w-9 h-9 ${isPlaying ? 'animate-pulse' : ''}`} />
                         </button>
                         <p className="text-[10px] md:text-sm font-pixel text-muted-foreground mt-4 uppercase">Escuchar</p>
                     </div>
@@ -247,7 +251,7 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
                     ${(isPlaying || isProcessingSTT) ? 'opacity-50 grayscale cursor-not-allowed' : ''}
                 `}
                         >
-                            <Mic size={36} />
+                            <PixelMicIcon className="w-9 h-9" />
                         </button>
                         <p className="text-[10px] md:text-sm font-pixel text-muted-foreground mt-4 uppercase">
                             {isRecording ? "Grabando..." : "Responder Hablando"}
@@ -275,7 +279,7 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
             ${!feedback ? 'border-primary bg-background text-foreground focus:border-primary focus:ring-4 focus:ring-primary/20 shadow-[4px_4px_0px_0px_rgba(var(--primary),0.3)]' : ''}
           `}
                 />
-                <Mic className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors ${!feedback ? 'text-primary' : feedback === 'correct' ? 'text-green-500' : 'text-destructive'}`} size={28} />
+                <PixelMicIcon className={`absolute left-5 top-1/2 -translate-y-1/2 transition-colors w-7 h-7 ${!feedback ? 'text-primary' : feedback === 'correct' ? 'text-green-500' : 'text-destructive'}`} />
             </form>
 
             <div className="h-8 flex items-center justify-center">

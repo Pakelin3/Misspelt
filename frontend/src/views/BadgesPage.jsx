@@ -2,14 +2,13 @@ import React, { useState, useEffect, useCallback, useContext } from 'react';
 import useAxios from '@/utils/useAxios';
 import AuthContext from '@/context/AuthContext';
 import BadgeCard from "@/components/ui/BadgeCard";
-import { TrophyIcon } from '@/components/PixelIcons';
+import { TrophyIcon, PixelStarIcon, PixelCrownIcon, PixelHeartFillIcon, PixelDiamondIcon } from '@/components/PixelIcons';
 
-// Configuración de categorías con colores temáticos RPG
 const CATEGORY_CONFIG = [
     {
         key: 'LEGENDARY',
         label: 'Legendarias',
-        emoji: '👑',
+        icon: PixelCrownIcon,
         borderColor: 'border-yellow-500',
         bgColor: 'bg-yellow-500/10',
         textColor: 'text-yellow-500',
@@ -19,7 +18,7 @@ const CATEGORY_CONFIG = [
     {
         key: 'EPIC',
         label: 'Épicas',
-        emoji: '💜',
+        icon: PixelHeartFillIcon,
         borderColor: 'border-purple-500',
         bgColor: 'bg-purple-500/10',
         textColor: 'text-purple-500',
@@ -29,7 +28,7 @@ const CATEGORY_CONFIG = [
     {
         key: 'RARE',
         label: 'Raras',
-        emoji: '💎',
+        icon: PixelDiamondIcon,
         borderColor: 'border-blue-500',
         bgColor: 'bg-blue-500/10',
         textColor: 'text-blue-500',
@@ -39,7 +38,7 @@ const CATEGORY_CONFIG = [
     {
         key: 'BASIC',
         label: 'Básicas',
-        emoji: '⭐',
+        icon: PixelStarIcon,
         borderColor: 'border-stone-400',
         bgColor: 'bg-stone-400/10',
         textColor: 'text-stone-400',
@@ -48,14 +47,12 @@ const CATEGORY_CONFIG = [
     },
 ];
 
-// Chevron icon para el acordeón
 const ChevronIcon = ({ open }) => (
-    <svg
-        className={`w-5 h-5 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
-        viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="square"
-    >
-        <polyline points="6 9 12 15 18 9" />
+
+    <svg className={`w-5 h-5 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M13 16H11V14H13V16ZM11 14H9V12H11V14ZM15 14H13V12H15V14ZM9 12H7V10H9V12ZM17 12H15V10H17V12ZM7 10H5V8H7V10ZM19 10H17V8H19V10Z" fill="black" />
     </svg>
+
 );
 
 function BadgesPage() {
@@ -72,8 +69,6 @@ function BadgesPage() {
         LEGENDARY: true, EPIC: true, RARE: true, BASIC: true
     });
 
-    // --- FETCH DE DATOS ---
-    // Fetch Badges
     const userId = user?.user_id;
 
     const fetchBadgeData = useCallback(async () => {
@@ -81,8 +76,8 @@ function BadgesPage() {
         setError(null);
         setInfoMessage("");
         try {
-            const badgesResponse = await api.get('/badges/');
-            const fetchedAllBadges = badgesResponse.data;
+            const badgesResponse = await api.get('/badges/?limit=100');
+            const fetchedAllBadges = Array.isArray(badgesResponse.data) ? badgesResponse.data : (badgesResponse.data.results || []);
             setAllBadges(fetchedAllBadges);
 
             let currentUserStats = null;
@@ -192,18 +187,15 @@ function BadgesPage() {
         return { unlocked: isUnlocked, progress: Math.floor(progress), showProgress: showProgress, conditionText: conditionText };
     };
 
-    // --- AGRUPAR BADGES POR CATEGORÍA ---
     const groupedBadges = CATEGORY_CONFIG.map(cat => {
         const badges = allBadges.filter(b => (b.category || 'BASIC') === cat.key);
         const unlockedCount = badges.filter(b => getBadgeStatus(b).unlocked).length;
         return { ...cat, badges, unlockedCount, totalCount: badges.length };
     }).filter(group => group.badges.length > 0);
 
-    // Resumen global
     const totalBadges = allBadges.length;
     const totalUnlocked = allBadges.filter(b => getBadgeStatus(b).unlocked).length;
 
-    // --- RENDERIZADO ---
     return (
         <div className="min-h-screen bg-background font-sans flex flex-col">
             <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-8 md:py-12 mt-16">
@@ -269,7 +261,7 @@ function BadgesPage() {
                                     `}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <span className="text-2xl">{group.emoji}</span>
+                                        <group.icon className="w-6 h-6 md:w-8 md:h-8" />
                                         <h2 className={`font-mono text-lg md:text-xl font-bold tracking-wider ${group.textColor}`}>
                                             {group.label}
                                         </h2>

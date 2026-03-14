@@ -67,18 +67,37 @@ function DashboardStatsCards() {
         total_words: 0,
         total_badges: 0,
     });
+
+    // Estado para Leaderboard
+    const [leaderboard, setLeaderboard] = useState([]);
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const fetchStats = useCallback(async () => {
+    const fetchData = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await api.get('/dashboard-data/');
-            setStats(response.data);
+            // Fetch stats basicos
+            const statsResp = await api.get('/dashboard-data/');
+            setStats(statsResp.data);
+
+            // Fetch Leaderboard (Todos los usuarios)
+            try {
+                const usersResp = await api.get('/user-stats/');
+                const allStats = Array.isArray(usersResp.data) ? usersResp.data : (usersResp.data.results || []);
+
+                // Ordenar por XP y sacar el Top 5
+                const sorted = [...allStats].sort((a, b) => b.experience - a.experience).slice(0, 5);
+                setLeaderboard(sorted);
+            } catch (err) {
+                console.error("Error fetching leaderboard:", err);
+                // No rompemos todo el dashboard si falla el leaderboard
+            }
+
             setError(null);
         } catch (err) {
-            console.error("Error fetching dashboard stats:", err);
+            console.error("Error fetching dashboard data:", err);
             if (!axios.isCancel(err) && err.code !== 'ECONNABORTED') {
                 setError("Error de conexión con el servidor.");
             }
@@ -88,8 +107,8 @@ function DashboardStatsCards() {
     }, [api]);
 
     useEffect(() => {
-        fetchStats();
-    }, [fetchStats]);
+        fetchData();
+    }, [fetchData]);
 
     // Configuración del Gráfico (Minimalista y Pixelado)
     const activeUsersChartData = {
@@ -146,7 +165,7 @@ function DashboardStatsCards() {
         return (
             <div className="bg-destructive/10 pixel-border border-destructive p-6 text-center">
                 <p className="font-mono text-destructive text-sm">{error}</p>
-                <button onClick={fetchStats} className="mt-4 text-xs underline font-sans text-foreground">
+                <button onClick={fetchData} className="mt-4 text-xs underline font-sans text-foreground">
                     Reintentar
                 </button>
             </div>
@@ -213,6 +232,60 @@ function DashboardStatsCards() {
                     colorClass="text-muted-foreground"
                 />
 
+            </div>
+
+            {/* Nueva Sección: Leaderboard */}
+            <div className="mt-8">
+                <h2 className="font-mono text-xl text-foreground mb-4 flex items-center gap-2">
+                    <span className="w-2 h-8 bg-yellow-500 block"></span>
+                    MEJORES GRANJEROS (TOP 5)
+                </h2>
+                <div className="bg-card pixel-border p-6 overflow-x-auto">
+                    {leaderboard.length === 0 ? (
+                        <p className="text-muted-foreground font-mono text-center py-4">No hay datos de usuarios aún.</p>
+                    ) : (
+                        <table className="w-full text-left font-mono">
+                            <thead>
+                                <tr className="border-b-2 border-foreground text-muted-foreground text-sm uppercase">
+                                    <th className="pb-3 px-4">#</th>
+                                    <th className="pb-3 px-4">Usuario</th>
+                                    <th className="pb-3 px-4">Nivel</th>
+                                    <th className="pb-3 px-4 text-right">XP Total</th>
+                                    <th className="pb-3 px-4 text-right">Racha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {leaderboard.map((userStat, index) => (
+                                    <tr key={userStat.id} className="border-b border-foreground/20 hover:bg-muted/30 transition-colors">
+                                        <td className="py-4 px-4 font-bold text-lg">
+                                            {index + 1}
+                                            {index === 0 && <span className="text-yellow-500 mr-1">★</span>}
+                                            {index === 1 && <span className="text-gray-400 mr-1">★</span>}
+                                            {index === 2 && <span className="text-amber-700 mr-1">★</span>}
+
+                                        </td>
+                                        <td className="py-4 px-4 font-bold text-primary">{userStat.user_username || `User ${userStat.user}`}</td>
+                                        <td className="py-4 px-4">
+                                            <span className="bg-primary/20 text-primary px-2 py-1 rounded-sm text-xs">
+                                                Lvl {userStat.level}
+                                            </span>
+                                        </td>
+                                        <td className="py-4 px-4 font-bold text-right tracking-wider">{userStat.experience.toLocaleString()}</td>
+                                        <td className="py-4 px-4 text-right text-muted-foreground">
+                                            {userStat.current_streak > 0 ? (
+                                                <span className="text-orange-500 flex items-center justify-end gap-1">
+                                                    🔥 {userStat.current_streak}
+                                                </span>
+                                            ) : (
+                                                <span className="opacity-50">-</span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
             </div>
         </div>
     );

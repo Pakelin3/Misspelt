@@ -4,24 +4,11 @@ import AuthContext from '@/context/AuthContext';
 import { toast } from 'sonner';
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
-
-// ─── Inline Icons ─────────────────────────────────────────────
-const EditIcon = ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-    </svg>
-);
-const SaveIcon = ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <polyline points="20 6 9 17 4 12" />
-    </svg>
-);
-const XIcon = ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-);
+import {
+    PixelEditIcon, PixelSaveIcon, PixelTargetIcon,
+    PixelBookOpenIcon, PixelLightningIcon, SwordIcon,
+    PixelStarIcon, TrophyIcon
+} from '@/components/PixelIcons';
 
 // ─── Stat Gauge Component ─────────────────────────────────────
 const StatGauge = ({ label, value, maxValue, suffix = '', isPercentage = false }) => {
@@ -263,7 +250,7 @@ function ProfilePage() {
                             onClick={handleStartEditing}
                             className="absolute bottom-4 right-4 p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors border-2 border-transparent hover:border-primary"
                         >
-                            <EditIcon className="w-4 h-4" />
+                            <PixelEditIcon className="w-4 h-4" />
                         </button>
                     ) : (
                         <div className="absolute bottom-4 right-4 flex gap-2">
@@ -272,13 +259,13 @@ function ProfilePage() {
                                 disabled={saving}
                                 className="p-2 bg-primary text-primary-foreground border-2 border-foreground hover:brightness-110 transition-all disabled:opacity-50"
                             >
-                                <SaveIcon className="w-4 h-4" />
+                                <PixelSaveIcon className="w-4 h-4" />
                             </button>
                             <button
                                 onClick={() => setIsEditing(false)}
-                                className="p-2 text-muted-foreground hover:text-destructive border-2 border-transparent hover:border-destructive transition-colors"
+                                className="p-2 text-muted-foreground hover:text-destructive text-base font-mono border-2 border-transparent hover:border-destructive transition-colors"
                             >
-                                <XIcon className="w-4 h-4" />
+                                X
                             </button>
                         </div>
                     )}
@@ -378,13 +365,13 @@ function ProfilePage() {
                         {/* Quick Stats (Right Side) */}
                         <div id="tutorial-quick-stats" className="hidden md:grid grid-cols-2 gap-2 shrink-0">
                             {[
-                                { label: 'Racha', value: userStats.current_streak, icon: '🔥' },
-                                { label: 'Récord', value: userStats.longest_streak, icon: '⭐' },
-                                { label: 'Insignias', value: userStats.unlocked_badges?.length || 0, icon: '🏆' },
-                                { label: 'Avatares', value: userStats.unlocked_avatars?.length || 0, icon: '🎭' },
+                                { label: 'Racha', value: userStats.current_streak, icon: <PixelLightningIcon className="w-6 h-6 text-yellow-500/80" /> },
+                                { label: 'Récord', value: userStats.longest_streak, icon: <PixelStarIcon className="w-6 h-6 text-yellow-500" /> },
+                                { label: 'Insignias', value: userStats.unlocked_badges?.length || 0, icon: <TrophyIcon className="w-6 h-6 text-yellow-400" /> },
+                                { label: 'Avatares', value: userStats.unlocked_avatars?.length || 0, icon: <SwordIcon className="w-6 h-6" /> },
                             ].map(s => (
                                 <div key={s.label} className="flex items-center gap-2 px-3 py-2 bg-muted/20 border border-foreground/20">
-                                    <span className="text-lg">{s.icon}</span>
+                                    <div className="shrink-0 flex justify-center w-8">{s.icon}</div>
                                     <div>
                                         <p className="text-base font-mono font-bold text-foreground leading-none">{s.value}</p>
                                         <p className="text-[9px] font-mono text-muted-foreground uppercase">{s.label}</p>
@@ -398,13 +385,13 @@ function ProfilePage() {
                 {/* ═══════════ TABS ═══════════ */}
                 <div id="tutorial-tabs" className="flex border-b-2 border-foreground/20 mb-6 overflow-x-auto">
                     <TabButton active={activeTab === 'stats'} onClick={() => setActiveTab('stats')}>
-                        📊 Estadísticas
+                        Estadísticas
                     </TabButton>
                     <TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history')}>
-                        📜 Historial
+                        Historial
                     </TabButton>
                     <TabButton active={activeTab === 'badges'} onClick={() => setActiveTab('badges')}>
-                        🏆 Insignias
+                        Insignias
                     </TabButton>
                 </div>
 
@@ -417,7 +404,7 @@ function ProfilePage() {
                         {/* Precision Section */}
                         <div className="bg-card pixel-border p-5">
                             <h3 className="font-mono text-sm uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
-                                <span className="text-lg">🎯</span> Precisión
+                                <PixelTargetIcon className="w-5 h-5 text-red-500" /> Precisión
                             </h3>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 <StatGauge label="General" value={generalAccuracy} maxValue={100} isPercentage />
@@ -429,7 +416,7 @@ function ProfilePage() {
                         {/* Knowledge Section */}
                         <div className="bg-card pixel-border p-5">
                             <h3 className="font-mono text-sm uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
-                                <span className="text-lg">📚</span> Conocimiento
+                                <PixelBookOpenIcon className="w-5 h-5 text-blue-500" /> Conocimiento
                             </h3>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                 <StatGauge label="Slangs Dominados" value={userStats.slangs_learned || 0} maxValue={100} />
@@ -442,7 +429,7 @@ function ProfilePage() {
                         {/* Activity Section */}
                         <div className="bg-card pixel-border p-5">
                             <h3 className="font-mono text-sm uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
-                                <span className="text-lg">⚡</span> Actividad
+                                <PixelLightningIcon className="w-5 h-5 text-yellow-500" /> Actividad
                             </h3>
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                 <StatGauge label="Palabras Vistas" value={userStats.words_seen_total || 0} maxValue={500} />
@@ -454,7 +441,7 @@ function ProfilePage() {
                         {/* Combat Section */}
                         <div className="bg-card pixel-border p-5">
                             <h3 className="font-mono text-sm uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
-                                <span className="text-lg">⚔️</span> Combate (Acumulado)
+                                <SwordIcon className="w-5 h-5 text-foreground" /> Combate (Acumulado)
                             </h3>
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                 <StatGauge label="Letras Eliminadas" value={userStats.total_letters_killed || 0} maxValue={5000} />
@@ -470,7 +457,7 @@ function ProfilePage() {
                     <div className="animate-in fade-in duration-300">
                         {gameHistory.length === 0 ? (
                             <div className="text-center p-12 bg-card pixel-border text-muted-foreground">
-                                <p className="text-4xl mb-3">📜</p>
+                                <PixelBookOpenIcon className="w-10 h-10 mb-3 mx-auto text-muted-foreground/50" />
                                 <p className="font-mono text-sm">Aún no has jugado ninguna partida.</p>
                                 <p className="text-xs mt-1">¡Ve a jugar y tu historial aparecerá aquí!</p>
                             </div>
@@ -486,10 +473,10 @@ function ProfilePage() {
                                             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                                                 {/* Mode Icon */}
                                                 <div className={`
-                                                    w-12 h-12 flex items-center justify-center text-2xl border-2 shrink-0
-                                                    ${isSurvivor ? 'border-red-500/50 bg-red-500/10' : 'border-blue-500/50 bg-blue-500/10'}
+                                                    w-12 h-12 flex items-center justify-center border-2 shrink-0
+                                                    ${isSurvivor ? 'border-red-500/50 bg-red-500/10 text-red-500' : 'border-blue-500/50 bg-blue-500/10 text-blue-500'}
                                                 `}>
-                                                    {isSurvivor ? '⚔️' : '🧠'}
+                                                    {isSurvivor ? <SwordIcon className="w-6 h-6" /> : <PixelBookOpenIcon className="w-6 h-6" />}
                                                 </div>
 
                                                 {/* Details */}
@@ -577,19 +564,19 @@ function ProfilePage() {
                     <div className="animate-in fade-in duration-300">
                         {(!userStats.unlocked_badges || userStats.unlocked_badges.length === 0) ? (
                             <div className="text-center p-12 bg-card pixel-border text-muted-foreground">
-                                <p className="text-4xl mb-3">🏆</p>
+                                <TrophyIcon className="w-10 h-10 mb-3 mx-auto text-muted-foreground/50" />
                                 <p className="font-mono text-sm">Aún no has desbloqueado insignias.</p>
                                 <p className="text-xs mt-1">¡Sigue jugando para ganar tus primeras insignias!</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
                                 {userStats.unlocked_badges.map(badge => (
                                     <div key={badge.id} className="bg-card pixel-border p-4 flex flex-col items-center text-center hover:-translate-y-1 transition-transform">
                                         <div className="w-16 h-16 mb-3 flex items-center justify-center">
                                             {badge.image ? (
                                                 <img src={badge.image} alt={badge.title} className="w-full h-full object-contain" />
                                             ) : (
-                                                <span className="text-3xl">🏆</span>
+                                                <TrophyIcon className="w-10 h-10 text-yellow-500/80" />
                                             )}
                                         </div>
                                         <h4 className="font-mono text-[11px] font-bold text-foreground leading-tight mb-1">{badge.title}</h4>
@@ -599,7 +586,7 @@ function ProfilePage() {
                                             ${badge.category === 'LEGENDARY' ? 'border-yellow-500 text-yellow-500 bg-yellow-500/10' :
                                                 badge.category === 'EPIC' ? 'border-purple-500 text-purple-500 bg-purple-500/10' :
                                                     badge.category === 'RARE' ? 'border-blue-500 text-blue-500 bg-blue-500/10' :
-                                                        'border-stone-400 text-stone-400 bg-stone-400/10'}
+                                                        'border-stone-700 text-stone-700 bg-stone-700/10'}
                                         `}>
                                             {badge.category}
                                         </div>
@@ -618,7 +605,7 @@ function ProfilePage() {
                 className="fixed bottom-6 right-6 w-14 h-14 bg-accent text-accent-foreground pixel-border flex items-center justify-center text-2xl hover:scale-110 transition-transform z-50 shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:shadow-[6px_6px_0_0_rgba(0,0,0,1)]"
                 title="Ver Tutorial de Nuevo"
             >
-                ❓
+                <span className="font-mono text-3xl pb-1">?</span>
             </button>
         </div>
     );

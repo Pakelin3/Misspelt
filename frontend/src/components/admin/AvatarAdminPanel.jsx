@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import useAxios from '@/utils/useAxios';
-import { Plus, Edit, Trash2, Save, X, Search, Loader2, Upload, Image as ImageIcon, User, CheckCircle } from 'lucide-react';
+import { Plus, Trash2, Save, Search, Loader2, Upload, Image as ImageIcon, User, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Componentes UI Propios
@@ -15,8 +15,13 @@ function AvatarAdminPanel() {
     const [avatars, setAvatars] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Paginación
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
     // Filtros
     const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 
     // Estado del Formulario
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -31,24 +36,41 @@ function AvatarAdminPanel() {
     });
     const [previewUrl, setPreviewUrl] = useState(null);
 
+    // --- EFECTO DEBOUNCE ---
+    useEffect(() => {
+        const timerId = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+            setCurrentPage(1); // Reset page on new search
+        }, 500);
+
+        return () => {
+            clearTimeout(timerId);
+        };
+    }, [searchTerm]);
+
     // --- FETCH DATA ---
-    const fetchAvatars = useCallback(async () => {
+    const fetchAvatars = useCallback(async (page, search) => {
         setLoading(true);
         try {
-            const response = await api.get(`/avatars/`);
-            const data = response.data.results ? response.data.results : response.data;
-            setAvatars(data);
+            const searchParam = search ? `&search=${search}` : '';
+            const response = await api.get(`/avatars/?page=${page}${searchParam}`);
+
+            if (response.data.results) {
+                setAvatars(response.data.results);
+                setTotalPages(Math.ceil(response.data.count / 15));
+            } else {
+                setAvatars(response.data);
+            }
         } catch (err) {
             console.error("Error fetching avatars:", err);
-            // Fallback silencioso o toast
         } finally {
             setLoading(false);
         }
     }, [api]);
 
     useEffect(() => {
-        fetchAvatars();
-    }, [fetchAvatars]);
+        fetchAvatars(currentPage, debouncedSearchTerm);
+    }, [fetchAvatars, currentPage, debouncedSearchTerm]);
 
     // --- MANEJADORES ---
     const handleOpenForm = (avatar = null) => {
@@ -114,7 +136,7 @@ function AvatarAdminPanel() {
                 toast.success('¡Creado!');
             }
             setIsFormOpen(false);
-            fetchAvatars();
+            fetchAvatars(currentPage, debouncedSearchTerm);
         } catch (err) {
             console.error(err);
             toast.error('Error', { description: 'No se pudo guardar el avatar. Verifica el nombre único.' });
@@ -129,9 +151,10 @@ function AvatarAdminPanel() {
                 onClick: async () => {
                     try {
                         await api.delete(`/avatars/${id}/`);
-                        fetchAvatars();
+                        fetchAvatars(currentPage, debouncedSearchTerm);
                         toast.success('Borrado');
                     } catch (error) {
+                        console.error("Error deleting avatar:", error);
                         toast.error('Error', { description: 'No se pudo eliminar.' });
                     }
                 }
@@ -143,10 +166,7 @@ function AvatarAdminPanel() {
         });
     };
 
-    // Filtrado local
-    const filteredAvatars = avatars.filter(avatar =>
-        avatar.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Filtrado local removido (Se hace en backend)
 
     return (
         <div className="space-y-6 font-mono">
@@ -184,13 +204,13 @@ function AvatarAdminPanel() {
                     </div>
                 )}
 
-                {filteredAvatars.length === 0 && !loading ? (
+                {avatars.length === 0 && !loading ? (
                     <div className="text-center p-12 text-muted-foreground italic border-2 border-dashed border-foreground/30 m-4">
                         No hay avatares creados.
                     </div>
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {filteredAvatars.map((avatar) => (
+                        {avatars.map((avatar) => (
                             <div key={avatar.id} className="group relative bg-muted/20 border-2 border-foreground p-3 flex flex-col items-center hover:bg-muted/40 transition-colors">
 
                                 {/* Etiqueta Default */}
@@ -242,6 +262,31 @@ function AvatarAdminPanel() {
                         ))}
                     </div>
                 )}
+
+                {/* Controles de Paginación */}
+                {!loading && totalPages > 1 && (
+                    <div className="flex justify-between items-center mt-6 pt-4 border-t-4 border-foreground w-full">
+                        <Button
+                            variant="outline"
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="pixel-btn h-10 border-2 border-foreground rounded-none bg-accent hover:bg-accent/80 text-accent-foreground disabled:opacity-50"
+                        >
+                            ANTERIOR
+                        </Button>
+                        <span className="font-mono text-sm uppercase bg-foreground text-background px-3 py-1 font-bold">
+                            PÁG {currentPage} DE {totalPages}
+                        </span>
+                        <Button
+                            variant="outline"
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className="pixel-btn h-10 border-2 border-foreground rounded-none bg-accent hover:bg-accent/80 text-accent-foreground disabled:opacity-50"
+                        >
+                            SIGUIENTE
+                        </Button>
+                    </div>
+                )}
             </div>
 
             {/* --- MODAL FORMULARIO --- */}
@@ -253,8 +298,8 @@ function AvatarAdminPanel() {
                             <h3 className="font-bold text-lg uppercase flex items-center gap-2">
                                 {editingAvatar ? 'Editar Avatar' : 'Nuevo Avatar'}
                             </h3>
-                            <button onClick={() => setIsFormOpen(false)} className="hover:bg-red-500 hover:text-white p-1 border-2 border-transparent hover:border-foreground transition-colors">
-                                <X className="w-5 h-5" />
+                            <button onClick={() => setIsFormOpen(false)} className="flex items-center justify-center hover:bg-red-500 hover:text-white px-2 py-1 font-mono  border-2 border-transparent hover:border-foreground transition-colors">
+                                X
                             </button>
                         </div>
 

@@ -20,10 +20,10 @@ const LLM_API_KEY =
 const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY;
 
 const VOICE_IDS = {
-    mage: "GBv7mTt0atIp3Br8iCZE", // Thomas
-    warlock: "ErXwobaYiN019PkySvjV", // Antoni
-    erudit: "21m00Tcm4TlvDq8ikWAM", // Rachel
-    farmer: "TxGEqnHWrfWFTfGW9XjX", // Josh
+    mage: "cjVigY5qzO86Huf0OWal", // Eric (Smooth, Trustworthy)
+    warlock: "N2lVS1w4EtoT3dr4eOWO", // Callum (Husky Trickster)
+    erudit: "JBFqnCBsd6RMkjVDRZzb", // George (Captivating Storyteller)
+    farmer: "bIHbv24MWmeRgasZH58o", // Will (Relaxed Optimist)
 };
 
 export default function OracleChat({ characterId, results, onComplete, userName = "Jugador" }) {
@@ -31,7 +31,7 @@ export default function OracleChat({ characterId, results, onComplete, userName 
     const [input, setInput] = useState("");
     const [isThinking, setIsThinking] = useState(false);
     const [isListening, setIsListening] = useState(false);
-    const [ttsEnabled, setTtsEnabled] = useState(true);
+    const [ttsEnabled, setTtsEnabled] = useState(false);
     const [turnCount, setTurnCount] = useState(0);
 
     const chatContainerRef = useRef(null);
@@ -144,8 +144,8 @@ Words they failed: [${missedTexts}].
 
 STRICT RULE 1: You MUST communicate ENTIRELY in English, unless the player explicitly asks you to speak in another language.
 ${interactionRule}
-STRICT RULE 3: IMPORTANT! Use very SIMPLE and BASIC English vocabulary (A2 to B1 level). Avoid complex metaphors, ancient words, or overly difficult grammar. Make your scenarios very easy to understand for an English learner.
-STRICT RULE 4: Keep your responses extremely short (maximum 3 lines).
+STRICT RULE 3: IMPORTANT! Use very SIMPLE and BASIC English vocabulary (A2 to B1 level). Avoid complex metaphors, ancient words, or overly difficult grammar. Make your scenarios very easy to understand for an English learner if the player has a grammatical error, correct it in a simple and basic way.
+STRICT RULE 4: Keep any response that you will give to the player in range of 0 to 300 characters.
 STRICT RULE 5: NEVER use markdown format or asterisks for actions. Speak like a real person, in plain text.
 STRICT RULE 6: The chat has a maximum of 5 turns. However, YOU CAN DECIDE TO END THE CONVERSATION EARLY if you are fully satisfied with the player's English response or if you are completely frustrated. To end the conversation, write your farewell text in English, and IMMEDIATELY AFTER INCLUDE a JSON object EXACTLY like this: {"evaluacion": {"feedback_general": "your critical and severe evaluation of their grammar, consistency, and creativity in Spanish", "calidad": 60, "consistencia": "Bad or Good"}}. Note: The feedback_general inside the JSON should be in Spanish to help the user understand their final score.
             `;
@@ -275,8 +275,8 @@ STRICT RULE 6: The chat has a maximum of 5 turns. However, YOU CAN DECIDE TO END
         return rawText.replace(/\*/g, '');
     };
 
-    const playTTS = async (text) => {
-        if (!ttsEnabled || !ELEVENLABS_API_KEY) return;
+    const playTTS = async (text, force = false) => {
+        if ((!ttsEnabled && !force) || !ELEVENLABS_API_KEY) return;
 
         try {
             const voiceId = VOICE_IDS[characterId] || VOICE_IDS["mage"];
@@ -386,14 +386,23 @@ STRICT RULE 6: The chat has a maximum of 5 turns. However, YOU CAN DECIDE TO END
                         )}
                         <div
                             className={`
-                            max-w-[75%] p-3 border-2 text-sm md:text-base leading-relaxed
+                            group relative max-w-[75%] p-3 border-2 text-sm md:text-base leading-relaxed
                             ${msg.role === "user"
                                     ? "bg-accent text-accent-foreground border-accent-foreground shadow-[-2px_2px_0_0_rgba(0,0,0,1)]"
-                                    : "bg-background text-foreground border-foreground shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
+                                    : "bg-background text-foreground border-foreground shadow-[2px_2px_0_0_rgba(0,0,0,1)] pr-10"
                                 }
                         `}
                         >
                             {msg.content}
+                            {msg.role === "model" && ELEVENLABS_API_KEY && (
+                                <button
+                                    onClick={() => playTTS(msg.content, true)}
+                                    className="absolute right-2 bottom-2 text-primary hover:text-primary/70 transition-colors"
+                                    title="Reproducir Voz"
+                                >
+                                    <Volume2 size={16} />
+                                </button>
+                            )}
                         </div>
                         {msg.role === "user" && (
                             <div className="w-8 h-8 rounded-none border-2 border-accent bg-accent/20 flex shrink-0 items-center justify-center mt-1 overflow-hidden">

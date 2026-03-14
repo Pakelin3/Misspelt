@@ -5,10 +5,10 @@ import useAxios from '@/utils/useAxios';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Trophy, Clock, Star, Home, Play, RotateCcw, ArrowLeft, X, Sparkles, Lock } from 'lucide-react';
+import { PixelPlayIcon, TrophyIcon, PixelClockIcon, PixelStarIcon, PixelHomeIcon, PixelRestartIcon, PixelArrowLeftIcon, PixelSparklesIcon, PixelLockIcon, BookIcon, PixelTargetIcon, SwordIcon, LeafIcon, PixelSkullIcon, PixelFireIcon, PixelMagicOrbIcon, PixelLightningIcon, PixelMoonIcon, PixelHoleIcon, PixelBookOpenIcon } from '@/components/PixelIcons';
 import SpriteAnimator from '@/components/ui/SpriteAnimator';
 import QuizManager from '@/components/quiz/QuizManager';
-import OracleChat from '@/components/game/OracleChat'; // [NEW] Added OracleChat
+import OracleChat from '@/components/game/OracleChat';
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
 
@@ -67,26 +67,26 @@ const GamePage = () => {
 
     const UPGRADES = {
         mage: [
-            { name: 'Multicast', tier: 'Nv. 1-3', desc: 'Añade un proyectil adicional. (Máximo 4 proyectiles a la vez).', emoji: '🔮', color: 'text-blue-400', bg: 'bg-blue-500/20', border: 'border-blue-500/40' },
-            { name: 'Disparo Perforante', tier: 'Nv. 4', desc: 'Los proyectiles ahora atraviesan a 1 enemigo.', emoji: '💫', color: 'text-purple-400', bg: 'bg-purple-500/20', border: 'border-purple-500/40' },
-            { name: 'Archimago', tier: 'Nv. 5+', desc: '+20% de Daño Total. (Mejora infinita para el endgame).', emoji: '⚡', color: 'text-yellow-400', bg: 'bg-yellow-500/20', border: 'border-yellow-500/40', ultimate: true },
+            { name: 'Multicast', tier: 'Nv. 1-3', desc: 'Añade un proyectil adicional. (Máximo 4 proyectiles a la vez).', icon: PixelMagicOrbIcon, color: 'text-blue-400', bg: 'bg-blue-500/20', border: 'border-blue-500/40' },
+            { name: 'Disparo Perforante', tier: 'Nv. 4', desc: 'Los proyectiles ahora atraviesan a 1 enemigo.', icon: PixelStarIcon, color: 'text-purple-400', bg: 'bg-purple-500/20', border: 'border-purple-500/40' },
+            { name: 'Archimago', tier: 'Nv. 5+', desc: '+20% de Daño Total. (Mejora infinita para el endgame).', icon: PixelLightningIcon, color: 'text-yellow-400', bg: 'bg-yellow-500/20', border: 'border-yellow-500/40', ultimate: true },
         ],
         warlock: [
-            { name: 'Corrupción', tier: 'x3', desc: 'Aumenta el tamaño de tu aura oscura en un 15%.', emoji: '🌑', color: 'text-purple-400', bg: 'bg-purple-500/20', border: 'border-purple-500/40' },
-            { name: 'Vacío Famélico', tier: 'x2', desc: 'El aura hace daño un 20% más rápido (reduce el tiempo entre ticks).', emoji: '🕳️', color: 'text-red-400', bg: 'bg-red-500/20', border: 'border-red-500/40' },
-            { name: 'Segador de Almas', tier: 'DEF', desc: 'Los enemigos que mueren dentro de tu aura curan 1 HP (cooldown: 2s).', emoji: '💀', color: 'text-green-400', bg: 'bg-green-500/20', border: 'border-green-500/40', ultimate: true },
+            { name: 'Corrupción', tier: 'Nv. 1-3', desc: 'Aumenta el tamaño de tu aura oscura en un 15%.', icon: PixelMoonIcon, color: 'text-purple-400', bg: 'bg-purple-500/20', border: 'border-purple-500/40' },
+            { name: 'Vacío Famélico', tier: 'Nv. 4-5', desc: 'El aura hace daño un 20% más rápido (reduce el tiempo entre ticks).', icon: PixelHoleIcon, color: 'text-red-400', bg: 'bg-red-500/20', border: 'border-red-500/40' },
+            { name: 'Segador de Almas', tier: 'DEF', desc: 'Los enemigos que mueren dentro de tu aura curan 1 HP (cooldown: 2s).', icon: PixelSkullIcon, color: 'text-green-400', bg: 'bg-green-500/20', border: 'border-green-500/40', ultimate: true },
         ],
         erudit: [
-            { name: 'Más Conocimiento', tier: 'x6', desc: 'Añade un libro adicional a tu órbita defensiva.', emoji: '📖', color: 'text-blue-400', bg: 'bg-blue-500/20', border: 'border-blue-500/40' },
+            { name: 'Más Conocimiento', tier: 'x6', desc: 'Añade un libro adicional a tu órbita defensiva.', icon: PixelBookOpenIcon, color: 'text-blue-400', bg: 'bg-blue-500/20', border: 'border-blue-500/40' },
             { name: 'Lectura Rápida', tier: 'MAX', desc: 'Los libros giran un 30% más rápido a tu alrededor.', emoji: '💨', color: 'text-cyan-400', bg: 'bg-cyan-500/20', border: 'border-cyan-500/40' },
-            { name: 'Libros Pesados', tier: 'DEF', desc: '+10% daño general e infligen +50% de Empuje (Knockback).', emoji: '📚', color: 'text-amber-400', bg: 'bg-amber-500/20', border: 'border-amber-500/40', ultimate: true },
+            { name: 'Libros Pesados', tier: 'DEF', desc: '+10% daño general e infligen +50% de Empuje (Knockback).', icon: BookIcon, color: 'text-amber-400', bg: 'bg-amber-500/20', border: 'border-amber-500/40', ultimate: true },
         ],
         farmer: [
-            { name: 'Guadaña Afilada', tier: 'Nv. 1', desc: 'La guadaña atraviesa a 1 enemigo antes de regresar.', emoji: '🌾', color: 'text-green-400', bg: 'bg-green-500/20', border: 'border-green-500/40' },
-            { name: 'Cosecha Magna', tier: 'Nv. 2', desc: 'El tamaño de tu guadaña aumenta un 30%.', emoji: '🌿', color: 'text-lime-400', bg: 'bg-lime-500/20', border: 'border-lime-500/40' },
-            { name: 'Doble Guadaña', tier: 'Nv. 3', desc: 'Lanza una segunda guadaña al mismo tiempo.', emoji: '⚔️', color: 'text-orange-400', bg: 'bg-orange-500/20', border: 'border-orange-500/40' },
-            { name: 'Segar Almas', tier: 'Nv. 4', desc: 'Las guadañas atraviesan enemigos de forma infinita (Pierce ∞).', emoji: '💀', color: 'text-red-400', bg: 'bg-red-500/20', border: 'border-red-500/40' },
-            { name: 'Cosecha Crítica', tier: 'Nv. 5+', desc: '+20% de Daño Total continuo para el late-game.', emoji: '🔥', color: 'text-yellow-400', bg: 'bg-yellow-500/20', border: 'border-yellow-500/40', ultimate: true },
+            { name: 'Guadaña Afilada', tier: 'Nv. 1', desc: 'La guadaña atraviesa a 1 enemigo antes de regresar.', icon: LeafIcon, color: 'text-green-400', bg: 'bg-green-500/20', border: 'border-green-500/40' },
+            { name: 'Cosecha Magna', tier: 'Nv. 2', desc: 'El tamaño de tu guadaña aumenta un 30%.', icon: LeafIcon, color: 'text-lime-400', bg: 'bg-lime-500/20', border: 'border-lime-500/40' },
+            { name: 'Doble Guadaña', tier: 'Nv. 3', desc: 'Lanza una segunda guadaña al mismo tiempo.', icon: SwordIcon, color: 'text-orange-400', bg: 'bg-orange-500/20', border: 'border-orange-500/40' },
+            { name: 'Segar Almas', tier: 'Nv. 4', desc: 'Las guadañas atraviesan enemigos de forma infinita (Pierce ∞).', icon: PixelSkullIcon, color: 'text-red-400', bg: 'bg-red-500/20', border: 'border-red-500/40' },
+            { name: 'Cosecha Crítica', tier: 'Nv. 5+', desc: '+20% de Daño Total continuo para el late-game.', icon: PixelFireIcon, color: 'text-yellow-400', bg: 'bg-yellow-500/20', border: 'border-yellow-500/40', ultimate: true },
         ],
     };
 
@@ -298,7 +298,7 @@ const GamePage = () => {
                 response.data.badges_unlocked.forEach(badge => {
                     toast('¡Insignia Desbloqueada!', {
                         description: badge.title,
-                        icon: badge.image ? <img src={badge.image} alt={badge.title} className="w-8 h-8 rounded-full pixel-rendering" /> : <Trophy className="w-6 h-6 text-yellow-500" />,
+                        icon: badge.image ? <img src={badge.image} alt={badge.title} className="w-8 h-8 rounded-full pixel-rendering" /> : <TrophyIcon className="w-6 h-6 text-yellow-500" />,
                         duration: 5000,
                     });
                 });
@@ -419,7 +419,7 @@ const GamePage = () => {
                                                 {!isUnlocked && (
                                                     <div className="absolute inset-0 bg-background/50 z-20 flex items-center justify-center backdrop-blur-[1px]">
                                                         <div className="bg-background p-2 border-2 border-foreground shadow-md rounded-none">
-                                                            <Lock size={20} className="text-muted-foreground" />
+                                                            <PixelLockIcon className="text-muted-foreground w-5 h-5" />
                                                         </div>
                                                     </div>
                                                 )}
@@ -462,7 +462,7 @@ const GamePage = () => {
 
                                     {!unlockedCharacters.includes(currentCharacter.id) && (
                                         <div className="mb-6 p-3 border-2 border-red-500/50 bg-red-500/10 flex items-start gap-3 animate-in pulse duration-1000">
-                                            <Lock className="text-red-500 shrink-0 mt-0.5" size={18} />
+                                            <PixelLockIcon className="text-red-500 shrink-0 mt-0.5 w-4 h-4" />
                                             <div>
                                                 <p className="text-xs font-bold text-red-500 uppercase mb-0.5">Personaje Bloqueado</p>
                                                 <p className="text-sm font-sans text-muted-foreground">{currentCharacter.unlockReq}</p>
@@ -502,7 +502,7 @@ const GamePage = () => {
                                         onClick={() => setShowUpgrades(true)}
                                         className="w-full mb-6 relative h-12 text-xs rounded-none font-bold uppercase pixel-btn border-2 border-accent hover:bg-accent hover:text-accent-foreground text-accent group overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 transition-all"
                                     >
-                                        <Sparkles size={16} className="mr-2 group-hover:animate-spin" />
+                                        <PixelSparklesIcon className="w-4 h-4 mr-2 group-hover:animate-spin" />
                                         Ver Árbol de Mejoras
                                     </Button>
 
@@ -533,7 +533,7 @@ const GamePage = () => {
                                         onClick={() => navigate('/')}
                                         className="w-full lg:w-1/3 rounded-none h-14 text-sm pixel-btn border-2 border-foreground hover:bg-muted"
                                     >
-                                        <ArrowLeft className="mr-2" /> VOLVER
+                                        <PixelArrowLeftIcon className="mr-2 w-6 h-6" /> VOLVER
                                     </Button>
                                     <Button
                                         onClick={startGame}
@@ -548,7 +548,7 @@ const GamePage = () => {
                                             </>
                                         ) : (
                                             <>
-                                                <Play className="mr-2 fill-current" /> INICIAR PARTIDA
+                                                <PixelPlayIcon className="mr-2 fill-current" /> INICIAR PARTIDA
                                             </>
                                         )}
                                     </Button>
@@ -559,7 +559,7 @@ const GamePage = () => {
                                     <div className="absolute inset-0 z-30 bg-background/95 backdrop-blur-md flex flex-col animate-in fade-in zoom-in-95 duration-200 border-4 border-accent shadow-2xl">
                                         <div className="bg-accent text-accent-foreground px-5 py-4 flex items-center justify-between shadow-sm">
                                             <div className="flex items-center gap-3">
-                                                <Sparkles size={20} className="animate-pulse" />
+                                                <PixelSparklesIcon className="w-5 h-5 animate-pulse" />
                                                 <h3 className="font-black text-lg uppercase tracking-wider drop-shadow-sm">Mejoras de {currentCharacter.name}</h3>
                                             </div>
                                             <button
@@ -567,7 +567,7 @@ const GamePage = () => {
                                                 className="hover:bg-background/20 text-accent-foreground p-1.5 transition-colors border-2 border-transparent hover:border-accent-foreground shadow-sm hover:shadow-md"
                                                 title="Cerrar"
                                             >
-                                                <X size={20} />
+                                                <span className="font-mono text-xl font-black block px-1 leading-none">X</span>
                                             </button>
                                         </div>
                                         <div className="flex-1 overflow-y-auto px-2 py-4 custom-scrollbar scroll-smooth">
@@ -584,7 +584,9 @@ const GamePage = () => {
                                                         {/* Content Card */}
                                                         <div className={`flex text-base items-start  gap-4 p-3 border-2 ${upg.border} ${upg.bg} w-full shadow-[2px_2px_0_0_rgba(0,0,0,0.5)] hover:shadow-[4px_4px_0_0_rgba(0,0,0,0.5)] transition-all hover:-translate-y-0.5 relative group bg-background/50 backdrop-blur-sm`}>
                                                             <div className="flex flex-col items-center justify-center gap-1 w-8 shrink-0">
-                                                                <span className="text-2xl drop-shadow-sm group-hover:scale-110 transition-transform">{upg.emoji}</span>
+                                                                <div className="w-8 h-8 group-hover:scale-110 transition-transform flex items-center justify-center">
+                                                                    {upg.icon ? <upg.icon className="w-full h-full drop-shadow-sm" /> : <span className="text-2xl drop-shadow-sm">{upg.emoji}</span>}
+                                                                </div>
                                                             </div>
                                                             <div className="flex-1 min-w-0">
                                                                 <div className="flex items-center flex-wrap gap-2 mb-1.5 line-clamp-1">
@@ -620,7 +622,7 @@ const GamePage = () => {
                         className="fixed bottom-6 right-6 w-14 h-14 bg-accent text-accent-foreground pixel-border flex items-center justify-center text-2xl hover:scale-110 transition-transform z-50 shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:shadow-[6px_6px_0_0_rgba(0,0,0,1)]"
                         title="Ver Tutorial de Nuevo"
                     >
-                        ❓
+                        <span className="font-mono text-3xl pb-1">?</span>
                     </button>
                 </div>
             )}
@@ -688,7 +690,7 @@ const GamePage = () => {
                         <Card className="w-full max-w-2xl rounded-none border-4 border-primary bg-background p-0 overflow-hidden">
                             {/* Header */}
                             <div className="bg-primary text-primary-foreground px-6 py-4 flex items-center justify-center gap-3 border-b-4 border-foreground">
-                                <Trophy className="w-8 h-8 animate-bounce" />
+                                <TrophyIcon className="w-8 h-8 animate-bounce" />
                                 <h2 className="text-2xl md:text-3xl font-black uppercase tracking-wider">Resumen de Partida</h2>
                             </div>
 
@@ -696,22 +698,22 @@ const GamePage = () => {
                                 {/* Main Stats Grid */}
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                     <div className="bg-muted/50 p-4 border-2 border-foreground/30 text-center">
-                                        <Star className="w-5 h-5 text-yellow-500 mx-auto mb-1" />
+                                        <PixelStarIcon className="w-5 h-5 text-yellow-500 mx-auto mb-1" />
                                         <p className="text-[10px] uppercase font-bold text-muted-foreground">XP Ganada</p>
                                         <p className="text-2xl font-black text-primary">+{results.xp_earned}</p>
                                     </div>
                                     <div className="bg-muted/50 p-4 border-2 border-foreground/30 text-center">
-                                        <Trophy className="w-5 h-5 text-primary mx-auto mb-1" />
+                                        <TrophyIcon className="w-5 h-5 text-primary mx-auto mb-1" />
                                         <p className="text-[10px] uppercase font-bold text-muted-foreground">Nivel</p>
                                         <p className="text-2xl font-black text-foreground">{results.level}</p>
                                     </div>
                                     <div className="bg-muted/50 p-4 border-2 border-foreground/30 text-center">
-                                        <Clock className="w-5 h-5 text-blue-500 mx-auto mb-1" />
+                                        <PixelClockIcon className="w-5 h-5 text-blue-500 mx-auto mb-1" />
                                         <p className="text-[10px] uppercase font-bold text-muted-foreground">Tiempo</p>
                                         <p className="text-2xl font-black text-foreground">{formatTime(results.time_spent)}</p>
                                     </div>
                                     <div className="bg-muted/50 p-4 border-2 border-foreground/30 text-center">
-                                        <span className="text-lg block mb-1">🎯</span>
+                                        <PixelTargetIcon className="w-5 h-5 text-red-500 mx-auto mb-1" />
                                         <p className="text-[10px] uppercase font-bold text-muted-foreground">Precisión</p>
                                         <p className={`text-2xl font-black ${accColor}`}>{accuracy}%</p>
                                     </div>
@@ -719,7 +721,7 @@ const GamePage = () => {
 
                                 {/* Combat Stats */}
                                 <div className="bg-muted/20 border-2 border-foreground/20 p-4">
-                                    <p className="text-[10px] font-bold uppercase text-muted-foreground mb-3 tracking-wider">⚔️ Combate</p>
+                                    <p className="flex items-center gap-1 text-[10px] font-bold uppercase text-muted-foreground mb-3 tracking-wider"><SwordIcon className="w-3 h-3" /> Combate</p>
                                     <div className="grid grid-cols-3 gap-4 text-center">
                                         <div>
                                             <p className="text-xl font-black text-foreground">{correctAnswers}/{totalQuestions}</p>
@@ -739,7 +741,7 @@ const GamePage = () => {
                                 {/* Word Breakdown */}
                                 {breakdown && (
                                     <div className="bg-muted/20 border-2 border-foreground/20 p-4">
-                                        <p className="text-[10px] font-bold uppercase text-muted-foreground mb-3 tracking-wider">📚 Desglose por tipo</p>
+                                        <p className="flex items-center gap-1 text-[10px] font-bold uppercase text-muted-foreground mb-3 tracking-wider"><BookIcon className="w-3 h-3" /> Desglose por tipo</p>
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                                             {[
                                                 { label: 'Slangs', key: 'SLANG', color: 'text-yellow-500' },
@@ -764,14 +766,14 @@ const GamePage = () => {
                                         onClick={() => setGameState('SELECTION')}
                                         className="flex-1 h-12 text-base pixel-btn rounded-none shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all"
                                     >
-                                        <RotateCcw className="mr-2 w-5 h-5" /> JUGAR DE NUEVO
+                                        <PixelRestartIcon className="mr-2 w-5 h-5" /> JUGAR DE NUEVO
                                     </Button>
                                     <Button
                                         variant="outline"
                                         onClick={() => navigate('/')}
                                         className="flex-1 h-12 text-base pixel-btn rounded-none border-2 border-foreground hover:bg-muted"
                                     >
-                                        <Home className="mr-2 w-5 h-5" /> IR AL HOME
+                                        <PixelHomeIcon className="mr-2 w-5 h-5" /> IR AL HOME
                                     </Button>
                                 </div>
                             </div>
