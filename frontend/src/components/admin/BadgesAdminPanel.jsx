@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import useAxios from '@/utils/useAxios';
-import { Plus, Edit, Trash2, Save, X, Search, Loader2, Upload, Image as ImageIcon } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, Search, Loader2, Upload, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Componentes UI Propios
@@ -19,7 +19,6 @@ function BadgesAdminPanel() {
     // Paginación
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [totalCount, setTotalCount] = useState(0);
 
     // Filtros
     const [searchTerm, setSearchTerm] = useState('');
@@ -64,10 +63,9 @@ function BadgesAdminPanel() {
         try {
             const searchParam = search ? `&search=${search}` : '';
             const response = await api.get(`/badges/?page=${page}${searchParam}`);
-            
+
             if (response.data.results) {
                 setBadges(response.data.results);
-                setTotalCount(response.data.count);
                 setTotalPages(Math.ceil(response.data.count / 12));
             } else {
                 setBadges(Array.isArray(response.data) ? response.data : []);
@@ -421,8 +419,8 @@ function BadgesAdminPanel() {
                             <h3 className="font-bold text-lg uppercase flex items-center gap-2">
                                 {editingBadge ? 'Editar Insignia' : 'Nueva Insignia'}
                             </h3>
-                            <button onClick={() => setIsFormOpen(false)} className="hover:bg-red-500 hover:text-white p-1 border-2 border-transparent hover:border-foreground transition-colors">
-                                <X className="w-5 h-5" />
+                            <button onClick={() => setIsFormOpen(false)} className="flex items-center justify-center hover:bg-red-500 hover:text-white px-2 py-1 font-mono  border-2 border-transparent hover:border-foreground transition-colors">
+                                X
                             </button>
                         </div>
 

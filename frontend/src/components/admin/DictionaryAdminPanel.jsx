@@ -352,8 +352,8 @@ function DictionaryAdminPanel() {
                                 {editingWord ? <Edit className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                                 {editingWord ? 'Editar Palabra' : 'Nueva Palabra'}
                             </h3>
-                            <button onClick={() => setIsFormOpen(false)} className="hover:bg-red-500 hover:text-white p-1 transition-colors border-2 border-transparent hover:border-foreground">
-                                <X className="w-5 h-5" />
+                            <button onClick={() => setIsFormOpen(false)} className="flex items-center justify-center hover:bg-red-500 hover:text-white px-2 py-1 font-mono  border-2 border-transparent hover:border-foreground transition-colors">
+                                X
                             </button>
                         </div>
 
@@ -504,9 +504,9 @@ function DictionaryAdminPanel() {
                                     setIsUploadOpen(false);
                                     setUploadFile(null);
                                 }}
-                                className="hover:text-destructive cursor-pointer font-mono text-xl transition-colors"
+                                className="flex items-center justify-center hover:bg-red-500 hover:text-white px-2 py-1 font-mono  border-2 border-transparent hover:border-foreground transition-colors"
                             >
-                                <X className="w-6 h-6" />
+                                X
                             </button>
                         </div>
 

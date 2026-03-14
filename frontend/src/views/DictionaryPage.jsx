@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, Volume2, ChevronLeft, ChevronRight, X, BookOpen, Lock } from 'lucide-react';
 import useAxios from "@/utils/useAxios";
-import { BookIcon } from '@/components/PixelIcons';
+import { BookIcon, PixelVolume3Icon, PixelChevronIcon, PixelBookOpenIcon, PixelLockIcon, PixelSearchIcon } from '@/components/PixelIcons';
 import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 import VzlaFlag from '@/assets/ve.svg';
 import UsaFlag from '@/assets/us.svg';
@@ -192,8 +191,8 @@ function DictionaryPage() {
 
                 <div id="tutorial-dict-controls" className="flex flex-col md:flex-row gap-4 mb-8 items-center justify-between bg-card/50 p-4 pixel-border">
 
-                    <div className="relative w-full md:max-w-md group">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
+                    <div className="relative w-full group">
+                        <PixelSearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
                         <input
                             type="text"
                             placeholder="Buscar palabra..."
@@ -214,7 +213,7 @@ function DictionaryPage() {
                             className={`w-full flex items-center justify-between px-4 py-3 font-mono text-xs md:text-sm border-2 uppercase transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${currentFilterObj.activeClass}`}
                         >
                             <span className="font-bold">{currentFilterObj.label}</span>
-                            <ChevronLeft className={`w-4 h-4 transition-transform duration-200 ${isFilterOpen ? '-rotate-90' : 'rotate-180'}`} />
+                            <PixelChevronIcon className={`w-4 h-4 transition-transform duration-200 ${isFilterOpen ? '' : '-rotate-90'}`} />
                         </button>
 
                         {isFilterOpen && (
@@ -289,9 +288,9 @@ function DictionaryPage() {
 
 
                                         {word.is_unlocked ? (
-                                            <BookOpen className="w-4 h-4 text-muted-foreground group-hover:text-primary" />
+                                            <PixelBookOpenIcon className="w-4 h-4 text-muted-foreground group-hover:text-primary" />
                                         ) : (
-                                            <Lock className="w-4 h-4 text-muted-foreground" />
+                                            <PixelLockIcon className="w-4 h-4 text-muted-foreground" />
                                         )}
                                     </div>
                                 </div>
@@ -307,7 +306,7 @@ function DictionaryPage() {
                             disabled={currentPage === 1}
                             className="p-3 bg-card pixel-border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted transition-colors"
                         >
-                            <ChevronLeft className="w-6 h-6" />
+                            <PixelChevronIcon className="w-6 h-6 rotate-90" />
                         </button>
 
                         <div className="px-6 py-3 bg-card pixel-border font-mono text-xs">
@@ -319,7 +318,7 @@ function DictionaryPage() {
                             disabled={currentPage === totalPages}
                             className="p-3 bg-card pixel-border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted transition-colors"
                         >
-                            <ChevronRight className="w-6 h-6" />
+                            <PixelChevronIcon className="w-6 h-6 -rotate-90" />
                         </button>
                     </div>
                 )}
@@ -333,7 +332,7 @@ function DictionaryPage() {
                 className="fixed bottom-6 right-6 w-14 h-14 bg-accent text-accent-foreground pixel-border flex items-center justify-center text-2xl hover:scale-110 transition-transform z-50 shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:shadow-[6px_6px_0_0_rgba(0,0,0,1)]"
                 title="Ver Tutorial de Nuevo"
             >
-                ❓
+                <span className="font-mono text-3xl pb-1">?</span>
             </button>
         </div>
     );
@@ -433,9 +432,9 @@ const WordDetailModal = ({ word, onClose }) => {
             >
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-muted-foreground hover:text-destructive transition-colors"
+                    className="absolute top-4 right-4 text-muted-foreground hover:text-destructive font-mono text-xl transition-colors"
                 >
-                    <X className="w-8 h-8" />
+                    X
                 </button>
 
                 <div className="flex items-center justify-between gap-2 mb-6 border-b-4 border-muted pb-4">
@@ -464,7 +463,7 @@ const WordDetailModal = ({ word, onClose }) => {
                                         onClick={() => setCurrentExampleIndex(prev => prev > 0 ? prev - 1 : word.examples.length - 1)}
                                         className="flex items-center gap-3 bg-card text-foreground p-1 hover:bg-primary hover:text-primary-foreground font-mono text-sm pixel-border pixel-btn no-underline"
                                     >
-                                        <ChevronLeft className="w-4 h-4" />
+                                        <PixelChevronIcon className="w-4 h-4 rotate-90" />
                                     </button>
                                     <span className="font-mono text-xs text-muted-foreground w-8 text-center">
                                         {currentExampleIndex + 1}/{word.examples.length}
@@ -473,7 +472,7 @@ const WordDetailModal = ({ word, onClose }) => {
                                         onClick={() => setCurrentExampleIndex(prev => prev < word.examples.length - 1 ? prev + 1 : 0)}
                                         className="flex items-center gap-3 bg-card text-foreground p-1 hover:bg-primary hover:text-primary-foreground font-mono text-sm pixel-border pixel-btn no-underline"
                                     >
-                                        <ChevronRight className="w-4 h-4" />
+                                        <PixelChevronIcon className="w-4 h-4 -rotate-90" />
                                     </button>
                                 </div>
                             )}
@@ -509,7 +508,7 @@ const WordDetailModal = ({ word, onClose }) => {
                         onClick={() => playPronunciation(word.text)}
                         className="flex items-center gap-2 p-2 bg-muted/50 hover:bg-primary hover:text-primary-foreground border-2 border-foreground transition-colors pixel-btn"
                         title="Escuchar pronunciación">
-                        <Volume2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                        <PixelVolume3Icon className="w-4 h-4 group-hover:scale-110 transition-transform" />
                         PRONUNCIACIÓN
                     </button>
 

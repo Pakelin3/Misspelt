@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-import { BookIcon, SwordIcon } from '@/components/PixelIcons';
+import { BookIcon, SwordIcon, PixelChevronIcon } from '@/components/PixelIcons';
 import { VillagerIcon, SignalIcon, MedalRibbonIcon } from '@/components/AdminPixelIcons';
 import { LogOut, Menu, X, ChevronRight } from 'lucide-react';
 import DashboardStatsCards from '@/components/admin/DashboardStatsCards';
@@ -114,7 +114,7 @@ function AdminDashboard() {
                         className="w-full flex items-center justify-center p-2 text-foreground hover:bg-muted rounded-sm transition-colors mb-2"
                         title={isSidebarOpen ? "Colapsar" : "Expandir"}
                     >
-                        {isSidebarOpen ? <ChevronRight className="rotate-180 w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                        {isSidebarOpen ? <PixelChevronIcon className="rotate-90 w-6 h-6" /> : <PixelChevronIcon className="rotate-270 w-6 h-6" />}
                     </button>
 
                     {isSidebarOpen && (

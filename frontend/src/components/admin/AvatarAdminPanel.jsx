@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import useAxios from '@/utils/useAxios';
-import { Plus, Edit, Trash2, Save, X, Search, Loader2, Upload, Image as ImageIcon, User, CheckCircle } from 'lucide-react';
+import { Plus, Trash2, Save, Search, Loader2, Upload, Image as ImageIcon, User, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Componentes UI Propios
@@ -18,7 +18,6 @@ function AvatarAdminPanel() {
     // Paginación
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [totalCount, setTotalCount] = useState(0);
 
     // Filtros
     const [searchTerm, setSearchTerm] = useState('');
@@ -58,7 +57,6 @@ function AvatarAdminPanel() {
 
             if (response.data.results) {
                 setAvatars(response.data.results);
-                setTotalCount(response.data.count);
                 setTotalPages(Math.ceil(response.data.count / 15));
             } else {
                 setAvatars(response.data);
@@ -156,6 +154,7 @@ function AvatarAdminPanel() {
                         fetchAvatars(currentPage, debouncedSearchTerm);
                         toast.success('Borrado');
                     } catch (error) {
+                        console.error("Error deleting avatar:", error);
                         toast.error('Error', { description: 'No se pudo eliminar.' });
                     }
                 }
@@ -299,8 +298,8 @@ function AvatarAdminPanel() {
                             <h3 className="font-bold text-lg uppercase flex items-center gap-2">
                                 {editingAvatar ? 'Editar Avatar' : 'Nuevo Avatar'}
                             </h3>
-                            <button onClick={() => setIsFormOpen(false)} className="hover:bg-red-500 hover:text-white p-1 border-2 border-transparent hover:border-foreground transition-colors">
-                                <X className="w-5 h-5" />
+                            <button onClick={() => setIsFormOpen(false)} className="flex items-center justify-center hover:bg-red-500 hover:text-white px-2 py-1 font-mono  border-2 border-transparent hover:border-foreground transition-colors">
+                                X
                             </button>
                         </div>
 
