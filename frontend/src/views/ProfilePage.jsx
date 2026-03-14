@@ -7,7 +7,7 @@ import "driver.js/dist/driver.css";
 import {
     PixelEditIcon, PixelSaveIcon, PixelTargetIcon,
     PixelBookOpenIcon, PixelLightningIcon, SwordIcon,
-    PixelStarIcon, TrophyIcon
+    PixelStarIcon, TrophyIcon, PixelFireIcon
 } from '@/components/PixelIcons';
 
 // ─── Stat Gauge Component ─────────────────────────────────────
@@ -365,7 +365,7 @@ function ProfilePage() {
                         {/* Quick Stats (Right Side) */}
                         <div id="tutorial-quick-stats" className="hidden md:grid grid-cols-2 gap-2 shrink-0">
                             {[
-                                { label: 'Racha', value: userStats.current_streak, icon: <PixelLightningIcon className="w-6 h-6 text-yellow-500/80" /> },
+                                { label: 'Racha', value: userStats.current_streak, icon: <PixelFireIcon className="w-6 h-6 text-yellow-500/80" /> },
                                 { label: 'Récord', value: userStats.longest_streak, icon: <PixelStarIcon className="w-6 h-6 text-yellow-500" /> },
                                 { label: 'Insignias', value: userStats.unlocked_badges?.length || 0, icon: <TrophyIcon className="w-6 h-6 text-yellow-400" /> },
                                 { label: 'Avatares', value: userStats.unlocked_avatars?.length || 0, icon: <SwordIcon className="w-6 h-6" /> },

@@ -224,6 +224,13 @@ class WordViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend] 
     filterset_fields = ['word_type']
 
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve', 'random']:
+            self.permission_classes = [IsAuthenticated]
+        else:
+            self.permission_classes = [IsAuthenticated, IsAdminUser]
+        return super().get_permissions()
+
     def get_queryset(self):
         queryset = super().get_queryset()
         search_param = self.request.query_params.get('search')
@@ -337,7 +344,13 @@ class BadgeViewSet(viewsets.ModelViewSet):
         if search_param:
             queryset = queryset.filter(title__icontains=search_param)
         return queryset
-    #permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            self.permission_classes = [IsAuthenticated]
+        else:
+            self.permission_classes = [IsAuthenticated, IsAdminUser]
+        return super().get_permissions()
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA AVATARES (CRUD) ---
@@ -353,18 +366,23 @@ class AvatarViewSet(viewsets.ModelViewSet):
         if search_param:
             queryset = queryset.filter(name__icontains=search_param)
         return queryset
-    # Restringir permisos solo a administradores, ya que el CRUD es para gestión
-    #permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            self.permission_classes = [IsAuthenticated]
+        else:
+            self.permission_classes = [IsAuthenticated, IsAdminUser]
+        return super().get_permissions()
 
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA ESTADISTICAS DE USUARIOS (CRUD) ---
 # * --------------------------------------------------------------------------------------------------
 class UserStatsViewSet(
-    mixins.RetrieveModelMixin,   # Permite GET para detalle por ID (admin)
-    mixins.UpdateModelMixin,     # Permite PUT/PATCH para detalle por ID (admin)
-    mixins.ListModelMixin,       # Permite GET para lista (admin)
-    viewsets.GenericViewSet      # Base para vistas que manejan operaciones específicas
+    mixins.RetrieveModelMixin,   
+    mixins.UpdateModelMixin,     
+    mixins.ListModelMixin,       
+    viewsets.GenericViewSet      
 ):
     serializer_class = UserStatsSerializer #
 
@@ -383,14 +401,14 @@ class UserStatsViewSet(
         y para las otras acciones (solo admins).
         """
         if self.action == 'me':
-            self.permission_classes = [IsAuthenticated] # Cualquier usuario autenticado puede ver sus propias stats
+            self.permission_classes = [IsAuthenticated] 
         elif self.action in ['retrieve', 'list', 'update', 'partial_update']:
-            self.permission_classes = [IsAuthenticated, IsAdminUser] # Para operaciones estándar, solo admin
+            self.permission_classes = [IsAuthenticated, IsAdminUser] 
         else:
-            self.permission_classes = [IsAuthenticated] # Permisos por defecto para otras acciones
+            self.permission_classes = [IsAuthenticated] 
         return super().get_permissions()
 
-    @action(detail=False, methods=['get', 'patch']) # Permite GET y PATCH para la acción 'me'
+    @action(detail=False, methods=['get', 'patch'])
     def me(self, request):
         """
         Obtiene o actualiza parcialmente las estadísticas del usuario autenticado.
@@ -400,22 +418,17 @@ class UserStatsViewSet(
         user_stats, created = UserStats.objects.get_or_create(user=request.user) #
 
         if request.method == 'GET':
-            # Ejecutar check_and_unlock_badges en cada GET a /me/
-            # Esto asegura que los badges se verifiquen y desbloqueen justo antes de devolver los datos.
             newly_unlocked_badges_on_get = check_and_unlock_badges(request.user) 
-            # Recargar user_stats para obtener los cambios si los hubo (ej. badge añadido)
             user_stats.refresh_from_db() 
             serializer = self.get_serializer(user_stats)
             response_data = serializer.data
             
-            # Incluir badges desbloqueados en esta petición GET
             if newly_unlocked_badges_on_get:
                 response_data['newly_unlocked_badges_on_get'] = [badge.title for badge in newly_unlocked_badges_on_get]
 
             return Response(response_data)
         
         elif request.method == 'PATCH':
-            # Usar partial=True para PATCH, actualiza solo los campos enviados
             serializer = self.get_serializer(user_stats, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -430,10 +443,10 @@ class UserStatsViewSet(
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA USUARIOS (CRUD) ---
 # * --------------------------------------------------------------------------------------------------
-class AdminUserViewSet(viewsets.ReadOnlyModelViewSet): # Usamos ReadOnly para evitar que el admin de frontend modifique usuarios directamente aquí
-    queryset = User.objects.all().order_by('username') #
-    serializer_class = AdminUserSerializer #
-    permission_classes = [IsAuthenticated, IsAdminUser] #
+class AdminUserViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = User.objects.all().order_by('username') 
+    serializer_class = AdminUserSerializer 
+    permission_classes = [IsAuthenticated, IsAdminUser] 
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA RUTAS ---
@@ -608,9 +621,14 @@ def submit_game_results(request):
     stats.total_time_played_seconds += time_spent
     
     from django.utils import timezone
+    from datetime import timedelta
     today = timezone.now().date()
+    
     if stats.last_login_date != today:
-        stats.current_streak += 1
+        if stats.last_login_date == today - timedelta(days=1):
+            stats.current_streak += 1
+        else:
+            stats.current_streak = 1
         stats.last_login_date = today
         
     stats.save()

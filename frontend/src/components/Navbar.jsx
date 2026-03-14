@@ -2,7 +2,7 @@ import React, { useContext, useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import useAxios from "@/utils/useAxios";
 import AuthContext from '@/context/AuthContext';
-import { BookIcon, BrainIcon, TrophyIcon, LeafIcon, SwordIcon, GearIcon } from "@/components/PixelIcons";
+import { PixelBookOpenIcon, BrainIcon, TrophyIcon, LeafIcon, SwordIcon, GearIcon } from "@/components/PixelIcons";
 
 function Navbar() {
     const { user, logoutUser } = useContext(AuthContext);
@@ -127,7 +127,7 @@ function Navbar() {
                 {/* --- DESKTOP NAV --- */}
                 <div className="hidden md:flex items-center justify-center gap-1 lg:gap-2 flex-grow">
                     <Link to="/dictionary" className={navLinkClass("/dictionary")} >
-                        <BookIcon className="w-4 h-4 lg:w-5 lg:h-5 shrink-0" /> <span className="text-base lg:text-xl xl:text-2xl">Diccionario</span>
+                        <PixelBookOpenIcon className="w-4 h-4 lg:w-5 lg:h-5 shrink-0" /> <span className="text-base lg:text-xl xl:text-2xl">Diccionario</span>
                     </Link>
                     <Link to="/quiz" className={navLinkClass("/quiz")}>
                         <BrainIcon className="w-4 h-4 lg:w-5 lg:h-5 shrink-0" /> <span className="text-base lg:text-xl xl:text-2xl">Quiz</span>
@@ -242,7 +242,7 @@ function Navbar() {
                                 <SwordIcon className="w-5 h-5" /> Jugar
                             </Link>
                             <Link to="/dictionary" onClick={toggleMobileMenu} className={navLinkClass("/dictionary")}>
-                                <BookIcon className="w-5 h-5" /> Diccionario
+                                <PixelBookOpenIcon className="w-5 h-5" /> Diccionario
                             </Link>
                             <Link to="/quiz" onClick={toggleMobileMenu} className={navLinkClass("/quiz")}>
                                 <BrainIcon className="w-5 h-5" /> Quiz
