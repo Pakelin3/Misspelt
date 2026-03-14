@@ -447,10 +447,25 @@ export function PixelFireIcon({ className = "w-6 h-6" }) {
 
 export function PixelMagicOrbIcon({ className = "w-6 h-6" }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="12" cy="12" r="8" fill="#3b82f6" fillOpacity="0.5" stroke="none" />
-      <path d="M10 8H14M8 12H16" strokeWidth="2" stroke="#60a5fa" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="2" width="12" height="2" fill="currentColor" />
+      <rect x="6" y="20" width="12" height="2" fill="currentColor" />
+      <rect x="4" y="4" width="2" height="2" fill="currentColor" />
+      <rect width="2" height="2" transform="matrix(-1 0 0 1 20 4)" fill="currentColor" />
+      <rect x="2" y="6" width="2" height="12" fill="currentColor" />
+      <rect width="2" height="12" transform="matrix(-1 0 0 1 22 6)" fill="currentColor" />
+      <rect x="4" y="18" width="2" height="2" fill="currentColor" />
+      <rect width="2" height="2" transform="matrix(-1 0 0 1 20 18)" fill="currentColor" />
+      <rect x="11" y="7" width="2" height="2" fill="currentColor" />
+      <rect x="11" y="15" width="2" height="2" fill="currentColor" />
+      <rect x="7" y="11" width="2" height="2" fill="currentColor" />
+      <rect x="15" y="11" width="2" height="2" fill="currentColor" />
+      <rect x="9" y="9" width="2" height="2" fill="currentColor" />
+      <rect x="13" y="9" width="2" height="2" fill="currentColor" />
+      <rect x="13" y="13" width="2" height="2" fill="currentColor" />
+      <rect x="9" y="13" width="2" height="2" fill="currentColor" />
     </svg>
+
   );
 }
 
@@ -477,6 +492,58 @@ export function PixelTargetIcon({ className = "w-6 h-6" }) {
       <circle cx="12" cy="12" r="5" />
       <circle cx="12" cy="12" r="1" />
       <path d="M12 2V6M12 18V22M2 12H6M18 12H22" />
+    </svg>
+  );
+}
+export function PixelEditIcon({ className = "w-6 h-6" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="16" y="2" width="4" height="2" fill="currentColor" />
+      <rect x="18" y="4" width="2" height="2" fill="currentColor" />
+      <rect x="16" y="6" width="2" height="2" fill="currentColor" />
+      <rect x="14" y="8" width="2" height="2" fill="currentColor" />
+      <rect x="12" y="10" width="2" height="2" fill="currentColor" />
+      <rect x="10" y="12" width="2" height="2" fill="currentColor" />
+      <rect x="8" y="14" width="2" height="2" fill="currentColor" />
+      <rect x="6" y="16" width="2" height="2" fill="currentColor" />
+      <rect x="4" y="18" width="2" height="2" fill="currentColor" />
+      <rect x="2" y="16" width="2" height="4" fill="currentColor" />
+      <rect x="4" y="14" width="2" height="2" fill="currentColor" />
+      <rect x="6" y="12" width="2" height="2" fill="currentColor" />
+      <rect x="8" y="10" width="2" height="2" fill="currentColor" />
+      <rect x="10" y="8" width="2" height="2" fill="currentColor" />
+      <rect x="12" y="6" width="2" height="2" fill="currentColor" />
+      <rect x="14" y="4" width="2" height="2" fill="currentColor" />
+      <rect x="14" y="6" width="2" height="2" fill="currentColor" />
+      <rect x="16" y="4" width="2" height="2" fill="currentColor" />
+      <rect x="16" y="12" width="2" height="2" fill="currentColor" />
+      <rect x="16" y="20" width="2" height="2" fill="currentColor" />
+      <rect x="12" y="16" width="2" height="2" fill="currentColor" />
+      <rect x="20" y="16" width="2" height="2" fill="currentColor" />
+      <rect x="14" y="14" width="2" height="2" fill="currentColor" />
+      <rect x="18" y="14" width="2" height="2" fill="currentColor" />
+      <rect x="18" y="18" width="2" height="2" fill="currentColor" />
+      <rect x="14" y="18" width="2" height="2" fill="currentColor" />
+      <rect x="4" y="2" width="2" height="2" fill="currentColor" />
+      <rect x="2" y="4" width="2" height="2" fill="currentColor" />
+      <rect x="4" y="6" width="2" height="2" fill="currentColor" />
+      <rect x="6" y="4" width="2" height="2" fill="currentColor" />
+      <rect x="20" y="10" width="2" height="2" fill="currentColor" />
+      <rect x="8" y="20" width="2" height="2" fill="currentColor" />
+    </svg>
+
+  );
+}
+
+export function PixelSaveIcon({ className = "w-6 h-6" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="5" y="3" width="14" height="2" fill="currentColor" />
+      <rect x="3" y="5" width="2" height="14" fill="currentColor" />
+      <rect x="19" y="5" width="2" height="14" fill="currentColor" />
+      <rect x="5" y="19" width="14" height="2" fill="currentColor" />
+      <rect x="7" y="5" width="4" height="6" fill="currentColor" />
+      <rect x="9" y="13" width="6" height="6" fill="currentColor" />
     </svg>
   );
 }
