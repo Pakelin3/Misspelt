@@ -33,18 +33,6 @@ function Dashboard() {
     }, [api]);
 
 
-    // useEffect(() => {
-    //     const fetchPostData = async () => {
-    //         try {
-    //             const response = await api.post("/test/", { text: "holaa" });
-    //             setRes(response.data.message);
-    //         } catch (error) {
-    //             console.error("Error fetching POST data:", error);
-    //             setRes("Algo salió mal [POST]");
-    //         }
-    //     };
-    //     fetchPostData();
-    // }, [api]);
 
     return (
         <div>

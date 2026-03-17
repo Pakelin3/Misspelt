@@ -188,3 +188,91 @@
 .stagger-3 {
   animation-delay: 0.3s;
 }
+
+/* Custom Driver.js Theme */
+.misspelt-driver-popover.driver-popover {
+  background-color: hsl(var(--card));
+  color: hsl(var(--foreground));
+  border: 4px solid hsl(var(--foreground));
+  box-shadow: 4px 4px 0px 0px hsl(var(--foreground)), -1px -1px 0px 0px hsl(var(--foreground));
+  border-radius: 0;
+  padding: 1.5rem;
+  font-family: var(--font-sans);
+}
+
+.misspelt-driver-popover .driver-popover-title {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: hsl(var(--foreground));
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  font-weight: normal;
+}
+
+.misspelt-driver-popover .driver-popover-description {
+  font-family: var(--font-sans);
+  font-size: 1.25rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.4;
+}
+
+.misspelt-driver-popover .driver-popover-close-btn {
+  color: hsl(var(--muted-foreground));
+  top: 0.75rem;
+  right: 0.75rem;
+  transition: color 0.1s ease;
+}
+
+.misspelt-driver-popover .driver-popover-close-btn:hover {
+  color: hsl(var(--destructive));
+}
+
+.misspelt-driver-popover .driver-popover-footer {
+  margin-top: 1.5rem;
+}
+
+.misspelt-driver-popover .driver-popover-progress-text {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: hsl(var(--muted-foreground));
+  font-weight: normal;
+}
+
+.misspelt-driver-popover .driver-popover-prev-btn,
+.misspelt-driver-popover .driver-popover-next-btn {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border: 2px solid hsl(var(--foreground));
+  box-shadow: 2px 2px 0px 0px hsl(var(--foreground));
+  border-radius: 0;
+  font-family: var(--font-mono);
+  font-size: 0.45rem;
+  padding: 0.25rem 0.25rem;
+  text-transform: uppercase;
+  text-shadow: none;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  font-weight: normal;
+}
+
+.misspelt-driver-popover .driver-popover-prev-btn:hover,
+.misspelt-driver-popover .driver-popover-next-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0px 0px hsl(var(--foreground));
+  background-color: hsl(var(--primary));
+}
+
+.misspelt-driver-popover .driver-popover-prev-btn:active,
+.misspelt-driver-popover .driver-popover-next-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.misspelt-driver-popover .driver-popover-prev-btn.driver-popover-btn-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.misspelt-driver-popover .driver-popover-navigation-btns {
+  gap: 0.5rem;
+  justify-content: flex-end;
+}

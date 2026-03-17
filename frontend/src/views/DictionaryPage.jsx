@@ -89,14 +89,14 @@ function DictionaryPage() {
         }
     }, [wordsPerPage, api]);
 
-    // --- DRIVER.JS TUTORIAL ---
     const startTutorial = useCallback(() => {
         const driverObj = driver({
+            popoverClass: 'misspelt-driver-popover pixel-rendering',
             showProgress: true,
             animate: true,
             doneBtnText: '¡A Leer!',
-            nextBtnText: 'Siguiente ➔',
-            prevBtnText: '⬅ Anterior',
+            nextBtnText: 'Siguiente',
+            prevBtnText: 'Anterior',
             steps: [
                 {
                     element: '#tutorial-dict-controls',

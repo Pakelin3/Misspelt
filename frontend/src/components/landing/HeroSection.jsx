@@ -2,8 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { StarIcon, SwordIcon } from "@/components/PixelIcons";
 import heroBg from "@/img/background.jpg";
-// import TextType from "@/components/ui/TextType";
-// import ASCIIText from "@/components/ui/TextASCII";
 import TextShuffle from "@/components/ui/TextShuffle";
 
 export function HeroSection() {
@@ -21,15 +19,13 @@ export function HeroSection() {
 
       <div className="relative z-10 mx-auto max-w-5xl px-4 text-center">
 
-        {/* Estrellas decorativas */}
         <div className="flex justify-center gap-4 mb-6">
           <StarIcon className="w-8 h-8 animate-sparkle text-accent" />
           <StarIcon className="w-6 h-6 animate-sparkle stagger-1 text-accent" />
           <StarIcon className="w-8 h-8 animate-sparkle stagger-2 text-accent" />
         </div>
 
-        {/* Título Principal */}
-        <h1 className="font-mono text-4xl md:text-5xl lg:text-6xl text-foreground leading-tight mb-6 animate-slide-up">
+        <h1 className="font-mono  text-foreground leading-tight mb-6 animate-slide-up">
           <TextShuffle
             text="MISSPELT"
             shuffleDirection="up"
@@ -57,13 +53,13 @@ export function HeroSection() {
 
         {/* Botones de Acción */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up stagger-3">
-          <Link
-            to="/play"
-            className="flex items-center gap-3 bg-primary text-primary-foreground px-8 py-4 font-mono text-sm pixel-border-primary pixel-btn no-underline hover:text-primary-foreground"
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('start-game-loading'))}
+            className="flex items-center gap-3 bg-primary text-primary-foreground px-8 py-4 font-mono text-sm pixel-border-primary pixel-btn hover:text-primary-foreground"
           >
             <SwordIcon className="w-5 h-5" />
             COMENZAR AVENTURA
-          </Link>
+          </button>
           <a
             href="#quiz-preview"
             className="flex items-center gap-3 bg-card text-foreground px-8 py-4 font-mono text-sm pixel-border pixel-btn no-underline"

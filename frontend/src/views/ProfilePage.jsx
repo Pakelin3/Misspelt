@@ -60,8 +60,6 @@ function ProfilePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('stats');
-
-    // Edit mode
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState({ full_name: '', current_avatar: '', current_title: '' });
     const [saving, setSaving] = useState(false);
@@ -99,14 +97,14 @@ function ProfilePage() {
         fetchAllData();
     }, [fetchAllData]);
 
-    // --- DRIVER.JS TUTORIAL ---
     const startTutorial = useCallback(() => {
         const driverObj = driver({
+            popoverClass: 'misspelt-driver-popover pixel-rendering',
             showProgress: true,
             animate: true,
             doneBtnText: '¡A Jugar!',
-            nextBtnText: 'Siguiente ➔',
-            prevBtnText: '⬅ Anterior',
+            nextBtnText: 'Siguiente',
+            prevBtnText: 'Anterior',
             steps: [
                 {
                     element: '#tutorial-avatar',

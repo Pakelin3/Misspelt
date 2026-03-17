@@ -300,14 +300,14 @@ function DictionaryAdminPanel() {
                                                     className="p-2 hover:bg-blue-100 border-2 border-transparent hover:border-blue-500 transition-all text-blue-600"
                                                     title="Editar"
                                                 >
-                                                    <Edit className="w-4 h-4" />
+                                                    <Edit className="w-6 h-6" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(word.id)}
                                                     className="p-2 hover:bg-red-100 border-2 border-transparent hover:border-red-500 transition-all text-red-600"
                                                     title="Eliminar"
                                                 >
-                                                    <Trash2 className="w-4 h-4" />
+                                                    <Trash2 className="w-6 h-6" />
                                                 </button>
                                             </div>
                                         </td>

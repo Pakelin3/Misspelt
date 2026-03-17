@@ -22,8 +22,10 @@ const GameRenderer = ({ currentWord, gameType, handleCorrect, handleWrong, allWo
     };
 
     switch (gameType) {
-        case 'sentence':
-            return <SentenceBuilder key={uniqueKey} {...commonProps} />;
+        case 'sentence-en':
+            return <SentenceBuilder key={uniqueKey} direction="en" {...commonProps} />;
+        case 'sentence-es':
+            return <SentenceBuilder key={uniqueKey} direction="es" {...commonProps} />;
         case 'listening':
             return <ListeningChallenge key={uniqueKey} {...commonProps} />;
         case 'multi':
@@ -44,8 +46,6 @@ const QuizManager = ({ words = EMPTY_WORDS, allWords = EMPTY_ALL_WORDS, onComple
     const [gameStatus, setGameStatus] = useState('playing');
     const [currentWord, setCurrentWord] = useState(null);
     const [gameType, setGameType] = useState('multi');
-
-    // Use a ref to track the words array to avoid re-triggering the effect on parent re-renders
     const wordsRef = useRef(words);
     wordsRef.current = words;
 
@@ -58,8 +58,8 @@ const QuizManager = ({ words = EMPTY_WORDS, allWords = EMPTY_ALL_WORDS, onComple
             const availableTypes = ['multi', 'listening'];
 
             if (word.examples && word.examples.length > 0) {
-                availableTypes.push('sentence');
-                availableTypes.push('sentence');
+                availableTypes.push('sentence-en');
+                availableTypes.push('sentence-es');
             }
 
             const randomType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
