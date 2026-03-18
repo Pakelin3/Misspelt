@@ -31,12 +31,20 @@ export function BrainIcon({ className = "w-6 h-6" }) {
 export function TrophyIcon({ className = "w-6 h-6" }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M8 2H16V10C16 13 14 15 12 15C10 15 8 13 8 10V2Z" fill="hsl(var(--accent))" stroke="hsl(var(--foreground))" strokeWidth="2" />
-      <path d="M16 4H19C20.1046 4 21 4.89543 21 6V7C21 8.10457 20.1046 9 19 9H16" stroke="hsl(var(--foreground))" strokeWidth="2" />
-      <path d="M8 4H5C3.89543 4 3 4.89543 3 6V7C3 8.10457 3.89543 9 5 9H8" stroke="hsl(var(--foreground))" strokeWidth="2" />
-      <path d="M12 15V19" stroke="hsl(var(--foreground))" strokeWidth="2" />
-      <rect x="8" y="19" width="8" height="3" fill="hsl(var(--foreground))" />
+      <rect x="6" y="2.99997" width="12" height="2" fill="hsl(var(--foreground))" />
+      <rect x="6" y="2.99997" width="2" height="12" fill="hsl(var(--foreground))" />
+      <rect x="16" y="2.99997" width="2" height="12" fill="hsl(var(--foreground))" />
+      <rect x="16" y="4.99997" width="6" height="2" fill="hsl(var(--foreground))" />
+      <rect x="2" y="4.99997" width="6" height="2" fill="hsl(var(--foreground))" />
+      <rect x="2" y="7" width="2" height="4" fill="hsl(var(--foreground))" />
+      <rect x="4" y="11" width="2" height="2" fill="hsl(var(--foreground))" />
+      <rect x="18" y="11" width="2" height="2" fill="hsl(var(--foreground))" />
+      <rect x="20" y="7" width="2" height="4" fill="hsl(var(--foreground))" />
+      <rect x="8" y="15" width="8" height="2" fill="hsl(var(--foreground))" />
+      <rect x="11" y="17.0001" width="2" height="4" fill="hsl(var(--foreground))" />
+      <rect x="9" y="19" width="6" height="2" fill="hsl(var(--foreground))" />
     </svg>
+
   );
 }
 
@@ -51,15 +59,13 @@ export function StarIcon({ className = "w-6 h-6" }) {
 export function SwordIcon({ className = "w-6 h-6" }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Blade */}
-      <path d="M12 3L14 15H10L12 3Z" fill="hsl(var(--muted))" stroke="hsl(var(--foreground))" strokeWidth="2" />
-      {/* Guard */}
-      <rect x="8" y="15" width="8" height="2" fill="hsl(var(--secondary))" stroke="hsl(var(--foreground))" strokeWidth="2" />
-      {/* Handle */}
-      <rect x="11" y="17" width="2" height="4" fill="hsl(var(--foreground))" />
-      {/* Pommel */}
-      <circle cx="12" cy="22" r="1.5" fill="hsl(var(--accent))" />
+      <rect x="11" y="2" width="2" height="2" fill="white" />
+      <rect x="9" y="4" width="2" height="12" fill="white" />
+      <rect x="13" y="4" width="2" height="12" fill="white" />
+      <rect x="7" y="16" width="10" height="2" fill="yellow" />
+      <rect x="11" y="18" width="2" height="4" fill="black" />
     </svg>
+
   );
 }
 
@@ -292,9 +298,9 @@ export function PixelBookOpenIcon({ className = "w-6 h-6" }) {
       <rect x="11" y="5" width="2" height="18" fill="black" />
       <rect y="5" width="2" height="14" fill="black" />
       <rect x="22" y="5" width="2" height="14" fill="black" />
-      <rect x="15" y="7" width="5" height="2" fill="black" />
-      <rect x="15" y="11" width="5" height="2" fill="black" />
-      <rect x="15" y="15" width="2" height="2" fill="black" />
+      <rect x="15" y="7" width="5" height="2" fill="hsl(var(--primary))" />
+      <rect x="15" y="11" width="5" height="2" fill="hsl(var(--muted-foreground))" />
+      <rect x="15" y="15" width="2" height="2" fill="hsl(var(--muted-foreground))" />
     </svg>
   );
 }

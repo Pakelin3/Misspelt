@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import useAxios from "@/utils/useAxios";
-import { BookIcon, PixelVolume3Icon, PixelChevronIcon, PixelBookOpenIcon, PixelLockIcon, PixelSearchIcon } from '@/components/PixelIcons';
+import { PixelVolume3Icon, PixelChevronIcon, PixelBookOpenIcon, PixelLockIcon, PixelSearchIcon } from '@/components/PixelIcons';
 import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 import VzlaFlag from '@/assets/ve.svg';
 import UsaFlag from '@/assets/us.svg';
@@ -89,14 +89,14 @@ function DictionaryPage() {
         }
     }, [wordsPerPage, api]);
 
-    // --- DRIVER.JS TUTORIAL ---
     const startTutorial = useCallback(() => {
         const driverObj = driver({
+            popoverClass: 'misspelt-driver-popover pixel-rendering',
             showProgress: true,
             animate: true,
             doneBtnText: '¡A Leer!',
-            nextBtnText: 'Siguiente ➔',
-            prevBtnText: '⬅ Anterior',
+            nextBtnText: 'Siguiente',
+            prevBtnText: 'Anterior',
             steps: [
                 {
                     element: '#tutorial-dict-controls',
@@ -181,7 +181,7 @@ function DictionaryPage() {
 
                 <div className="text-center mb-10">
                     <div className="inline-flex items-center justify-center p-3 bg-card pixel-border mb-4">
-                        <BookIcon className="w-8 h-8 text-primary" />
+                        <PixelBookOpenIcon className="w-8 h-8 text-primary" />
                     </div>
                     <h1 className="text-3xl md:text-4xl font-mono text-foreground mb-2">GRAN DICCIONARIO</h1>
                     <p className="text-xl text-muted-foreground font-sans max-w-lg mx-auto">

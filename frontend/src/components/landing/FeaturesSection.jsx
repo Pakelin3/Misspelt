@@ -1,5 +1,5 @@
 import React from "react";
-import { BookIcon, BrainIcon, TrophyIcon, HeartIcon } from "@/components/PixelIcons";
+import { BookIcon, BrainIcon, TrophyIcon, PixelHeartIcon } from "@/components/PixelIcons";
 
 const features = [
   {
@@ -18,9 +18,10 @@ const features = [
     description: "Desbloquea logros por rachas diarias y dominio de temas específicos.",
   },
   {
-    icon: HeartIcon,
+    icon: PixelHeartIcon,
     title: "SISTEMA DE VIDAS",
     description: "Cuidado con los errores. Tienes 3 corazones diarios para mantener tu granja a salvo.",
+    iconColor: "destructive",
   },
 ];
 
@@ -40,7 +41,7 @@ export function FeaturesSection() {
             <div key={feature.title} className="bg-background p-6 pixel-border group hover:translate-y-[-4px] transition-transform duration-300">
               <div className="flex items-start gap-5">
                 <div className="p-3 bg-primary/10 rounded-sm pixel-border-primary shrink-0">
-                  <feature.icon className="w-8 h-8 text-primary" />
+                  <feature.icon className={`w-8 h-8 ${feature.iconColor ? `fill-${feature.iconColor}` : "text-primary"}`} />
                 </div>
                 <div>
                   <h3 className="font-mono text-sm text-foreground mb-2">{feature.title}</h3>

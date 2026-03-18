@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import QuizManager from "@/components/quiz/QuizManager";

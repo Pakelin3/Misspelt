@@ -284,7 +284,7 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
 
             <div className="h-8 flex items-center justify-center">
                 {feedback === 'wrong' && (
-                    <p className="text-destructive font-pixel text-sm animate-bounce">❌ ¡Ups! Inténtalo de nuevo.</p>
+                    <p className="text-destructive font-pixel text-sm animate-bounce">¡Ups! Inténtalo de nuevo.</p>
                 )}
             </div>
 

@@ -1,14 +1,17 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import useAxios from "@/utils/useAxios";
 import AuthContext from '@/context/AuthContext';
-import { BookIcon, BrainIcon, TrophyIcon, LeafIcon, SwordIcon, GearIcon } from "@/components/PixelIcons";
+import { PixelBookOpenIcon, BrainIcon, TrophyIcon, LeafIcon, SwordIcon, GearIcon } from "@/components/PixelIcons";
+import LoadingScreen from "@/components/ui/LoadingScreen";
 
 function Navbar() {
     const { user, logoutUser } = useContext(AuthContext);
     const location = useLocation();
+    const navigate = useNavigate();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+    const [isStartingPlay, setIsStartingPlay] = useState(false);
     const mobileMenuRef = useRef(null);
     const mobileMenuButtonRef = useRef(null);
     const profileDropdownRef = useRef(null);
@@ -70,6 +73,12 @@ function Navbar() {
     }, []);
 
     useEffect(() => {
+        const handleStartLoading = () => setIsStartingPlay(true);
+        window.addEventListener('start-game-loading', handleStartLoading);
+        return () => window.removeEventListener('start-game-loading', handleStartLoading);
+    }, []);
+
+    useEffect(() => {
         setIsMobileMenuOpen(false);
         setIsProfileDropdownOpen(false);
     }, [location.pathname]);
@@ -114,8 +123,8 @@ function Navbar() {
 
                 {/* --- LOGO --- */}
                 <div className="flex items-center shrink-0">
-                    <Link to="/" className="flex items-center gap-2 group text-decoration-none">
-                        <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-sm bg-primary pixel-border-primary group-hover:scale-105 transition-transform">
+                    <Link to="/" className="flex items-center gap-2 group text-decoration-none ">
+                        <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-none bg-primary pixel-border-primary group-hover:scale-105 transition-transform">
                             <LeafIcon className="w-4 h-4 md:w-6 md:h-6 text-primary-foreground" />
                         </div>
                         <span className="font-mono text-xs md:text-sm text-foreground tracking-tight leading-tight hidden xs:block sm:block">
@@ -127,7 +136,7 @@ function Navbar() {
                 {/* --- DESKTOP NAV --- */}
                 <div className="hidden md:flex items-center justify-center gap-1 lg:gap-2 flex-grow">
                     <Link to="/dictionary" className={navLinkClass("/dictionary")} >
-                        <BookIcon className="w-4 h-4 lg:w-5 lg:h-5 shrink-0" /> <span className="text-base lg:text-xl xl:text-2xl">Diccionario</span>
+                        <PixelBookOpenIcon className="w-4 h-4 lg:w-5 lg:h-5 shrink-0" /> <span className="text-base lg:text-xl xl:text-2xl">Diccionario</span>
                     </Link>
                     <Link to="/quiz" className={navLinkClass("/quiz")}>
                         <BrainIcon className="w-4 h-4 lg:w-5 lg:h-5 shrink-0" /> <span className="text-base lg:text-xl xl:text-2xl">Quiz</span>
@@ -146,12 +155,12 @@ function Navbar() {
                 <div className="flex items-center gap-2 lg:gap-3 shrink-0">
 
                     {/* Botón JUGAR destacado */}
-                    <Link
-                        to="/play"
+                    <button
+                        onClick={() => setIsStartingPlay(true)}
                         className="hidden md:flex items-center gap-2 bg-primary text-primary-foreground px-3 lg:px-4 py-2 font-mono text-[10px] sm:text-xs pixel-border-primary-foreground pixel-btn text-decoration-none"
                     >
                         <SwordIcon className="w-4 h-4 shrink-0" /> <span className="hidden lg:inline">JUGAR</span>
-                    </Link>
+                    </button>
 
 
                     {user ? (
@@ -238,11 +247,17 @@ function Navbar() {
                             <Link to="/" onClick={toggleMobileMenu} className={navLinkClass("/")}>
                                 <LeafIcon className="w-5 h-5" /> Inicio
                             </Link>
-                            <Link to="/play" onClick={toggleMobileMenu} className={navLinkClass("/play")}>
+                            <button
+                                onClick={() => {
+                                    toggleMobileMenu();
+                                    setIsStartingPlay(true);
+                                }}
+                                className={navLinkClass("/play") + " w-full text-left"}
+                            >
                                 <SwordIcon className="w-5 h-5" /> Jugar
-                            </Link>
+                            </button>
                             <Link to="/dictionary" onClick={toggleMobileMenu} className={navLinkClass("/dictionary")}>
-                                <BookIcon className="w-5 h-5" /> Diccionario
+                                <PixelBookOpenIcon className="w-5 h-5" /> Diccionario
                             </Link>
                             <Link to="/quiz" onClick={toggleMobileMenu} className={navLinkClass("/quiz")}>
                                 <BrainIcon className="w-5 h-5" /> Quiz
@@ -280,6 +295,13 @@ function Navbar() {
                     </div>
                 )
             }
+
+            {isStartingPlay && (
+                <LoadingScreen 
+                    onLoadingComplete={() => navigate('/play')} 
+                    onClose={() => setIsStartingPlay(false)}
+                />
+            )}
         </header >
     );
 }

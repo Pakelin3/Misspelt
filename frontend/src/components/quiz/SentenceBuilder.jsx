@@ -17,7 +17,6 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
 
-// --- SUB-COMPONENTE: LA PALABRA INDIVIDUAL ---
 const SortableWord = ({ id, text, isChecked, isCorrect }) => {
     const {
         attributes,
@@ -31,10 +30,9 @@ const SortableWord = ({ id, text, isChecked, isCorrect }) => {
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
-        zIndex: isDragging ? 50 : 'auto', // Que se vea por encima al arrastrar
+        zIndex: isDragging ? 50 : 'auto',
     };
 
-    // Estilos condicionales según el estado del juego
     let bgClass = 'bg-background border-primary text-foreground hover:bg-muted shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]';
     if (isChecked) {
         bgClass = isCorrect
@@ -55,7 +53,7 @@ const SortableWord = ({ id, text, isChecked, isCorrect }) => {
         flex items-center gap-2 px-5 py-3 border-4 font-pixel uppercase font-bold text-sm md:text-base pixel-border
         cursor-grab active:cursor-grabbing select-none touch-none
         transition-all duration-200 ${bgClass}
-      `}
+    `}
         >
             <GripVertical size={20} className="opacity-40" strokeWidth={3} />
             {text}
@@ -64,7 +62,7 @@ const SortableWord = ({ id, text, isChecked, isCorrect }) => {
 };
 
 // --- COMPONENTE PRINCIPAL ---
-const SentenceBuilder = ({ word, onSuccess, onError }) => {
+const SentenceBuilder = ({ word, direction = 'en', onSuccess, onError }) => {
     const [state, dispatch] = React.useReducer((s, a) => ({ ...s, ...a }), {
         items: [],
         targetSentence: "",
@@ -74,7 +72,6 @@ const SentenceBuilder = ({ word, onSuccess, onError }) => {
     });
     const { items, targetSentence, translation, isChecked, isCorrect } = state;
 
-    // Configuración de sensores (Mouse, Touch y Teclado para accesibilidad)
     const sensors = useSensors(
         useSensor(PointerSensor),
         useSensor(KeyboardSensor, {
@@ -87,27 +84,28 @@ const SentenceBuilder = ({ word, onSuccess, onError }) => {
             let example = word.examples[0];
             if (typeof example === 'string') example = { en: example, es: "Traduce esto" };
 
-            // Creamos objetos con ID único para dnd-kit
-            const wordsArray = example.en.split(' ').map((w, i) => ({
-                id: `word-${i}-${w}`, // ID compuesto para evitar duplicados si hay palabras repetidas
+            const isEnglishTarget = direction === 'en' || example.es === "Traduce esto";
+            const target = isEnglishTarget ? example.en : example.es;
+            const promptTranslation = isEnglishTarget ? example.es : example.en;
+
+            const wordsArray = target.split(' ').map((w, i) => ({
+                id: `word-${i}-${w}`,
                 text: w
             }));
-
-            // Mezclar (Fisher-Yates)
             for (let i = wordsArray.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [wordsArray[i], wordsArray[j]] = [wordsArray[j], wordsArray[i]];
             }
 
             dispatch({
-                targetSentence: example.en,
-                translation: example.es,
+                targetSentence: target,
+                translation: promptTranslation,
                 items: wordsArray,
                 isChecked: false,
                 isCorrect: false
             });
         }
-    }, [word]);
+    }, [word, direction]);
 
     const handleDragEnd = (event) => {
         const { active, over } = event;
@@ -125,8 +123,8 @@ const SentenceBuilder = ({ word, onSuccess, onError }) => {
 
     const checkAnswer = () => {
         const currentSentence = items.map(i => i.text).join(' ');
-        const cleanCurrent = currentSentence.replace(/[.,!?;:]/g, '').toLowerCase().trim();
-        const cleanTarget = targetSentence.replace(/[.,!?;:]/g, '').toLowerCase().trim();
+        const cleanCurrent = currentSentence.replace(/[.,!?;:¿¡]/g, '').toLowerCase().trim();
+        const cleanTarget = targetSentence.replace(/[.,!?;:¿¡]/g, '').toLowerCase().trim();
 
         if (cleanCurrent === cleanTarget) {
             dispatch({ isChecked: true, isCorrect: true });
@@ -186,7 +184,7 @@ const SentenceBuilder = ({ word, onSuccess, onError }) => {
                     </button>
                 ) : (
                     <div className={`text-2xl font-pixel animate-bounce ${isCorrect ? 'text-green-500' : 'text-destructive'}`}>
-                        {isCorrect ? '✅ ¡EXCELENTE!' : '❌ INCORRECTO'}
+                        {isCorrect ? '¡EXCELENTE!' : 'INCORRECTO'}
                     </div>
                 )}
             </div>
