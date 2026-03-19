@@ -2,32 +2,21 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import useAxios from '@/utils/useAxios';
 import { Plus, Trash2, Save, Search, Loader2, Upload, Image as ImageIcon, User, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
-
-// Componentes UI Propios
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
 function AvatarAdminPanel() {
     const api = useAxios();
     const fileInputRef = useRef(null);
-
-    // Estados de datos
     const [avatars, setAvatars] = useState([]);
     const [loading, setLoading] = useState(true);
-
-    // Paginación
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-
-    // Filtros
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-
-    // Estado del Formulario
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingAvatar, setEditingAvatar] = useState(null);
 
-    // Form Data
     const [formData, setFormData] = useState({
         name: '',
         is_default: false,
@@ -36,11 +25,10 @@ function AvatarAdminPanel() {
     });
     const [previewUrl, setPreviewUrl] = useState(null);
 
-    // --- EFECTO DEBOUNCE ---
     useEffect(() => {
         const timerId = setTimeout(() => {
             setDebouncedSearchTerm(searchTerm);
-            setCurrentPage(1); // Reset page on new search
+            setCurrentPage(1);
         }, 500);
 
         return () => {
@@ -48,7 +36,6 @@ function AvatarAdminPanel() {
         };
     }, [searchTerm]);
 
-    // --- FETCH DATA ---
     const fetchAvatars = useCallback(async (page, search) => {
         setLoading(true);
         try {
@@ -72,7 +59,6 @@ function AvatarAdminPanel() {
         fetchAvatars(currentPage, debouncedSearchTerm);
     }, [fetchAvatars, currentPage, debouncedSearchTerm]);
 
-    // --- MANEJADORES ---
     const handleOpenForm = (avatar = null) => {
         if (avatar) {
             setEditingAvatar(avatar);
@@ -80,7 +66,7 @@ function AvatarAdminPanel() {
                 name: avatar.name,
                 is_default: avatar.is_default,
                 unlock_condition_description: avatar.unlock_condition_description || '',
-                image: null // Reset file
+                image: null
             });
             setPreviewUrl(avatar.image);
         } else {
@@ -99,8 +85,7 @@ function AvatarAdminPanel() {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Validaciones básicas
-            if (file.size > 2 * 1024 * 1024) { // 2MB limit
+            if (file.size > 2 * 1024 * 1024) {
                 toast.error('Archivo muy grande', { description: 'Máximo 2MB por avatar.' });
                 return;
             }
@@ -116,7 +101,7 @@ function AvatarAdminPanel() {
 
         const dataToSend = new FormData();
         dataToSend.append('name', formData.name);
-        dataToSend.append('is_default', formData.is_default ? 'true' : 'false'); // FormData suele preferir strings
+        dataToSend.append('is_default', formData.is_default ? 'true' : 'false');
         dataToSend.append('unlock_condition_description', formData.unlock_condition_description);
 
         if (formData.image instanceof File) {
@@ -166,11 +151,8 @@ function AvatarAdminPanel() {
         });
     };
 
-    // Filtrado local removido (Se hace en backend)
-
     return (
         <div className="space-y-6 font-mono">
-            {/* --- TOP BAR --- */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-card p-4 border-4 border-foreground shadow-sm">
                 <div>
                     <h2 className="text-2xl font-bold uppercase tracking-tighter flex items-center gap-2">
@@ -196,7 +178,6 @@ function AvatarAdminPanel() {
                 </div>
             </div>
 
-            {/* --- GRID VIEW --- */}
             <div className="bg-card border-4 border-foreground p-4 min-h-[400px] relative">
                 {loading && (
                     <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
@@ -212,15 +193,12 @@ function AvatarAdminPanel() {
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                         {avatars.map((avatar) => (
                             <div key={avatar.id} className="group relative bg-muted/20 border-2 border-foreground p-3 flex flex-col items-center hover:bg-muted/40 transition-colors">
-
-                                {/* Etiqueta Default */}
                                 {avatar.is_default && (
                                     <div className="absolute top-2 left-2 bg-yellow-400 text-black text-[10px] font-bold px-1 border border-foreground z-10">
                                         DEFAULT
                                     </div>
                                 )}
 
-                                {/* Imagen Avatar */}
                                 <div className="w-24 h-24 sm:w-32 sm:h-32 mb-3 bg-background border-2 border-foreground relative overflow-hidden flex items-center justify-center shadow-sm group-hover:shadow-md transition-all">
                                     {avatar.image ? (
                                         <img src={avatar.image} alt={avatar.name} className="w-full h-full object-cover" />
@@ -229,7 +207,6 @@ function AvatarAdminPanel() {
                                     )}
                                 </div>
 
-                                {/* Info */}
                                 <div className="text-center w-full mb-3">
                                     <h3 className="font-bold text-sm truncate w-full" title={avatar.name}>{avatar.name}</h3>
                                     {avatar.is_default ? (
@@ -241,7 +218,6 @@ function AvatarAdminPanel() {
                                     )}
                                 </div>
 
-                                {/* Actions */}
                                 <div className="flex w-full gap-2 mt-auto opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                     <Button
                                         variant="outline"
@@ -263,7 +239,6 @@ function AvatarAdminPanel() {
                     </div>
                 )}
 
-                {/* Controles de Paginación */}
                 {!loading && totalPages > 1 && (
                     <div className="flex justify-between items-center mt-6 pt-4 border-t-4 border-foreground w-full">
                         <Button
@@ -289,11 +264,9 @@ function AvatarAdminPanel() {
                 )}
             </div>
 
-            {/* --- MODAL FORMULARIO --- */}
             {isFormOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                     <div className="bg-card w-full max-w-lg border-4 border-foreground shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-                        {/* Header */}
                         <div className="bg-primary text-primary-foreground p-3 flex justify-between items-center border-b-4 border-foreground shrink-0">
                             <h3 className="font-bold text-lg uppercase flex items-center gap-2">
                                 {editingAvatar ? 'Editar Avatar' : 'Nuevo Avatar'}
@@ -303,11 +276,8 @@ function AvatarAdminPanel() {
                             </button>
                         </div>
 
-                        {/* Body */}
                         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto custom-scrollbar">
                             <div className="flex flex-col gap-6">
-
-                                {/* Upload Area */}
                                 <div className="flex flex-col items-center gap-3">
                                     <div
                                         className="w-40 h-40 border-4 border-dashed border-foreground/40 hover:border-primary/60 transition-colors bg-muted/20 flex flex-col items-center justify-center cursor-pointer relative overflow-hidden group"
@@ -322,7 +292,6 @@ function AvatarAdminPanel() {
                                             </div>
                                         )}
 
-                                        {/* Overlay */}
                                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                             <Upload className="w-8 h-8 text-white" />
                                         </div>
@@ -339,7 +308,6 @@ function AvatarAdminPanel() {
                                     </p>
                                 </div>
 
-                                {/* Inputs */}
                                 <div className="space-y-4">
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold uppercase">Nombre del Avatar</label>
@@ -386,7 +354,6 @@ function AvatarAdminPanel() {
                             </div>
                         </form>
 
-                        {/* Footer */}
                         <div className="p-4 border-t-4 border-foreground bg-muted/20 flex gap-3 shrink-0">
                             <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)} className="flex-1 border-2 border-foreground rounded-none pixel-btn h-12">
                                 CANCELAR

@@ -1,10 +1,8 @@
 import React, { useEffect, useState, useCallback, Suspense, lazy } from 'react';
 import useAxios from '@/utils/useAxios';
 import axios from 'axios';
-
-// Importamos los iconos pixelados
+import { PixelFireIcon } from '@/components/PixelIcons';
 import { VillagerIcon, SignalIcon, ScrollIcon, MedalRibbonIcon } from '@/components/AdminPixelIcons';
-// Importamos icono genérico para la carta extra
 import { BrainIcon } from '@/components/PixelIcons';
 
 const LazyBar = lazy(() => Promise.all([
@@ -21,7 +19,6 @@ const LazyBar = lazy(() => Promise.all([
     return { default: reactChartJs.Bar };
 }));
 
-// Componente extraído para la Tarjeta de Estadística
 const StatCard = ({ title, value, icon: Icon, colorClass, children }) => (
     <div className={`
         relative bg-card pixel-border p-6 flex flex-col justify-between 
@@ -44,7 +41,6 @@ const StatCard = ({ title, value, icon: Icon, colorClass, children }) => (
             </div>
         </div>
 
-        {/* Icono decorativo grande en el fondo */}
         <div className={`
             absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 
             transition-all group-hover:scale-110 rotate-12
@@ -53,7 +49,6 @@ const StatCard = ({ title, value, icon: Icon, colorClass, children }) => (
             <Icon className="w-24 h-24" />
         </div>
 
-        {/* Espacio para contenido extra (gráficos) */}
         {children && <div className="mt-4 z-10 relative">{children}</div>}
     </div>
 );
@@ -68,7 +63,6 @@ function DashboardStatsCards() {
         total_badges: 0,
     });
 
-    // Estado para Leaderboard
     const [leaderboard, setLeaderboard] = useState([]);
 
     const [loading, setLoading] = useState(true);
@@ -78,21 +72,15 @@ function DashboardStatsCards() {
         setLoading(true);
         setError(null);
         try {
-            // Fetch stats basicos
             const statsResp = await api.get('/dashboard-data/');
             setStats(statsResp.data);
 
-            // Fetch Leaderboard (Todos los usuarios)
             try {
-                const usersResp = await api.get('/user-stats/');
+                const usersResp = await api.get('/leaderboard/');
                 const allStats = Array.isArray(usersResp.data) ? usersResp.data : (usersResp.data.results || []);
-
-                // Ordenar por XP y sacar el Top 5
-                const sorted = [...allStats].sort((a, b) => b.experience - a.experience).slice(0, 5);
-                setLeaderboard(sorted);
+                setLeaderboard(allStats.slice(0, 5));
             } catch (err) {
                 console.error("Error fetching leaderboard:", err);
-                // No rompemos todo el dashboard si falla el leaderboard
             }
 
             setError(null);
@@ -110,16 +98,14 @@ function DashboardStatsCards() {
         fetchData();
     }, [fetchData]);
 
-    // Configuración del Gráfico (Minimalista y Pixelado)
     const activeUsersChartData = {
         labels: ['Activos', 'Total'],
         datasets: [
             {
                 label: 'Usuarios',
                 data: [stats.active_users, stats.total_users],
-                // Usamos variables CSS para los colores
-                backgroundColor: ['hsl(100 38% 35%)', 'hsl(28 45% 65%)'], // Primary y Secondary
-                borderColor: 'hsl(20 36% 18%)', // Foreground
+                backgroundColor: ['hsl(100 38% 35%)', 'hsl(28 45% 65%)'],
+                borderColor: 'hsl(20 36% 18%)',
                 borderWidth: 2,
                 barThickness: 20,
             },
@@ -137,7 +123,7 @@ function DashboardStatsCards() {
                 bodyFont: { family: 'VT323', size: 14 },
                 displayColors: false,
                 padding: 8,
-                cornerRadius: 0, // Borde cuadrado
+                cornerRadius: 0,
             }
         },
         scales: {
@@ -224,7 +210,7 @@ function DashboardStatsCards() {
                     colorClass="text-accent"
                 />
 
-                {/* 5. Carta Extra: Engagement (Opcional, si quieres llenar espacio o dar más data) */}
+                {/* 5. Carta Extra: Engagement */}
                 <StatCard
                     title="Tasa de Actividad"
                     value={`${engagementRate}%`}
@@ -234,7 +220,7 @@ function DashboardStatsCards() {
 
             </div>
 
-            {/* Nueva Sección: Leaderboard */}
+            {/* Leaderboard */}
             <div className="mt-8">
                 <h2 className="font-mono text-xl text-foreground mb-4 flex items-center gap-2">
                     <span className="w-2 h-8 bg-yellow-500 block"></span>
@@ -249,32 +235,37 @@ function DashboardStatsCards() {
                                 <tr className="border-b-2 border-foreground text-muted-foreground text-sm uppercase">
                                     <th className="pb-3 px-4">#</th>
                                     <th className="pb-3 px-4">Usuario</th>
-                                    <th className="pb-3 px-4">Nivel</th>
-                                    <th className="pb-3 px-4 text-right">XP Total</th>
+                                    <th className="pb-3 px-4">Destrezas</th>
+                                    <th className="pb-3 px-4 text-right">XP</th>
                                     <th className="pb-3 px-4 text-right">Racha</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {leaderboard.map((userStat, index) => (
                                     <tr key={userStat.id} className="border-b border-foreground/20 hover:bg-muted/30 transition-colors">
-                                        <td className="py-4 px-4 font-bold text-lg">
+                                        <td className="py-3 px-4 font-bold text-lg">
                                             {index + 1}
-                                            {index === 0 && <span className="text-yellow-500 mr-1">★</span>}
-                                            {index === 1 && <span className="text-gray-400 mr-1">★</span>}
-                                            {index === 2 && <span className="text-amber-700 mr-1">★</span>}
+                                            {index === 0 && <span className="text-yellow-500 ml-1">★</span>}
+                                            {index === 1 && <span className="text-gray-400 ml-1">★</span>}
+                                            {index === 2 && <span className="text-amber-700 ml-1">★</span>}
 
                                         </td>
-                                        <td className="py-4 px-4 font-bold text-primary">{userStat.user_username || `User ${userStat.user}`}</td>
-                                        <td className="py-4 px-4">
-                                            <span className="bg-primary/20 text-primary px-2 py-1 rounded-sm text-xs">
-                                                Lvl {userStat.level}
-                                            </span>
+                                        <td className="py-3 px-4 font-bold text-primary">{userStat.user_username || `User ${userStat.id}`}</td>
+                                        <td className="py-3 px-4">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="bg-primary/20 text-primary px-2 py-0.5 rounded-sm text-xs w-max">
+                                                    Lvl {userStat.level}
+                                                </span>
+                                                <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                                                    {userStat.true_accuracy}% Efectividad • {userStat.unlocked_count} p.
+                                                </span>
+                                            </div>
                                         </td>
-                                        <td className="py-4 px-4 font-bold text-right tracking-wider">{userStat.experience.toLocaleString()}</td>
-                                        <td className="py-4 px-4 text-right text-muted-foreground">
+                                        <td className="py-3 px-4 font-bold text-right text-muted-foreground">{userStat.experience.toLocaleString()}</td>
+                                        <td className="py-3 px-4 text-right text-muted-foreground">
                                             {userStat.current_streak > 0 ? (
-                                                <span className="text-orange-500 flex items-center justify-end gap-1">
-                                                    🔥 {userStat.current_streak}
+                                                <span className="text-orange-500 flex items-center justify-end gap-1 font-bold">
+                                                    {userStat.current_streak}<PixelFireIcon />
                                                 </span>
                                             ) : (
                                                 <span className="opacity-50">-</span>

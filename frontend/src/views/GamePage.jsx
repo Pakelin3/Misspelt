@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { PixelPlayIcon, TrophyIcon, PixelClockIcon, PixelStarIcon, PixelHomeIcon, PixelRestartIcon, PixelArrowLeftIcon, PixelSparklesIcon, PixelLockIcon, BookIcon, PixelTargetIcon, SwordIcon, LeafIcon, PixelSkullIcon, PixelFireIcon, PixelMagicOrbIcon, PixelLightningIcon, PixelMoonIcon, PixelHoleIcon, PixelBookOpenIcon } from '@/components/PixelIcons';
+import heroBg from "@/img/background.jpg";
 import SpriteAnimator from '@/components/ui/SpriteAnimator';
 import QuizManager from '@/components/quiz/QuizManager';
 import OracleChat from '@/components/game/OracleChat';
@@ -617,7 +618,6 @@ const GamePage = () => {
                         </div>
                     </Card>
 
-                    {/* Floating Tutorial Button */}
                     <button
                         onClick={startTutorial}
                         className="fixed bottom-6 right-6 w-14 h-14 bg-accent text-accent-foreground pixel-border flex items-center justify-center text-2xl hover:scale-110 transition-transform z-50 shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:shadow-[6px_6px_0_0_rgba(0,0,0,1)]"
@@ -660,13 +660,22 @@ const GamePage = () => {
 
             {/* VISTA A.5: ORACLE CHAT */}
             {gameState === 'AI_EVALUATION' && pendingGameData && (
-                <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-500">
-                    <OracleChat
-                        characterId={selectedSkin}
-                        results={pendingGameData}
-                        onComplete={handleOracleComplete}
-                        userName={user?.username || 'Jugador'}
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black overflow-hidden">
+                    <img
+                        src={heroBg}
+                        alt="Pixel Art Landscape"
+                        className="absolute inset-0 w-full h-full object-cover pixel-rendering opacity-30 pointer-events-none"
                     />
+                    <div className="relative z-10 w-full max-w-4xl h-[90vh] p-4 flex items-center justify-center">
+                        <OracleChat
+                            className="w-full h-full"
+                            characterId={selectedSkin}
+                            results={pendingGameData}
+                            onComplete={handleOracleComplete}
+                            userName={user?.username || 'Jugador'}
+                        />
+                    </div>
+
                 </div>
             )}
 

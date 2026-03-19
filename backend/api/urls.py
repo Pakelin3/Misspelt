@@ -16,6 +16,7 @@ router.register(r'avatars', views.AvatarViewSet, basename='avatar')
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("dashboard-data/", views.AdminDashboardDataAPIView.as_view(), name="admin_dashboard_data"),
+    path("leaderboard/", views.get_leaderboard, name="leaderboard"),
     path("token/", views.MyTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("register/", views.RegisterView.as_view(), name="auth_register"),

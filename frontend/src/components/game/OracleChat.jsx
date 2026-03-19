@@ -196,7 +196,7 @@ STRICT RULE 6: The chat has a maximum of 5 turns. However, YOU CAN DECIDE TO END
                             text:
                                 userText +
                                 (isLastTurn
-                                    ? '\n[SYSTEM]: This is your LAST mandatory turn. Say goodbye to the player briefly in your character, evaluate their entire performance, and AFTER YOUR FAREWELL TEXT, SPACE, AND WRITE A JSON OBJECT EXACTLY WITH THIS STRUCTURE (without markdown \`\`\`json marks): \n{"evaluacion": {"feedback_general": "your brief evaluation", "calidad": 85, "consistencia": "Good"}}'
+                                    ? '\n[SYSTEM]: This is your LAST mandatory turn. Say goodbye to the player briefly in your character, evaluate their entire performance, and AFTER YOUR FAREWELL TEXT, SPACE, AND WRITE A JSON OBJECT EXACTLY WITH THIS STRUCTURE (without markdown \`\`\`json marks): \n{"evaluacion": {"feedback_general": "your brief evaluation", "calidad": 10, "consistencia": "Neutral"}}'
                                     : ""),
                         },
                     ],
