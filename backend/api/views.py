@@ -212,6 +212,11 @@ class BadgePagination(PageNumberPagination):
     page_size_query_param = 'limit'
     max_page_size = 100
 
+class GameHistoryPagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = 'limit'
+    max_page_size = 50
+
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA PALABRAS (CRUD) ---
 # * --------------------------------------------------------------------------------------------------
@@ -724,9 +729,10 @@ def get_leaderboard(request):
 class GameHistoryListView(generics.ListAPIView):
     serializer_class = GameHistorySerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = GameHistoryPagination
 
     def get_queryset(self):
-        return GameHistory.objects.filter(user=self.request.user).order_by('-played_at')[:20]
+        return GameHistory.objects.filter(user=self.request.user).order_by('-played_at')
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEW PARA ACTUALIZAR PERFIL ---

@@ -57,6 +57,11 @@ function ProfilePage() {
     const [userStats, setUserStats] = useState(null);
     const [profileData, setProfileData] = useState(null);
     const [gameHistory, setGameHistory] = useState([]);
+    const [historyPage, setHistoryPage] = useState(1);
+    const [historyCount, setHistoryCount] = useState(0);
+    const [historyNext, setHistoryNext] = useState(null);
+    const [historyPrev, setHistoryPrev] = useState(null);
+    const [historyLoading, setHistoryLoading] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('stats');
@@ -76,15 +81,12 @@ function ProfilePage() {
         setLoading(true);
         setError(null);
         try {
-            const [statsRes, profileRes, historyRes] = await Promise.all([
+            const [statsRes, profileRes] = await Promise.all([
                 api.get('/user-stats/me/'),
                 api.get('/profile/me/'),
-                api.get('/game-history/'),
             ]);
             setUserStats(statsRes.data);
             setProfileData(profileRes.data);
-            const historyData = historyRes.data.results || historyRes.data;
-            setGameHistory(Array.isArray(historyData) ? historyData : []);
         } catch (err) {
             console.error("Error fetching profile data:", err);
             setError("No se pudieron cargar los datos del perfil.");
@@ -93,9 +95,32 @@ function ProfilePage() {
         }
     }, [api, userId]);
 
+    const fetchHistory = useCallback(async (page = 1) => {
+        setHistoryLoading(true);
+        try {
+            const res = await api.get(`/game-history/?page=${page}`);
+            const data = res.data;
+            setGameHistory(data.results || []);
+            setHistoryCount(data.count || 0);
+            setHistoryNext(data.next);
+            setHistoryPrev(data.previous);
+            setHistoryPage(page);
+        } catch (err) {
+            console.error('Error fetching history:', err);
+        } finally {
+            setHistoryLoading(false);
+        }
+    }, [api]);
+
     useEffect(() => {
         fetchAllData();
     }, [fetchAllData]);
+
+    useEffect(() => {
+        if (activeTab === 'history') {
+            fetchHistory(1);
+        }
+    }, [activeTab, fetchHistory]);
 
     const startTutorial = useCallback(() => {
         const driverObj = driver({
@@ -148,7 +173,6 @@ function ProfilePage() {
         if (!loading && !error && userStats) {
             const hasSeenTour = localStorage.getItem('misspelt_has_seen_dashboard_tour');
             if (!hasSeenTour) {
-                // Small delay to ensure render is complete
                 setTimeout(() => {
                     startTutorial();
                 }, 500);
@@ -174,7 +198,7 @@ function ProfilePage() {
             if (editForm.current_title !== (profileData?.current_title || '')) payload.current_title = editForm.current_title || null;
 
             await api.patch('/profile/me/', payload);
-            await fetchAllData(); // Recargar todo
+            await fetchAllData();
             window.dispatchEvent(new Event('profileUpdated'));
             setIsEditing(false);
             toast.success('¡Perfil actualizado!');
@@ -230,8 +254,6 @@ function ProfilePage() {
     const generalAccuracy = getAccuracy(userStats.correct_answers_total, userStats.total_questions_answered);
     const slangAccuracy = getAccuracy(userStats.correct_slangs, userStats.slangs_seen);
     const pvAccuracy = getAccuracy(userStats.correct_phrasal_verbs, userStats.phrasal_verbs_seen);
-
-    // Find current avatar object
     const currentAvatarObj = userStats.unlocked_avatars?.find(a => a.id === profileData?.current_avatar);
     const avatarSrc = currentAvatarObj?.image || `https://ui-avatars.com/api/?name=${userStats.user_username}&background=random`;
 
@@ -239,10 +261,8 @@ function ProfilePage() {
         <div className="min-h-screen bg-background font-sans flex flex-col">
             <div className="flex-1 max-w-5xl w-full mx-auto px-4 py-8 md:py-12 mt-16">
 
-                {/* ═══════════ PLAYER CARD (Hero Section) ═══════════ */}
                 <div className="relative bg-card pixel-border p-6 md:p-8 mb-8">
 
-                    {/* Edit Button */}
                     {!isEditing ? (
                         <button
                             onClick={handleStartEditing}
@@ -269,7 +289,6 @@ function ProfilePage() {
                     )}
 
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                        {/* Avatar */}
                         <div id="tutorial-avatar" className="relative shrink-0 flex flex-col items-center">
                             <div className="w-28 h-28 pixel-border bg-muted/30 p-1 overflow-hidden flex items-center justify-center">
                                 <img
@@ -282,8 +301,6 @@ function ProfilePage() {
                                 NVL {userStats.level}
                             </div>
                         </div>
-
-                        {/* Info */}
                         <div className="flex-1 text-center md:text-left">
                             {!isEditing ? (
                                 <>
@@ -340,8 +357,6 @@ function ProfilePage() {
                                     </div>
                                 </div>
                             )}
-
-                            {/* XP Progress Bar */}
                             <div id="tutorial-xp" className="mt-4 max-w-sm mx-auto md:mx-0">
                                 <div className="flex justify-between text-[10px] font-mono text-muted-foreground mb-1">
                                     <span>XP: {userStats.experience}</span>
@@ -359,8 +374,6 @@ function ProfilePage() {
                                 </p>
                             </div>
                         </div>
-
-                        {/* Quick Stats (Right Side) */}
                         <div id="tutorial-quick-stats" className="hidden md:grid grid-cols-2 gap-2 shrink-0">
                             {[
                                 { label: 'Racha', value: userStats.current_streak, icon: <PixelFireIcon className="w-6 h-6 text-yellow-500/80" /> },
@@ -398,8 +411,6 @@ function ProfilePage() {
                 {/* ─── STATS TAB ─── */}
                 {activeTab === 'stats' && (
                     <div className="space-y-6 animate-in fade-in duration-300">
-
-                        {/* Precision Section */}
                         <div className="bg-card pixel-border p-5">
                             <h3 className="font-mono text-sm uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
                                 <PixelTargetIcon className="w-5 h-5 text-red-500" /> Precisión
@@ -410,8 +421,6 @@ function ProfilePage() {
                                 <StatGauge label="Phrasal Verbs" value={pvAccuracy} maxValue={100} isPercentage />
                             </div>
                         </div>
-
-                        {/* Knowledge Section */}
                         <div className="bg-card pixel-border p-5">
                             <h3 className="font-mono text-sm uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
                                 <PixelBookOpenIcon className="w-5 h-5 text-blue-500" /> Conocimiento
@@ -423,8 +432,6 @@ function ProfilePage() {
                                 <StatGauge label="Vocabulario" value={userStats.vocabulary_learned || 0} maxValue={200} />
                             </div>
                         </div>
-
-                        {/* Activity Section */}
                         <div className="bg-card pixel-border p-5">
                             <h3 className="font-mono text-sm uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
                                 <PixelLightningIcon className="w-5 h-5 text-yellow-500" /> Actividad
@@ -435,8 +442,6 @@ function ProfilePage() {
                                 <StatGauge label="Respuestas Correctas" value={userStats.correct_answers_total || 0} maxValue={userStats.total_questions_answered || 1} />
                             </div>
                         </div>
-
-                        {/* Combat Section */}
                         <div className="bg-card pixel-border p-5">
                             <h3 className="font-mono text-sm uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
                                 <SwordIcon className="w-5 h-5 text-foreground" /> Combate (Acumulado)
@@ -453,106 +458,127 @@ function ProfilePage() {
                 {/* ─── HISTORY TAB ─── */}
                 {activeTab === 'history' && (
                     <div className="animate-in fade-in duration-300">
-                        {gameHistory.length === 0 ? (
+                        {historyLoading ? (
+                            <div className="flex flex-col items-center justify-center py-12 gap-3">
+                                <div className="w-10 h-10 border-4 border-accent border-t-transparent animate-spin rounded-full" />
+                                <p className="font-mono text-xs text-muted-foreground animate-pulse">CARGANDO HISTORIAL...</p>
+                            </div>
+                        ) : gameHistory.length === 0 ? (
                             <div className="text-center p-12 bg-card pixel-border text-muted-foreground">
                                 <PixelBookOpenIcon className="w-10 h-10 mb-3 mx-auto text-muted-foreground/50" />
                                 <p className="font-mono text-sm">Aún no has jugado ninguna partida.</p>
                                 <p className="text-xs mt-1">¡Ve a jugar y tu historial aparecerá aquí!</p>
                             </div>
                         ) : (
-                            <div className="space-y-3">
-                                {gameHistory.map(game => {
-                                    const accuracy = getAccuracy(game.correct_in_game, game.total_questions_in_game);
-                                    const accColor = accuracy >= 80 ? 'text-green-500' : accuracy >= 50 ? 'text-yellow-500' : 'text-red-500';
-                                    const isSurvivor = game.game_mode === 'SURVIVOR';
+                            <>
+                                <div className="space-y-3">
+                                    {gameHistory.map(game => {
+                                        const accuracy = getAccuracy(game.correct_in_game, game.total_questions_in_game);
+                                        const accColor = accuracy >= 80 ? 'text-green-500' : accuracy >= 50 ? 'text-yellow-500' : 'text-red-500';
+                                        const isSurvivor = game.game_mode === 'SURVIVOR';
 
-                                    return (
-                                        <div key={game.id} className="bg-card pixel-border p-4 flex flex-col gap-4 hover:bg-muted/20 transition-colors">
-                                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                                                {/* Mode Icon */}
-                                                <div className={`
-                                                    w-12 h-12 flex items-center justify-center border-2 shrink-0
-                                                    ${isSurvivor ? 'border-red-500/50 bg-red-500/10 text-red-500' : 'border-blue-500/50 bg-blue-500/10 text-blue-500'}
-                                                `}>
-                                                    {isSurvivor ? <SwordIcon className="w-6 h-6" /> : <PixelBookOpenIcon className="w-6 h-6" />}
-                                                </div>
-
-                                                {/* Details */}
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 border ${isSurvivor ? 'border-red-500/50 text-red-500' : 'border-blue-500/50 text-blue-500'}`}>
-                                                            {isSurvivor ? 'SURVIVOR' : 'QUIZ'}
-                                                        </span>
-                                                        <span className="text-[10px] text-muted-foreground font-mono">{formatDate(game.played_at)}</span>
+                                        return (
+                                            <div key={game.id} className="bg-card pixel-border p-4 flex flex-col gap-4 hover:bg-muted/20 transition-colors">
+                                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                                    <div className={`
+                                                        w-12 h-12 flex items-center justify-center border-2 shrink-0
+                                                        ${isSurvivor ? 'border-red-500/50 bg-red-500/10 text-red-500' : 'border-blue-500/50 bg-blue-500/10 text-blue-500'}
+                                                    `}>
+                                                        {isSurvivor ? <SwordIcon className="w-6 h-6" /> : <PixelBookOpenIcon className="w-6 h-6" />}
                                                     </div>
-                                                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-mono text-muted-foreground">
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 border ${isSurvivor ? 'border-red-500/50 text-red-500' : 'border-blue-500/50 text-blue-500'}`}>
+                                                                {isSurvivor ? 'SURVIVOR' : 'QUIZ'}
+                                                            </span>
+                                                            <span className="text-[10px] text-muted-foreground font-mono">{formatDate(game.played_at)}</span>
+                                                        </div>
+                                                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-mono text-muted-foreground">
+                                                            {game.total_questions_in_game > 0 && (
+                                                                <span>Preguntas: <span className="text-foreground font-bold">{game.correct_in_game}/{game.total_questions_in_game}</span></span>
+                                                            )}
+                                                            {game.time_spent_seconds > 0 && (
+                                                                <span>Tiempo: <span className="text-foreground font-bold">{formatTime(game.time_spent_seconds)}</span></span>
+                                                            )}
+                                                            {isSurvivor && game.letters_killed > 0 && (
+                                                                <span>Letras: <span className="text-foreground font-bold">{game.letters_killed}</span></span>
+                                                            )}
+                                                            {isSurvivor && game.bosses_killed > 0 && (
+                                                                <span>Jefes: <span className="text-foreground font-bold">{game.bosses_killed}</span></span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-4 shrink-0">
                                                         {game.total_questions_in_game > 0 && (
-                                                            <span>Preguntas: <span className="text-foreground font-bold">{game.correct_in_game}/{game.total_questions_in_game}</span></span>
+                                                            <div className="text-right">
+                                                                <p className={`font-mono text-lg font-bold ${accColor}`}>{accuracy.toFixed(0)}%</p>
+                                                                <p className="text-[9px] font-mono text-muted-foreground uppercase">Precisión</p>
+                                                            </div>
                                                         )}
-                                                        {game.time_spent_seconds > 0 && (
-                                                            <span>Tiempo: <span className="text-foreground font-bold">{formatTime(game.time_spent_seconds)}</span></span>
-                                                        )}
-                                                        {isSurvivor && game.letters_killed > 0 && (
-                                                            <span>Letras: <span className="text-foreground font-bold">{game.letters_killed}</span></span>
-                                                        )}
-                                                        {isSurvivor && game.bosses_killed > 0 && (
-                                                            <span>Jefes: <span className="text-foreground font-bold">{game.bosses_killed}</span></span>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                {/* Score & Accuracy */}
-                                                <div className="flex items-center gap-4 shrink-0">
-                                                    {game.total_questions_in_game > 0 && (
                                                         <div className="text-right">
-                                                            <p className={`font-mono text-lg font-bold ${accColor}`}>{accuracy.toFixed(0)}%</p>
-                                                            <p className="text-[9px] font-mono text-muted-foreground uppercase">Precisión</p>
+                                                            <p className="font-mono text-lg font-bold text-accent">+{game.score}</p>
+                                                            <p className="text-[9px] font-mono text-muted-foreground uppercase">XP</p>
                                                         </div>
-                                                    )}
-                                                    <div className="text-right">
-                                                        <p className="font-mono text-lg font-bold text-accent">+{game.score}</p>
-                                                        <p className="text-[9px] font-mono text-muted-foreground uppercase">XP</p>
                                                     </div>
                                                 </div>
+                                                {game.ai_evaluation && (() => {
+                                                    const aiEval = game.ai_evaluation.evaluacion || game.ai_evaluation;
+                                                    const quality = aiEval.calidad || 0;
+                                                    const qualityColor = quality >= 80 ? 'text-green-500' : quality >= 50 ? 'text-yellow-500' : 'text-red-500';
+
+                                                    return (
+                                                        <div className="mt-2 pt-3 border-t-2 border-dashed border-foreground/20">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <span className="text-sm">🔮</span>
+                                                                <span className="text-[11px] font-mono font-bold uppercase text-primary tracking-wider">Evaluación del Oráculo</span>
+                                                            </div>
+
+                                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                                <div className="md:col-span-2">
+                                                                    <p className="text-sm leading-relaxed border-l-2 border-primary pl-3 italic text-foreground/90">
+                                                                        "{aiEval.feedback_general}"
+                                                                    </p>
+                                                                </div>
+                                                                <div className="flex gap-4">
+                                                                    <div>
+                                                                        <p className="text-[10px] uppercase font-mono text-muted-foreground mb-1">Calidad</p>
+                                                                        <div className={`text-base font-bold ${qualityColor}`}>{quality}/100</div>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-[10px] uppercase font-mono text-muted-foreground mb-1">Feedback</p>
+                                                                        <div className="text-sm font-bold text-foreground">{aiEval.consistencia}</div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })()}
                                             </div>
-
-                                            {/* AI Evaluation */}
-                                            {game.ai_evaluation && (() => {
-                                                const aiEval = game.ai_evaluation.evaluacion || game.ai_evaluation;
-                                                const quality = aiEval.calidad || 0;
-                                                const qualityColor = quality >= 80 ? 'text-green-500' : quality >= 50 ? 'text-yellow-500' : 'text-red-500';
-
-                                                return (
-                                                    <div className="mt-2 pt-3 border-t-2 border-dashed border-foreground/20">
-                                                        <div className="flex items-center gap-2 mb-2">
-                                                            <span className="text-sm">🔮</span>
-                                                            <span className="text-[11px] font-mono font-bold uppercase text-primary tracking-wider">Evaluación del Oráculo</span>
-                                                        </div>
-
-                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                                            <div className="md:col-span-2">
-                                                                <p className="text-sm leading-relaxed border-l-2 border-primary pl-3 italic text-foreground/90">
-                                                                    "{aiEval.feedback_general}"
-                                                                </p>
-                                                            </div>
-                                                            <div className="flex gap-4">
-                                                                <div>
-                                                                    <p className="text-[10px] uppercase font-mono text-muted-foreground mb-1">Calidad</p>
-                                                                    <div className={`text-base font-bold ${qualityColor}`}>{quality}/100</div>
-                                                                </div>
-                                                                <div>
-                                                                    <p className="text-[10px] uppercase font-mono text-muted-foreground mb-1">Feedback</p>
-                                                                    <div className="text-sm font-bold text-foreground">{aiEval.consistencia}</div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })()}
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                                        );
+                                    })}
+                                </div>
+                                {historyCount > 5 && (
+                                    <div className="flex items-center justify-between mt-6 pt-4 border-t-2 border-foreground/20">
+                                        <button
+                                            onClick={() => fetchHistory(historyPage - 1)}
+                                            disabled={!historyPrev}
+                                            className="px-4 py-2 font-mono text-xs uppercase tracking-wider border-2 border-foreground bg-card hover:bg-muted transition-colors disabled:opacity-30 disabled:cursor-not-allowed pixel-border"
+                                        >
+                                            ◀ Anterior
+                                        </button>
+                                        <span className="font-mono text-xs text-muted-foreground">
+                                            Página {historyPage} de {Math.ceil(historyCount / 5)}
+                                        </span>
+                                        <button
+                                            onClick={() => fetchHistory(historyPage + 1)}
+                                            disabled={!historyNext}
+                                            className="px-4 py-2 font-mono text-xs uppercase tracking-wider border-2 border-foreground bg-card hover:bg-muted transition-colors disabled:opacity-30 disabled:cursor-not-allowed pixel-border"
+                                        >
+                                            Siguiente ▶
+                                        </button>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 )}
@@ -596,8 +622,6 @@ function ProfilePage() {
                 )}
 
             </div>
-
-            {/* Floating Tutorial Button */}
             <button
                 onClick={startTutorial}
                 className="fixed bottom-6 right-6 w-14 h-14 bg-accent text-accent-foreground pixel-border flex items-center justify-center text-2xl hover:scale-110 transition-transform z-50 shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:shadow-[6px_6px_0_0_rgba(0,0,0,1)]"
