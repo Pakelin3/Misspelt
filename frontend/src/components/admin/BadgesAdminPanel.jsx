@@ -2,8 +2,6 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import useAxios from '@/utils/useAxios';
 import { Plus, Edit, Trash2, Save, Search, Loader2, Upload, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
-
-// Componentes UI Propios
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
@@ -11,45 +9,37 @@ function BadgesAdminPanel() {
     const api = useAxios();
     const fileInputRef = useRef(null);
 
-    // Estados de datos
     const [badges, setBadges] = useState([]);
     const [avatars, setAvatars] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Paginación
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-
-    // Filtros
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-
-    // Estado del Formulario
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingBadge, setEditingBadge] = useState(null);
 
-    // Form Data
     const [formData, setFormData] = useState({
         title: '',
         description: '',
-        category: 'BASIC', // Kept from original, as it's likely needed
+        category: 'BASIC',
         xp_reward: 50,
-        avatar_reward: '', // Kept from original
-        title_reward: '', // Kept from original
-        condition_type: 'correct_slangs', // Kept from original
-        condition_value: 10, // Kept from original
-        condition_description: '', // Kept from original
-        reward_description: '', // Kept from original
-        is_secret: false, // Added from user's snippet
+        avatar_reward: '',
+        title_reward: '',
+        condition_type: 'correct_slangs',
+        condition_value: 10,
+        condition_description: '',
+        reward_description: '',
+        is_secret: false,
         image: null
     });
     const [previewUrl, setPreviewUrl] = useState(null);
 
-    // --- EFECTO DEBOUNCE ---
     useEffect(() => {
         const timerId = setTimeout(() => {
             setDebouncedSearchTerm(searchTerm);
-            setCurrentPage(1); // Reset page on new search
+            setCurrentPage(1);
         }, 500);
 
         return () => {
@@ -57,7 +47,6 @@ function BadgesAdminPanel() {
         };
     }, [searchTerm]);
 
-    // --- FETCH DATA ---
     const fetchBadges = useCallback(async (page, search) => {
         setLoading(true);
         try {
@@ -93,12 +82,9 @@ function BadgesAdminPanel() {
         fetchAvatars();
     }, [fetchBadges, fetchAvatars, currentPage, debouncedSearchTerm]);
 
-    // --- MANEJADORES DEL FORMULARIO ---
     const handleOpenForm = (badge = null) => {
         if (badge) {
             setEditingBadge(badge);
-
-            // Extract condition data safely
             let condType = 'correct_slangs';
             let condValue = 10;
             if (badge.unlock_condition_data && badge.unlock_condition_data.length > 0) {
@@ -106,7 +92,6 @@ function BadgesAdminPanel() {
                 condValue = badge.unlock_condition_data[0].value || 0;
             }
 
-            // Extract reward data safely
             let xp = 50;
             let avatarId = '';
             let titleRw = '';
@@ -181,7 +166,6 @@ function BadgesAdminPanel() {
         dataToSend.append('title', formData.title);
         dataToSend.append('description', formData.description);
 
-        // Construct complex fields for backend
         const conditionData = [{
             type: formData.condition_type,
             value: Number(formData.condition_value)
@@ -270,7 +254,6 @@ function BadgesAdminPanel() {
         });
     };
 
-    // Filter by title
     const filteredBadges = badges.filter(badge =>
         badge.title?.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -318,7 +301,6 @@ function BadgesAdminPanel() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         {filteredBadges.map((badge) => {
-                            // Extract display info safely
                             let xpDisplay = 0;
                             if (badge.reward_data && badge.reward_data.exp) xpDisplay = badge.reward_data.exp;
 
@@ -330,7 +312,6 @@ function BadgesAdminPanel() {
 
                             return (
                                 <div key={badge.id} className="group relative bg-muted/20 border-2 border-foreground p-4 flex flex-col items-center text-center hover:bg-muted/40 transition-colors">
-                                    {/* Badge Image Preview */}
                                     <div className="w-24 h-24 mb-4 bg-background border-2 border-foreground p-2 relative overflow-hidden flex items-center justify-center">
                                         {badge.image ? (
                                             <img src={badge.image} alt={badge.title} className="w-full h-full object-contain pixelated" />
@@ -342,18 +323,15 @@ function BadgesAdminPanel() {
                                         </div>
                                     </div>
 
-                                    {/* Badge Info */}
                                     <h3 className="font-bold text-lg leading-tight mb-1">{badge.title}</h3>
                                     <p className="text-xs text-muted-foreground line-clamp-2 mb-3 h-8">
                                         {badge.description}
                                     </p>
 
-                                    {/* Category */}
                                     <div className="text-[9px] font-bold px-2 py-0.5 mb-2 border border-foreground uppercase">
                                         {badge.category || 'BASIC'}
                                     </div>
 
-                                    {/* Action info */}
                                     <div className="text-[10px] font-bold bg-secondary/30 px-2 py-1 border border-foreground/30 mb-1 w-full truncate">
                                         Desafío: {badge.condition_description || conditionDisplay}
                                     </div>
@@ -361,7 +339,6 @@ function BadgesAdminPanel() {
                                         Premio: {badge.reward_description || `+${xpDisplay} XP`}
                                     </div>
 
-                                    {/* Actions */}
                                     <div className="flex w-full gap-2 mt-auto">
                                         <Button
                                             variant="outline"
@@ -384,7 +361,6 @@ function BadgesAdminPanel() {
                     </div>
                 )}
 
-                {/* Controles de Paginación */}
                 {!loading && totalPages > 1 && (
                     <div className="flex justify-between items-center mt-6 pt-4 border-t-4 border-foreground w-full">
                         <Button
@@ -410,11 +386,9 @@ function BadgesAdminPanel() {
                 )}
             </div>
 
-            {/* --- MODAL FORMULARIO --- */}
             {isFormOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                     <div className="bg-card w-full max-w-4xl border-4 border-foreground shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-                        {/* Header */}
                         <div className="bg-primary text-primary-foreground p-3 flex justify-between items-center border-b-4 border-foreground shrink-0">
                             <h3 className="font-bold text-lg uppercase flex items-center gap-2">
                                 {editingBadge ? 'Editar Insignia' : 'Nueva Insignia'}
@@ -424,10 +398,8 @@ function BadgesAdminPanel() {
                             </button>
                         </div>
 
-                        {/* Body */}
                         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto custom-scrollbar flex-1">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                {/* Columna Izquierda: Imagen */}
                                 <div className="md:col-span-1 flex flex-col items-center gap-3">
                                     <label className="text-xs font-bold uppercase self-start">Icono / Imagen</label>
                                     <div
@@ -443,7 +415,6 @@ function BadgesAdminPanel() {
                                             </div>
                                         )}
 
-                                        {/* Overlay Hover */}
                                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                             <Upload className="w-8 h-8 text-white" />
                                         </div>
@@ -460,7 +431,6 @@ function BadgesAdminPanel() {
                                     </p>
                                 </div>
 
-                                {/* Columna Derecha: Datos */}
                                 <div className="md:col-span-2 space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
@@ -615,7 +585,6 @@ function BadgesAdminPanel() {
                             </div>
                         </form>
 
-                        {/* Footer Buttons */}
                         <div className="p-4 border-t-4 border-foreground bg-muted/20 flex gap-3 shrink-0">
                             <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)} className="flex-1 border-2 border-foreground rounded-none pixel-btn h-12">
                                 CANCELAR

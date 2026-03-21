@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { BookIcon, SwordIcon, PixelChevronIcon } from '@/components/PixelIcons';
 import { VillagerIcon, SignalIcon, MedalRibbonIcon } from '@/components/AdminPixelIcons';
-import { LogOut, Menu, X, ChevronRight } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import DashboardStatsCards from '@/components/admin/DashboardStatsCards';
 import DictionaryAdminPanel from '@/components/admin/DictionaryAdminPanel';
 import BadgesAdminPanel from '@/components/admin/BadgesAdminPanel';
@@ -14,30 +14,29 @@ const ADMIN_MENU = [
     {
         title: 'Dashboard',
         path: '/admin-dashboard',
-        icon: SignalIcon, // Icono de reporte/estadísticas
+        icon: SignalIcon,
         description: 'Estadísticas generales'
     },
     {
         title: 'Diccionario',
         path: '/admin-dashboard/words',
-        icon: BookIcon, // Libro pixelado
+        icon: BookIcon,
         description: 'Gestionar palabras'
     },
     {
         title: 'Insignias',
         path: '/admin-dashboard/badges',
-        icon: MedalRibbonIcon, // Medalla pixelada
+        icon: MedalRibbonIcon,
         description: 'Logros y premios'
     },
     {
         title: 'Avatares',
         path: '/admin-dashboard/avatars',
-        icon: VillagerIcon, // Aldeano pixelado
+        icon: VillagerIcon,
         description: 'Usuarios y skins'
     }
 ];
 
-// --- COMPONENTE: SIDEBAR LINK ---
 const AdminSidebarLink = ({ item, isActive, isCollapsed, onClick }) => {
     return (
         <Link
@@ -62,28 +61,23 @@ const AdminSidebarLink = ({ item, isActive, isCollapsed, onClick }) => {
     );
 };
 
-// --- LAYOUT PRINCIPAL ---
 function AdminDashboard() {
-    // const { theme } = useTheme();
     const location = useLocation();
     const navigate = useNavigate();
-    const [isSidebarOpen, setSidebarOpen] = useState(true); // Desktop
-    const [isMobileMenuOpen, setMobileMenuOpen] = useState(false); // Mobile
+    const [isSidebarOpen, setSidebarOpen] = useState(true);
+    const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    // Determinar título actual
     const currentRoute = ADMIN_MENU.find(item => item.path === location.pathname) || ADMIN_MENU[0];
 
     return (
-        <div className="min-h-screen bg-background flex font-sans pt-[72px]"> {/* pt-[72px] para compensar el Navbar global */}
+        <div className="min-h-screen bg-background flex font-sans pt-[72px]">
 
-            {/* --- SIDEBAR DESKTOP --- */}
             <aside
                 className={`
                     hidden md:flex flex-col border-r-4 border-foreground bg-card h-[calc(100vh-72px)] sticky top-[72px] transition-all duration-300 z-20
                     ${isSidebarOpen ? 'w-64' : 'w-20'}
                 `}
             >
-                {/* Header del Sidebar */}
                 <div className="h-16 flex items-center justify-center border-b-4 border-foreground bg-muted/30">
                     <div className={`flex items-center gap-2 overflow-hidden ${!isSidebarOpen && 'justify-center'}`}>
                         <div className="w-8 h-8 bg-destructive rounded-sm flex items-center justify-center shrink-0 pixel-border border-2 border-foreground">
@@ -95,7 +89,6 @@ function AdminDashboard() {
                     </div>
                 </div>
 
-                {/* Navegación */}
                 <nav className="flex-1 py-4 overflow-y-auto custom-scrollbar">
                     {ADMIN_MENU.map((item) => (
                         <AdminSidebarLink
@@ -107,7 +100,6 @@ function AdminDashboard() {
                     ))}
                 </nav>
 
-                {/* Footer Sidebar */}
                 <div className="p-2 border-t-4 border-foreground bg-muted/30">
                     <button
                         onClick={() => setSidebarOpen(!isSidebarOpen)}
@@ -127,8 +119,6 @@ function AdminDashboard() {
                 </div>
             </aside>
 
-
-            {/* --- SIDEBAR MOBILE (Overlay) --- */}
             {isMobileMenuOpen && (
                 <div className="fixed inset-0 z-50 md:hidden pt-[72px]">
                     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
@@ -154,11 +144,8 @@ function AdminDashboard() {
                 </div>
             )}
 
-
-            {/* --- CONTENIDO PRINCIPAL --- */}
             <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">
 
-                {/* Sub-Header del Panel */}
                 <header className="h-16 border-b-4 border-foreground bg-card flex items-center justify-between px-4 sm:px-6 sticky top-0 z-10">
                     <div className="flex items-center gap-4">
                         <button
@@ -191,12 +178,9 @@ function AdminDashboard() {
                     </div>
                 </header>
 
-                {/* Wrapper del Contenido */}
                 <div className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
                     <div className="mx-auto max-w-7xl animate-in fade-in zoom-in-95 duration-300">
-                        {/* Contenedor tipo tarjeta pixelada */}
                         <div className="bg-card pixel-border p-6 sm:p-8 min-h-[500px] relative">
-                            {/* Decoración esquinas (opcional, estilo retro) */}
                             <div className="absolute top-2 left-2 w-2 h-2 bg-foreground/20" />
                             <div className="absolute top-2 right-2 w-2 h-2 bg-foreground/20" />
                             <div className="absolute bottom-2 left-2 w-2 h-2 bg-foreground/20" />

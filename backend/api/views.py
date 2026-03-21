@@ -13,7 +13,7 @@ from api.services import award_badge_rewards #
 from api.badge_unlock_logic import check_and_unlock_badges #
 from django.shortcuts import redirect
 from django.conf import settings
-from django.db.models import F
+from django.db.models import F, ExpressionWrapper, FloatField, Count
 from api.serializer import (
     myTokenObtainPairSerializer,
     RegisterSerializer,
@@ -31,8 +31,6 @@ import google.auth.transport.requests
 import requests
 import uuid
 from rest_framework_simplejwt.tokens import RefreshToken
-
-
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA AUTENTICACION ---
 # * --------------------------------------------------------------------------------------------------
@@ -213,6 +211,11 @@ class BadgePagination(PageNumberPagination):
     page_size = 12
     page_size_query_param = 'limit'
     max_page_size = 100
+
+class GameHistoryPagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = 'limit'
+    max_page_size = 50
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA PALABRAS (CRUD) ---
@@ -673,29 +676,63 @@ def submit_game_results(request):
 # * --------------------------------------------------------------------------------------------------
 def get_quiz_question(word_id):
     correct_word = Word.objects.get(id=word_id)
-    
-    # 1. Buscar distractores inteligentes (mismo tag)
     tag_list = correct_word.tags.split(',')
     distractors = Word.objects.filter(tags__icontains=tag_list[0]).exclude(id=correct_word.id)[:3] 
-    # 2. Si faltan, rellenar con aleatorios
     if len(distractors) < 3:
         randoms = Word.objects.exclude(id=correct_word.id).order_by('?')[:3 - len(distractors)]
     
     return {
         "question": f"¿Cómo se dice '{correct_word.translation}'?",
-        "options": [correct_word.text] + [d.text for d in distractors], # (luego se desordena en frontend)
+        "options": [correct_word.text] + [d.text for d in distractors], 
         "accepted_answers": [correct_word.text] + [s.text for s in correct_word.substitutes.all()]
     }
 
+
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA LA LEADERBOARD ---
+# * --------------------------------------------------------------------------------------------------
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_leaderboard(request):
+    
+    leaderboard = UserStats.objects.select_related('user').annotate(
+        unlocked_count=Count('unlocked_words'),
+        true_accuracy=ExpressionWrapper(
+            (F('correct_answers_total')) / (F('total_questions_answered') + 10.0),
+            output_field=FloatField()
+        ),
+        performance_score=ExpressionWrapper(
+            F('experience') + (F('unlocked_count') * 50) + (F('total_questions_answered') * 10 * F('true_accuracy')),
+            output_field=FloatField()
+        )
+    ).order_by('-performance_score')[:10] 
+
+    data = []
+    for stat in leaderboard:
+        data.append({
+            'id': stat.id,
+            'user_username': stat.user.username,
+            'level': stat.get_level(),
+            'experience': stat.experience,
+            'current_streak': stat.current_streak,
+            'unlocked_count': stat.unlocked_count,
+            'true_accuracy': round(stat.true_accuracy * 100, 1) if stat.true_accuracy else 0,
+            'performance_score': round(stat.performance_score) if stat.performance_score else 0
+        })
+
+    return Response(data, status=status.HTTP_200_OK)
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA HISTORIAL DE PARTIDAS ---
 # * --------------------------------------------------------------------------------------------------
 class GameHistoryListView(generics.ListAPIView):
     serializer_class = GameHistorySerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = GameHistoryPagination
 
     def get_queryset(self):
-        return GameHistory.objects.filter(user=self.request.user).order_by('-played_at')[:20]
+        return GameHistory.objects.filter(user=self.request.user).order_by('-played_at')
 
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEW PARA ACTUALIZAR PERFIL ---

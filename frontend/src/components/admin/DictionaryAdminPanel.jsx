@@ -2,25 +2,17 @@ import React, { useState, useEffect, useCallback } from 'react';
 import useAxios from '@/utils/useAxios';
 import { Plus, Edit, Trash2, Save, X, Search, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-
-// Componentes UI Propios
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
 function DictionaryAdminPanel() {
     const api = useAxios();
-
-    // Estados de datos
     const [words, setWords] = useState([]);
     const [loading, setLoading] = useState(true);
-
-    // Paginación y Filtros
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
     const itemsPerPage = 10;
-
-    // Estado del Formulario
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isUploadOpen, setIsUploadOpen] = useState(false);
     const [uploadFile, setUploadFile] = useState(null);
@@ -35,7 +27,6 @@ function DictionaryAdminPanel() {
         tags: ''
     });
 
-    // --- FETCH DATA ---
     const fetchWords = useCallback(async () => {
         setLoading(true);
         try {
@@ -43,7 +34,6 @@ function DictionaryAdminPanel() {
             const response = await api.get(`/words/?page=${page}&limit=${itemsPerPage}${searchParam}`);
 
             setWords(response.data.results || []);
-            // Calcular total de páginas basado en el count (asumiendo que tu API devuelve 'count')
             const totalCount = response.data.count || 0;
             setTotalPages(Math.ceil(totalCount / itemsPerPage));
         } catch (err) {
@@ -55,14 +45,12 @@ function DictionaryAdminPanel() {
     }, [api, page, searchTerm]);
 
     useEffect(() => {
-        // Debounce para la búsqueda
         const timer = setTimeout(() => {
             fetchWords();
         }, 300);
         return () => clearTimeout(timer);
     }, [fetchWords]);
 
-    // --- MANEJADORES DEL FORMULARIO ---
     const handleOpenForm = (word = null) => {
         if (word) {
             setEditingWord(word);
@@ -93,13 +81,12 @@ function DictionaryAdminPanel() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // Filtrar ejemplos vacíos
             const validExamples = formData.examples.filter(ex => ex.en.trim() !== '' || ex.es.trim() !== '');
 
             const payload = {
                 ...formData,
                 examples: validExamples,
-                tags: formData.tags, // String directamente al CharField
+                tags: formData.tags,
                 difficulty_level: parseInt(formData.difficulty_level)
             };
 
@@ -169,7 +156,6 @@ function DictionaryAdminPanel() {
         }
     };
 
-    // --- MANEJADORES DE EJEMPLOS DINÁMICOS ---
     const handleAddExample = () => {
         setFormData({
             ...formData,
@@ -191,7 +177,6 @@ function DictionaryAdminPanel() {
         setFormData({ ...formData, examples: newExamples });
     };
 
-    // --- HELPER PARA TIPOS ---
     const getTypeBadgeStyle = (type) => {
         switch (type) {
             case 'SLANG': return 'bg-yellow-100 text-yellow-800 border-yellow-800';
@@ -204,7 +189,6 @@ function DictionaryAdminPanel() {
 
     return (
         <div className="space-y-6 font-mono">
-            {/* --- TOP BAR --- */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-card p-4 border-4 border-foreground shadow-sm">
                 <div>
                     <h2 className="text-2xl font-bold uppercase tracking-tighter">
@@ -240,7 +224,6 @@ function DictionaryAdminPanel() {
                 </div>
             </div>
 
-            {/* --- TABLA PIXELADA --- */}
             <div className="bg-card border-4 border-foreground overflow-hidden relative min-h-[400px]">
                 {loading && (
                     <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
@@ -319,7 +302,6 @@ function DictionaryAdminPanel() {
                 </div>
             </div>
 
-            {/* --- PAGINACIÓN --- */}
             <div className="flex justify-between items-center bg-card border-4 border-foreground p-2">
                 <Button
                     variant="outline"
@@ -342,11 +324,9 @@ function DictionaryAdminPanel() {
                 </Button>
             </div>
 
-            {/* --- MODAL DE FORMULARIO (Pixel Style) --- */}
             {isFormOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                     <div className="bg-card w-full max-w-lg border-4 border-foreground shadow-2xl relative animate-in zoom-in-95 duration-200">
-                        {/* Header del Modal */}
                         <div className="bg-primary text-primary-foreground p-3 flex justify-between items-center border-b-4 border-foreground">
                             <h3 className="font-bold text-lg uppercase flex items-center gap-2">
                                 {editingWord ? <Edit className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
@@ -357,7 +337,6 @@ function DictionaryAdminPanel() {
                             </button>
                         </div>
 
-                        {/* Body del Modal */}
                         <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
                             <div className="space-y-4">
                                 <div className="space-y-2">
@@ -493,7 +472,6 @@ function DictionaryAdminPanel() {
                 </div>
             )}
 
-            {/* MODAL DE IMPORTACIÓN CSV */}
             {isUploadOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                     <div className="bg-card border-4 border-foreground w-full max-w-md max-h-[90vh] flex flex-col relative z-50 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
