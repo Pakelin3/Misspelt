@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import SpriteAnimator from "@/components/ui/SpriteAnimator";
+import useAxios from "@/utils/useAxios";
 
 const LLM_API_KEY =
     import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_OPENAI_API_KEU;
@@ -27,6 +28,7 @@ const VOICE_IDS = {
 };
 
 export default function OracleChat({ characterId, results, onComplete, userName = "Jugador" }) {
+    const api = useAxios();
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
     const [isThinking, setIsThinking] = useState(false);
@@ -262,17 +264,8 @@ STRICT RULE 6: The chat has a maximum of 5 turns. However, YOU CAN DECIDE TO END
     };
 
     const callGeminiAPI = async (history) => {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`;
-
-        const response = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents: history }),
-        });
-
-        const data = await response.json();
-        let rawText = data.candidates[0].content.parts[0].text;
-        return rawText.replace(/\*/g, '');
+        const response = await api.post('/game/oracle-post-game/', { history });
+        return response.data.response;
     };
 
     const playTTS = async (text, force = false) => {
