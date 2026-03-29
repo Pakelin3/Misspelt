@@ -6,6 +6,7 @@ import VzlaFlag from '@/assets/ve.svg';
 import UsaFlag from '@/assets/us.svg';
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
+import OracleChatDictionary from "@/components/dictionary/OracleChatDictionary";
 
 
 const getTypeBadgeStyle = (type) => {
@@ -45,6 +46,7 @@ function DictionaryPage() {
     // Modal
     const [selectedWord, setSelectedWord] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isOracleOpen, setIsOracleOpen] = useState(false);
 
     const selectedWordRef = useRef(selectedWord);
     const api = useAxios();
@@ -324,7 +326,9 @@ function DictionaryPage() {
                 )}
             </div>
 
-            {isModalOpen && <WordDetailModal word={selectedWord} onClose={() => setIsModalOpen(false)} />}
+            {isModalOpen && <WordDetailModal word={selectedWord} onClose={() => setIsModalOpen(false)} onOpenOracle={() => { setIsModalOpen(false); setIsOracleOpen(true); }} />}
+
+            {isOracleOpen && <OracleChatDictionary word={selectedWord} onClose={() => setIsOracleOpen(false)} />}
 
             {/* Floating Tutorial Button */}
             <button
@@ -341,7 +345,7 @@ function DictionaryPage() {
 export default DictionaryPage;
 
 
-const WordDetailModal = ({ word, onClose }) => {
+const WordDetailModal = ({ word, onClose, onOpenOracle }) => {
 
     const [voices, setVoices] = useState([]);
     const [currentExampleIndex, setCurrentExampleIndex] = useState(0);
@@ -512,8 +516,11 @@ const WordDetailModal = ({ word, onClose }) => {
                         PRONUNCIACIÓN
                     </button>
 
-                    <button className="flex-1 flex items-center justify-center gap-2 bg-accent text-accent-foreground py-3 font-mono text-xs pixel-btn pixel-border-accent hover:brightness-110">
-                        CONSULTAR A LA I.A.
+                    <button 
+                        onClick={onOpenOracle}
+                        className="flex-1 flex items-center justify-center gap-2 bg-accent text-accent-foreground py-3 font-mono text-xs pixel-btn border-4 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:brightness-110 active:translate-y-1 active:shadow-none transition-all"
+                    >
+                        <span className="font-bold text-sm">👁 ORÁCULO</span>
                     </button>
                 </div>
             </div>

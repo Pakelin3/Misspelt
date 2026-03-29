@@ -29,6 +29,8 @@ urlpatterns = [
     # --- RUTAS DE JUEGO ---
     path("game/quiz-words/", views.get_quiz_words, name="game_quiz_words"),
     path("game/submit-results/", views.submit_game_results, name="game_submit_results"),
+    path("game/oracle/", views.oracle_query, name="oracle_query"),
+    path("game/oracle-post-game/", views.oracle_post_game_query, name="oracle_post_game_query"),
     # -------------------------------
 
     # --- RUTAS DE PERFIL ---

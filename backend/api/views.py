@@ -13,6 +13,8 @@ from api.services import award_badge_rewards #
 from api.badge_unlock_logic import check_and_unlock_badges #
 from django.shortcuts import redirect
 from django.conf import settings
+import os
+import google.generativeai as genai
 from django.db.models import F, ExpressionWrapper, FloatField, Count
 from api.serializer import (
     myTokenObtainPairSerializer,
@@ -754,3 +756,109 @@ class ProfileUpdateView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA ORÁCULO DICCIONARIO ---
+# * --------------------------------------------------------------------------------------------------
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def oracle_query(request):
+    """
+    Endpoint para el Oráculo del Diccionario.
+    """
+    word_id = request.data.get('word_id')
+    question_type = request.data.get('question_type')
+
+    if not word_id or not question_type:
+        return Response({'error': 'word_id y question_type son requeridos'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        word = Word.objects.get(id=word_id)
+    except Word.DoesNotExist:
+        return Response({'error': 'Palabra no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+    api_key = getattr(settings, 'GEMINI_API_KEY', os.getenv("GEMINI_API_KEY") if os.getenv("GEMINI_API_KEY") else os.getenv("VITE_GEMINI_API_KEY"))
+    if not api_key:
+         print("[Oracle] API Key de Gemini ausente en .env del backend.")
+         return Response({'error': 'API key de Gemini no configurada en el backend'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    genai.configure(api_key=api_key)
+    
+    base_context = f'Eres el "Oráculo del Granero", un sabio y misterioso campesino mágico del juego Misspelt. El usuario pregunta sobre la palabra en inglés "{word.text}" ("{word.translation}" en español), definición: "{word.definition}". Responde en un tono sabio, conciso (máximo 4 oraciones) y amigable. No uses subtítulos ni markdown. Usa español pero resaltando la palabra en inglés.'
+
+    if question_type == 'WHAT':
+        question_prompt = "Explica el significado directo de la palabra de forma sencilla para alguien que la está aprendiendo."
+    elif question_type == 'WHY':
+        question_prompt = "Explica brevemente la lógica o etimología (el origen) detrás de esta palabra o frase. ¿Por qué se dice así?"
+    elif question_type == 'HOW':
+        question_prompt = "Explica la estructura gramatical y las reglas de uso para esta palabra. ¿Cómo se usa correctamente en una oración?"
+    elif question_type == 'WHEN':
+        question_prompt = "Explica el contexto social: ¿Es formal, informal, de enojo, tristeza? ¿Cuándo es apropiado usarla?"
+    elif question_type == 'EXAMPLES':
+        question_prompt = "Dame exactamente 3 ejemplos creativos y variados de cómo usar esta palabra en oraciones. Separa cada ejemplo y provee su traducción."
+    else:
+         return Response({'error': 'Tipo de pregunta inválido'}, status=status.HTTP_400_BAD_REQUEST)
+
+    system_prompt = f"{base_context}\nInstrucción: {question_prompt}"
+
+    try:
+        model = genai.GenerativeModel('gemini-2.5-flash', system_instruction=system_prompt)
+        response = model.generate_content("Responde a la consulta lo más preciso posible.")
+        text_response = response.text.replace('*', '').strip()
+        
+        return Response({'response': text_response}, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(f"[Oracle] Error generando contenido: {str(e)}")
+        try:
+            model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=system_prompt)
+            response = model.generate_content("Responde a la consulta lo más preciso posible.")
+            text_response = response.text.replace('*', '').strip()
+            return Response({'response': text_response}, status=status.HTTP_200_OK)
+        except Exception as fallback_e:
+            print(f"[Oracle] Fallback falló: {str(fallback_e)}")
+            return Response({'error': f'Error en Oráculo: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA ORÁCULO POST-PARTIDA ---
+# * --------------------------------------------------------------------------------------------------
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def oracle_post_game_query(request):
+    """
+    Endpoint para el Oráculo Post-Partida, que recibe todo el historial
+    y lo envía a Gemini.
+    """
+    history = request.data.get('history', [])
+
+    api_key = getattr(settings, 'GEMINI_API_KEY', os.getenv("GEMINI_API_KEY") if os.getenv("GEMINI_API_KEY") else os.getenv("VITE_GEMINI_API_KEY"))
+    if not api_key:
+         return Response({'error': 'API key de Gemini no configurada en el backend'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    genai.configure(api_key=api_key)
+    
+    formatted_history = []
+    for msg in history:
+        role = msg.get('role', 'user')
+        parts = msg.get('parts', [])
+        # Extract text from parts (JS sends [{'text': '...'}])
+        text_parts = [p.get('text', '') if isinstance(p, dict) else str(p) for p in parts]
+        formatted_history.append({'role': role, 'parts': text_parts})
+        
+    try:
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        response = model.generate_content(formatted_history)
+        text_response = response.text.replace('*', '').strip()
+        return Response({'response': text_response}, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(f"[Oracle Post-Game] Error: {str(e)}")
+        try:
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            response = model.generate_content(formatted_history)
+            text_response = response.text.replace('*', '').strip()
+            return Response({'response': text_response}, status=status.HTTP_200_OK)
+        except Exception as fallback_e:
+            return Response({'error': str(fallback_e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
