@@ -12,6 +12,7 @@ router.register(r'badges', views.BadgeViewSet, basename='badge')
 router.register(r'user-stats', views.UserStatsViewSet, basename='user-stats')
 router.register(r'users', views.AdminUserViewSet, basename='user')
 router.register(r'avatars', views.AvatarViewSet, basename='avatar')
+router.register(r'farms', views.FarmViewSet, basename='farms')
 
 urlpatterns = [
     path("admin/", admin.site.urls),

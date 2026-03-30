@@ -69,6 +69,10 @@ function ProfilePage() {
     const [editForm, setEditForm] = useState({ full_name: '', current_avatar: '', current_title: '' });
     const [saving, setSaving] = useState(false);
 
+    // Granjas
+    const [inviteCode, setInviteCode] = useState('');
+    const [joinLoading, setJoinLoading] = useState(false);
+
     // ─── FETCH ────────────────────────────────────
     const userId = user?.user_id;
 
@@ -207,6 +211,21 @@ function ProfilePage() {
             toast.error('Error', { description: 'No se pudo guardar el perfil.' });
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleJoinFarm = async (e) => {
+        e.preventDefault();
+        if (!inviteCode.trim()) return;
+        setJoinLoading(true);
+        try {
+            const res = await api.post('/farms/join/', { invite_code: inviteCode.trim() });
+            toast.success('¡Granja unida!', { description: res.data.status + (res.data.farm_name ? ` (${res.data.farm_name})` : '') });
+            setInviteCode('');
+        } catch (err) {
+            toast.error('Error', { description: err.response?.data?.error || 'Código inválido.' });
+        } finally {
+            setJoinLoading(false);
         }
     };
 
@@ -391,6 +410,31 @@ function ProfilePage() {
                             ))}
                         </div>
                     </div>
+                </div>
+
+                {/* ═══════════ GRANJAS WIDGET ═══════════ */}
+                <div className="bg-card pixel-border p-4 mb-8 flex flex-col md:flex-row items-center justify-between gap-4 border-4 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
+                    <div>
+                        <h3 className="font-mono font-bold text-foreground uppercase tracking-wider">Unirse a una Granja</h3>
+                        <p className="text-[11px] text-muted-foreground font-mono">Ingresa el código que te dio tu instructor para conectarte.</p>
+                    </div>
+                    <form onSubmit={handleJoinFarm} className="flex gap-2 w-full md:w-auto">
+                        <input
+                            type="text"
+                            value={inviteCode}
+                            onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                            placeholder="CÓDIGO"
+                            maxLength={8}
+                            className="bg-background border-2 border-foreground px-3 py-2 font-mono text-sm uppercase outline-none focus:border-primary w-full md:w-40 shadow-inner"
+                        />
+                        <button
+                            type="submit"
+                            disabled={joinLoading || !inviteCode}
+                            className="bg-accent text-accent-foreground border-2 border-foreground px-4 py-2 font-mono font-bold text-sm hover:brightness-110 disabled:opacity-50 whitespace-nowrap shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-y-[1px] hover:shadow-none transition-all active:translate-y-[2px]"
+                        >
+                            {joinLoading ? '...' : '+ UNIRSE'}
+                        </button>
+                    </form>
                 </div>
 
                 {/* ═══════════ TABS ═══════════ */}

@@ -1,12 +1,8 @@
 import React from "react";
 
-/* PIXEL ICONS LIBRARY
-  Estos iconos usan tus variables CSS (hsl var(--primary)) para colorearse.
-*/
-
 export function BookIcon({ className = "w-6 h-6" }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <rect x="4" y="2" width="16" height="20" rx="1" fill="hsl(var(--card))" stroke="hsl(var(--foreground))" strokeWidth="2" />
       <path d="M8 2V22" stroke="hsl(var(--foreground))" strokeWidth="2" />
       <rect x="10" y="6" width="6" height="2" fill="hsl(var(--primary))" />
@@ -30,20 +26,7 @@ export function BrainIcon({ className = "w-6 h-6" }) {
 
 export function TrophyIcon({ className = "w-6 h-6" }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="6" y="2.99997" width="12" height="2" fill="hsl(var(--foreground))" />
-      <rect x="6" y="2.99997" width="2" height="12" fill="hsl(var(--foreground))" />
-      <rect x="16" y="2.99997" width="2" height="12" fill="hsl(var(--foreground))" />
-      <rect x="16" y="4.99997" width="6" height="2" fill="hsl(var(--foreground))" />
-      <rect x="2" y="4.99997" width="6" height="2" fill="hsl(var(--foreground))" />
-      <rect x="2" y="7" width="2" height="4" fill="hsl(var(--foreground))" />
-      <rect x="4" y="11" width="2" height="2" fill="hsl(var(--foreground))" />
-      <rect x="18" y="11" width="2" height="2" fill="hsl(var(--foreground))" />
-      <rect x="20" y="7" width="2" height="4" fill="hsl(var(--foreground))" />
-      <rect x="8" y="15" width="8" height="2" fill="hsl(var(--foreground))" />
-      <rect x="11" y="17.0001" width="2" height="4" fill="hsl(var(--foreground))" />
-      <rect x="9" y="19" width="6" height="2" fill="hsl(var(--foreground))" />
-    </svg>
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M16 17h-3v2h2v2H9v-2h2v-2H8v-2h8v2Zm2-12h4v6h-2V7h-2v4h2v2h-2v2h-2V5H8v10H6v-2H4v-2h2V7H4v4H2V5h4V3h12v2Z" /></svg>
 
   );
 }
@@ -90,21 +73,21 @@ export function LeafIcon({ className = "w-5 h-5" }) {
 export function GearIcon({ className = "w-6 h-6" }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="9" y="11" width="2" height="2" fill="black" />
-      <rect x="13" y="11" width="2" height="2" fill="black" />
-      <rect x="5" y="7" width="14" height="2" fill="black" />
-      <rect x="5" y="9" width="2" height="6" fill="black" />
-      <rect x="5" y="15" width="14" height="2" fill="black" />
-      <rect x="17" y="9" width="2" height="6" fill="black" />
-      <rect x="11" y="5" width="2" height="2" fill="black" />
-      <rect x="2" y="2" width="6" height="2" fill="black" />
-      <rect x="2" y="20" width="6" height="2" fill="black" />
-      <rect x="16" y="2" width="6" height="2" fill="black" />
-      <rect x="16" y="20" width="6" height="2" fill="black" />
-      <rect x="2" y="4" width="2" height="4" fill="black" />
-      <rect x="2" y="16" width="2" height="4" fill="black" />
-      <rect x="20" y="4" width="2" height="4" fill="black" />
-      <rect x="20" y="16" width="2" height="4" fill="black" />
+      <rect x="9" y="11" width="2" height="2" fill="currentColor" />
+      <rect x="13" y="11" width="2" height="2" fill="currentColor" />
+      <rect x="5" y="7" width="14" height="2" fill="currentColor" />
+      <rect x="5" y="9" width="2" height="6" fill="currentColor" />
+      <rect x="5" y="15" width="14" height="2" fill="currentColor" />
+      <rect x="17" y="9" width="2" height="6" fill="currentColor" />
+      <rect x="11" y="5" width="2" height="2" fill="currentColor" />
+      <rect x="2" y="2" width="6" height="2" fill="currentColor" />
+      <rect x="2" y="20" width="6" height="2" fill="currentColor" />
+      <rect x="16" y="2" width="6" height="2" fill="currentColor" />
+      <rect x="16" y="20" width="6" height="2" fill="currentColor" />
+      <rect x="2" y="4" width="2" height="4" fill="currentColor" />
+      <rect x="2" y="16" width="2" height="4" fill="currentColor" />
+      <rect x="20" y="4" width="2" height="4" fill="currentColor" />
+      <rect x="20" y="16" width="2" height="4" fill="currentColor" />
     </svg>
 
   );
@@ -290,17 +273,17 @@ export function PixelVolume0Icon({ className = "w-6 h-6" }) {
 
 export function PixelBookOpenIcon({ className = "w-6 h-6" }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="2" y="3" width="9" height="2" fill="black" />
-      <rect y="19" width="11" height="2" fill="black" />
-      <rect x="13" y="3" width="9" height="2" fill="black" />
-      <rect x="13" y="19" width="11" height="2" fill="black" />
-      <rect x="11" y="5" width="2" height="18" fill="black" />
-      <rect y="5" width="2" height="14" fill="black" />
-      <rect x="22" y="5" width="2" height="14" fill="black" />
-      <rect x="15" y="7" width="5" height="2" fill="hsl(var(--primary))" />
-      <rect x="15" y="11" width="5" height="2" fill="hsl(var(--muted-foreground))" />
-      <rect x="15" y="15" width="2" height="2" fill="hsl(var(--muted-foreground))" />
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="3" width="9" height="2" fill="currentColor" />
+      <rect y="19" width="11" height="2" fill="currentColor" />
+      <rect x="13" y="3" width="9" height="2" fill="currentColor" />
+      <rect x="13" y="19" width="11" height="2" fill="currentColor" />
+      <rect x="11" y="5" width="2" height="18" fill="currentColor" />
+      <rect y="5" width="2" height="14" fill="currentColor" />
+      <rect x="22" y="5" width="2" height="14" fill="currentColor" />
+      <rect x="15" y="7" width="5" height="2" fill="currentColor" />
+      <rect x="15" y="11" width="5" height="2" fill="currentColor" />
+      <rect x="15" y="15" width="2" height="2" fill="currentColor" />
     </svg>
   );
 }
@@ -560,4 +543,36 @@ export function PixelSaveIcon({ className = "w-6 h-6" }) {
       <rect x="9" y="13" width="6" height="6" fill="currentColor" />
     </svg>
   );
+}
+
+export function PixelCopyPasteIcon({ className = "w-6 h-6" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 22H8v-2h12v2ZM8 20H6v-2H4v-2h2V8h2v12Zm14 0h-2V8h2v12ZM4 16H2V4h2v12ZM18 6h2v2H8V6h8V4h2v2Zm-2-2H4V2h12v2Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function PixelUsersIcon({ className = "w-6 h-6" }) {
+  return (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M2 22H0v-4h2v4Zm14 0h-2v-4h2v4Zm8 0h-2v-4h2v4ZM4 18H2v-2h2v2Zm10 0h-2v-2h2v2Zm8 0h-2v-2h2v2Zm-10-2H4v-2h8v2Zm8 0h-4v-2h4v2Zm-9-4H5v-2h6v2Zm8 0h-4v-2h4v2ZM5 10H3V4h2v6Zm8 0h-2V4h2v6Zm8 0h-2V4h2v6ZM11 4H5V2h6v2Zm8 0h-4V2h4v2Z" /></svg>
+  );
+}
+
+export function PixelAvatarIcon({ className = "w-6 h-6" }) {
+  return (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M8 20h8v-2h4v2h-2v2H6v-2H4v-2h4v2Zm-4-2H2V6h2v12Zm12 0H8v-2h8v2Zm6 0h-2V6h2v12Zm-8-4h-4v-2h4v2Zm-4-2H8V8h2v4Zm6 0h-2V8h2v4Zm-2-4h-4V6h4v2ZM6 6H4V4h2v2Zm14 0h-2V4h2v2Zm-2-2H6V2h12v2Z" /></svg>
+  );
+}
+
+export function PixelSignalIcon({ className = "w-6 h-6" }) {
+  return (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M8 20H2v-4h2v-2h4v6Zm7 0H9v-8h2v-2h4v10Zm7 0h-6V6h2V4h4v16Z" /></svg>
+  );
+}
+
+export function PixelTeachIcon({ className = "w-6 h-6" }) {
+  return (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M14 10H8v10H6v-4H4v4H2V8h12v2Zm6 6H10v-2h10v2Zm2-2h-2V6h2v8ZM7 6H3V2h4v4Zm13 0H9V4h11v2Z" /></svg>
+  )
 }

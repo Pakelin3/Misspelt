@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useCallback, Suspense, lazy } from 'react';
 import useAxios from '@/utils/useAxios';
 import axios from 'axios';
-import { PixelFireIcon } from '@/components/PixelIcons';
-import { VillagerIcon, SignalIcon, ScrollIcon, MedalRibbonIcon } from '@/components/AdminPixelIcons';
-import { BrainIcon } from '@/components/PixelIcons';
+import { PixelFireIcon, PixelUsersIcon, PixelBookOpenIcon, TrophyIcon, PixelTeachIcon } from '@/components/PixelIcons';
+import { SignalIcon } from '@/components/AdminPixelIcons';
 
 const LazyBar = lazy(() => Promise.all([
     import('chart.js'),
@@ -19,6 +18,7 @@ const LazyBar = lazy(() => Promise.all([
     return { default: reactChartJs.Bar };
 }));
 
+// eslint-disable-next-line no-unused-vars
 const StatCard = ({ title, value, icon: Icon, colorClass, children }) => (
     <div className={`
         relative bg-card pixel-border p-6 flex flex-col justify-between 
@@ -176,7 +176,7 @@ function DashboardStatsCards() {
                 <StatCard
                     title="Población Total"
                     value={stats.total_users}
-                    icon={VillagerIcon}
+                    icon={PixelUsersIcon}
                     colorClass="text-foreground"
                 />
 
@@ -198,23 +198,23 @@ function DashboardStatsCards() {
                 <StatCard
                     title="Palabras Descubiertas"
                     value={stats.total_words}
-                    icon={ScrollIcon}
-                    colorClass="text-secondary-foreground"
+                    icon={PixelBookOpenIcon}
+                    colorClass="text-secondary"
                 />
 
                 {/* 4. Total Insignias */}
                 <StatCard
                     title="Medallas Otorgadas"
                     value={stats.total_badges}
-                    icon={MedalRibbonIcon}
-                    colorClass="text-accent"
+                    icon={TrophyIcon}
+                    colorClass="text-amber-800"
                 />
 
                 {/* 5. Carta Extra: Engagement */}
                 <StatCard
                     title="Tasa de Actividad"
                     value={`${engagementRate}%`}
-                    icon={BrainIcon}
+                    icon={PixelTeachIcon}
                     colorClass="text-muted-foreground"
                 />
 
