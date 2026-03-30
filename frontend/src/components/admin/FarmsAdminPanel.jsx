@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import useAxios from '@/utils/useAxios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Trash2 } from 'lucide-react';
 
 export default function FarmsAdminPanel() {
     const [farms, setFarms] = useState([]);
@@ -43,6 +43,37 @@ export default function FarmsAdminPanel() {
         } catch (error) {
             toast.error("Error", { description: "No se pudo crear la granja." });
         }
+    };
+
+    const handleDeleteFarm = async (id, e) => {
+        e.stopPropagation();
+        toast.custom((t) => (
+            <div className="bg-card border-foreground w-[300px] flex flex-col gap-4 font-mono relative">
+                <div className="flex flex-col gap-1">
+                    <h3 className="font-bold uppercase flex items-center gap-2 text-destructive">
+                        <Trash2 className="w-5 h-5" /> ¿ELIMINAR GRANJA?
+                    </h3>
+                    <p className="text-xs text-muted-foreground leading-tight">Esta acción es destructiva e irreversible.</p>
+                </div>
+                <div className="flex gap-2 mt-2">
+                    <button onClick={() => toast.dismiss(t)} className="flex-1 px-2 py-2 border-2 border-foreground bg-muted hover:bg-background text-xs font-bold transition-colors uppercase">
+                        Cancelar
+                    </button>
+                    <button onClick={async () => {
+                        toast.dismiss(t);
+                        try {
+                            await api.delete(`/farms/${id}/`);
+                            fetchFarms();
+                            toast.success('Borrado');
+                        } catch {
+                            toast.error('Error', { description: 'No se pudo eliminar.' });
+                        }
+                    }} className="flex-1 px-2 py-2 border-2 border-transparent bg-destructive text-destructive-foreground hover:bg-red-600 text-xs font-bold transition-colors uppercase">
+                        Sí, borrar
+                    </button>
+                </div>
+            </div>
+        ), { duration: 10000 });
     };
 
     if (loading) {
@@ -101,7 +132,16 @@ export default function FarmsAdminPanel() {
                             className="bg-card pixel-border border-4 border-foreground p-5 cursor-pointer hover:-translate-y-1 hover:shadow-[6px_6px_0_0_rgba(0,0,0,1)] transition-all flex flex-col justify-between"
                         >
                             <div>
-                                <h3 className="font-mono font-bold text-lg leading-tight mb-2 truncate" title={farm.name}>{farm.name}</h3>
+                                <div className="flex justify-between items-start">
+                                    <h3 className="font-mono font-bold text-lg leading-tight mb-2 truncate pr-2" title={farm.name}>{farm.name}</h3>
+                                    <button
+                                        onClick={(e) => handleDeleteFarm(farm.id, e)}
+                                        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0 p-1 border-2 border-transparent hover:border-destructive"
+                                        title="Eliminar Granja"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
                                 <p className="font-mono text-xs text-muted-foreground">Código: <span className="text-primary font-bold">{farm.invite_code}</span></p>
                             </div>
                             <div className="mt-4 flex items-center gap-2">

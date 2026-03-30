@@ -7,7 +7,7 @@ import "driver.js/dist/driver.css";
 import {
     PixelEditIcon, PixelSaveIcon, PixelTargetIcon,
     PixelBookOpenIcon, PixelLightningIcon, SwordIcon,
-    PixelStarIcon, TrophyIcon, PixelFireIcon
+    PixelStarIcon, TrophyIcon, PixelFireIcon, PixelUsersIcon
 } from '@/components/PixelIcons';
 
 // ─── Stat Gauge Component ─────────────────────────────────────
@@ -72,6 +72,8 @@ function ProfilePage() {
     // Granjas
     const [inviteCode, setInviteCode] = useState('');
     const [joinLoading, setJoinLoading] = useState(false);
+    const [userFarms, setUserFarms] = useState([]);
+    const [farmsLoading, setFarmsLoading] = useState(false);
 
     // ─── FETCH ────────────────────────────────────
     const userId = user?.user_id;
@@ -120,11 +122,25 @@ function ProfilePage() {
         fetchAllData();
     }, [fetchAllData]);
 
+    const fetchUserFarms = useCallback(async () => {
+        setFarmsLoading(true);
+        try {
+            const res = await api.get('/farms/');
+            setUserFarms(res.data.results || res.data || []);
+        } catch (err) {
+            console.error('Error fetching farms:', err);
+        } finally {
+            setFarmsLoading(false);
+        }
+    }, [api]);
+
     useEffect(() => {
         if (activeTab === 'history') {
             fetchHistory(1);
+        } else if (activeTab === 'farms') {
+            fetchUserFarms();
         }
-    }, [activeTab, fetchHistory]);
+    }, [activeTab, fetchHistory, fetchUserFarms]);
 
     const startTutorial = useCallback(() => {
         const driverObj = driver({
@@ -222,6 +238,7 @@ function ProfilePage() {
             const res = await api.post('/farms/join/', { invite_code: inviteCode.trim() });
             toast.success('¡Granja unida!', { description: res.data.status + (res.data.farm_name ? ` (${res.data.farm_name})` : '') });
             setInviteCode('');
+            if (activeTab === 'farms') fetchUserFarms();
         } catch (err) {
             toast.error('Error', { description: err.response?.data?.error || 'Código inválido.' });
         } finally {
@@ -446,7 +463,10 @@ function ProfilePage() {
                         Historial
                     </TabButton>
                     <TabButton active={activeTab === 'badges'} onClick={() => setActiveTab('badges')}>
-                        Insignias
+                        Vitrina de Insignias
+                    </TabButton>
+                    <TabButton active={activeTab === 'farms'} onClick={() => setActiveTab('farms')}>
+                        Granjas
                     </TabButton>
                 </div>
 
@@ -657,6 +677,46 @@ function ProfilePage() {
                                                         'border-stone-700 text-stone-700 bg-stone-700/10'}
                                         `}>
                                             {badge.category}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* ─── FARMS TAB ─── */}
+                {activeTab === 'farms' && (
+                    <div className="animate-in fade-in duration-300">
+                        {farmsLoading ? (
+                            <div className="flex flex-col items-center justify-center py-12 gap-3">
+                                <div className="w-10 h-10 border-4 border-accent border-t-transparent animate-spin rounded-full" />
+                                <p className="font-mono text-xs text-muted-foreground animate-pulse">CARGANDO GRANJAS...</p>
+                            </div>
+                        ) : userFarms.length === 0 ? (
+                            <div className="text-center p-12 bg-card pixel-border text-muted-foreground border-4 border-foreground">
+                                <span className="text-4xl mb-3 mx-auto block">🚜</span>
+                                <p className="font-mono text-sm">Aún no perteneces a ninguna granja.</p>
+                                <p className="text-xs mt-1">¡Utiliza el cuadro superior para unirte a una con un código de acceso!</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {userFarms.map(farm => (
+                                    <div key={farm.id} className="bg-card pixel-border p-5 border-4 border-foreground hover:-translate-y-1 transition-transform shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <h3 className="font-mono font-bold text-xl uppercase tracking-wider leading-tight mb-2 truncate" title={farm.name}>{farm.name}</h3>
+                                                <p className="font-mono text-xs text-muted-foreground mb-1 uppercase">Dueño: <span className="text-foreground font-bold">{farm.owner_username}</span></p>
+                                            </div>
+                                            <span className="text-3xl" title="Granja de Estudiante"></span>
+                                        </div>
+                                        <div className="mt-4 flex flex-wrap items-center gap-2">
+                                            <div className="text-[10px] font-mono bg-muted/50 px-2 py-1 border border-foreground/20 text-muted-foreground uppercase flex items-center gap-1">
+                                                <PixelUsersIcon className="w-4 h-4 text-primary" /> {farm.students_count} Granjeros
+                                            </div>
+                                            {/* <div className="text-[10px] font-mono bg-primary/20 px-2 py-1 border border-primary text-primary uppercase flex items-center gap-1">
+                                                ID: {farm.invite_code}
+                                            </div> */}
                                         </div>
                                     </div>
                                 ))}

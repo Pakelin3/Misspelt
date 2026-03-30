@@ -3,8 +3,9 @@ import useAxios from '@/utils/useAxios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { PixelCopyPasteIcon, PixelCrownIcon } from '@/components/PixelIcons';
-import { Loader2, ArrowLeft, Trash2 } from 'lucide-react';
+import { Loader2, ArrowLeft, Trash2, Eye } from 'lucide-react';
 import { VillagerIcon } from '@/components/AdminPixelIcons';
+import StudentProfileModal from './StudentProfileModal';
 
 export default function FarmDetail() {
     const { id } = useParams();
@@ -13,6 +14,7 @@ export default function FarmDetail() {
 
     const [farm, setFarm] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [selectedStudentId, setSelectedStudentId] = useState(null);
 
     const fetchFarmDetail = async () => {
         setLoading(true);
@@ -132,12 +134,12 @@ export default function FarmDetail() {
                                         </td>
                                         <td className="p-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 border-2 border-foreground bg-muted shrink-0 overflow-hidden">
-                                                    {student.current_avatar ? (
-                                                        <img src={student.current_avatar} alt="avatar" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-[10px]">N/A</div>
-                                                    )}
+                                                <div className="w-10 h-10 border-2 border-foreground bg-muted shrink-0 overflow-hidden pixel-rendering shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
+                                                    <img
+                                                        src={`https://ui-avatars.com/api/?name=${student.username}&background=random`}
+                                                        alt="avatar"
+                                                        className="w-full h-full object-cover"
+                                                    />
                                                 </div>
                                                 <span className="font-bold">@{student.username}</span>
                                             </div>
@@ -145,15 +147,24 @@ export default function FarmDetail() {
                                         <td className="p-4 text-center font-bold">NVL {student.level}</td>
                                         <td className="p-4 text-center font-bold">{student.experience} XP</td>
                                         <td className="p-4 text-center font-bold">{student.accuracy}%</td>
-                                        <td className="p-4 text-center font-bold">{student.unlocked_count}</td>
-                                        <td className="p-4 text-right">
-                                            <button
-                                                onClick={() => handleRemoveStudent(student.id, student.username)}
-                                                className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 border-2 border-transparent hover:border-destructive transition-all"
-                                                title="Eliminar de la granja"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+                                        <td className="p-4 text-center text-sm font-bold text-muted-foreground">{student.unlocked_count} p.</td>
+                                        <td className="p-4">
+                                            <div className="flex gap-2 justify-center">
+                                                <button
+                                                    onClick={() => setSelectedStudentId(student.id)}
+                                                    className="p-2 border-2 border-transparent text-primary hover:border-primary hover:bg-primary/20 transition-colors"
+                                                    title="Ver Detalles del Estudiante"
+                                                >
+                                                    <Eye className="w-5 h-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleRemoveStudent(student.id, student.username)}
+                                                    className="p-2 border-2 border-transparent text-destructive hover:border-destructive hover:bg-destructive/20 transition-colors"
+                                                    title="Remover Estudiante"
+                                                >
+                                                    <Trash2 className="w-5 h-5" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -162,6 +173,15 @@ export default function FarmDetail() {
                     </table>
                 </div>
             </div>
+
+            {/* Modal de Detalles del Estudiante */}
+            {selectedStudentId && (
+                <StudentProfileModal
+                    farmId={id}
+                    studentId={selectedStudentId}
+                    onClose={() => setSelectedStudentId(null)}
+                />
+            )}
         </div>
     );
 }

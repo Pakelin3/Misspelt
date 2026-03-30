@@ -925,3 +925,48 @@ class FarmViewSet(viewsets.ModelViewSet):
             return Response({'status': '¡Te has unido exitosamente!', 'farm_name': farm.name})
         except Farm.DoesNotExist:
             return Response({'error': 'Código inválido o granja no existente.'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['get'], url_path='student-detail/(?P<student_id>[^/.]+)')
+    def student_detail(self, request, pk=None, student_id=None):
+        farm = self.get_object()
+        if farm.owner != request.user and not request.user.is_superuser:
+            return Response({'error': 'No auth'}, status=status.HTTP_403_FORBIDDEN)
+        
+        try:
+            student = farm.students.get(id=student_id)
+        except User.DoesNotExist:
+            return Response({'error': 'Estudiante no encontrado en esta granja.'}, status=status.HTTP_404_NOT_FOUND)
+
+        from api.models import UserStats, GameHistory
+        from api.serializer import UserStatsSerializer, GameHistorySerializer
+
+        try:
+            stats = UserStats.objects.get(user=student)
+            stats_data = UserStatsSerializer(stats, context={'request': request}).data
+        except UserStats.DoesNotExist:
+            stats_data = {}
+
+        history_qs = GameHistory.objects.filter(user=student).order_by('-played_at')
+        total_battles = history_qs.count()
+
+        page = int(request.query_params.get('page', 1))
+        page_size = 5
+        start = (page - 1) * page_size
+        end = start + page_size
+        
+        history_page = history_qs[start:end]
+        history_data = GameHistorySerializer(history_page, many=True).data
+
+        avatar_url = f"https://ui-avatars.com/api/?name={student.username}&background=random"
+        if hasattr(student, 'profile') and student.profile.current_avatar and student.profile.current_avatar.image:
+             if request is not None:
+                 avatar_url = request.build_absolute_uri(student.profile.current_avatar.image.url)
+
+        return Response({
+            'student_id': student.id,
+            'username': student.username,
+            'avatar_url': avatar_url,
+            'stats': stats_data,
+            'total_battles': total_battles,
+            'recent_history': history_data
+        })
