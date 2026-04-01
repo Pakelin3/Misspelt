@@ -239,3 +239,49 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ['full_name', 'current_avatar', 'current_title', 'image']
+
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- MODELO FARM (GRANJA) ---
+# * --------------------------------------------------------------------------------------------------
+from api.models import Farm
+
+class FarmSerializer(serializers.ModelSerializer):
+    students_count = serializers.SerializerMethodField()
+    owner_username = serializers.CharField(source='owner.username', read_only=True)
+
+    class Meta:
+        model = Farm
+        fields = ['id', 'name', 'owner_username', 'invite_code', 'created_at', 'students_count']
+        read_only_fields = ['owner_username', 'invite_code', 'created_at', 'students_count']
+
+    def get_students_count(self, obj):
+        return obj.students.count()
+
+class FarmDetailSerializer(serializers.ModelSerializer):
+    students_data = serializers.SerializerMethodField()
+    owner_username = serializers.CharField(source='owner.username', read_only=True)
+
+    class Meta:
+        model = Farm
+        fields = ['id', 'name', 'owner_username', 'invite_code', 'created_at', 'students_data']
+        read_only_fields = ['owner_username', 'invite_code', 'created_at', 'students_data']
+
+    def get_students_data(self, obj):
+        students = obj.students.all()
+        data = []
+        for student in students:
+            if hasattr(student, 'stats'):
+                stats = student.stats
+                accuracy = round((stats.correct_answers_total / (stats.total_questions_answered + 0.0001)) * 100, 1)
+                data.append({
+                    'id': student.id,
+                    'username': student.username,
+                    'level': stats.get_level(),
+                    'experience': stats.experience,
+                    'unlocked_count': stats.unlocked_words.count(),
+                    'accuracy': min(accuracy, 100) if stats.total_questions_answered > 0 else 0,
+                    'current_avatar': student.profile.current_avatar.image.url if hasattr(student, 'profile') and student.profile.current_avatar else None
+                })
+        data.sort(key=lambda x: x['experience'], reverse=True)
+        return data

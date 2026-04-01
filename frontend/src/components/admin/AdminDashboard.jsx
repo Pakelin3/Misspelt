@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-import { BookIcon, SwordIcon, PixelChevronIcon } from '@/components/PixelIcons';
+import { BookIcon, SwordIcon, PixelChevronIcon, PixelUsersIcon, TrophyIcon, PixelAvatarIcon } from '@/components/PixelIcons';
 import { VillagerIcon, SignalIcon, MedalRibbonIcon } from '@/components/AdminPixelIcons';
 import { Menu, X } from 'lucide-react';
 import DashboardStatsCards from '@/components/admin/DashboardStatsCards';
 import DictionaryAdminPanel from '@/components/admin/DictionaryAdminPanel';
 import BadgesAdminPanel from '@/components/admin/BadgesAdminPanel';
 import AvatarAdminPanel from '@/components/admin/AvatarAdminPanel';
+import FarmsAdminPanel from '@/components/admin/FarmsAdminPanel';
+import FarmDetail from '@/components/admin/FarmDetail';
 import { Button } from '@/components/ui/Button';
 
 
@@ -18,6 +20,12 @@ const ADMIN_MENU = [
         description: 'Estadísticas generales'
     },
     {
+        title: 'Granjas',
+        path: '/admin-dashboard/farms',
+        icon: PixelUsersIcon,
+        description: 'Gestión de clases'
+    },
+    {
         title: 'Diccionario',
         path: '/admin-dashboard/words',
         icon: BookIcon,
@@ -26,13 +34,13 @@ const ADMIN_MENU = [
     {
         title: 'Insignias',
         path: '/admin-dashboard/badges',
-        icon: MedalRibbonIcon,
+        icon: TrophyIcon,
         description: 'Logros y premios'
     },
     {
         title: 'Avatares',
         path: '/admin-dashboard/avatars',
-        icon: VillagerIcon,
+        icon: PixelAvatarIcon,
         description: 'Usuarios y skins'
     }
 ];
@@ -43,10 +51,10 @@ const AdminSidebarLink = ({ item, isActive, isCollapsed, onClick }) => {
             to={item.path}
             onClick={onClick}
             className={`
-                flex items-center gap-3 px-3 py-3 mx-2 my-1 rounded-sm transition-all duration-100 group font-sans text-lg
+                flex items-center gap-3 px-3 py-2 mx-2 my-2 pixel-border-primary-foreground pixel-btn text-decoration-none transition-all overflow-hidden
                 ${isActive
-                    ? 'bg-primary text-primary-foreground pixel-border-primary translate-x-1'
-                    : 'text-foreground hover:bg-muted hover:translate-x-1'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-foreground hover:bg-primary hover:text-primary-foreground'
                 }
             `}
         >
@@ -103,7 +111,7 @@ function AdminDashboard() {
                 <div className="p-2 border-t-4 border-foreground bg-muted/30">
                     <button
                         onClick={() => setSidebarOpen(!isSidebarOpen)}
-                        className="w-full flex items-center justify-center p-2 text-foreground hover:bg-muted rounded-sm transition-colors mb-2"
+                        className="w-full rounded-none flex items-center justify-center p-2 text-foreground hover:bg-muted transition-colors mb-2"
                         title={isSidebarOpen ? "Colapsar" : "Expandir"}
                     >
                         {isSidebarOpen ? <PixelChevronIcon className="rotate-90 w-6 h-6" /> : <PixelChevronIcon className="rotate-270 w-6 h-6" />}
@@ -167,9 +175,9 @@ function AdminDashboard() {
 
                     <div className="flex items-center gap-3">
                         <Button
-                            variant="outline"
+                            variant="submit"
                             size="sm"
-                            className="hidden sm:flex gap-2 font-mono text-xs pixel-btn rounded-none border-2 border-foreground"
+                            className="hidden sm:flex gap-2 font-mono text-xs bg-secondary pixel-btn rounded-none border-2 border-foreground"
                             onClick={() => navigate('/')}
                         >
                             <SwordIcon className="w-4 h-4" />
@@ -188,6 +196,8 @@ function AdminDashboard() {
 
                             <Routes>
                                 <Route index element={<DashboardStatsCards />} />
+                                <Route path="farms" element={<FarmsAdminPanel />} />
+                                <Route path="farms/:id" element={<FarmDetail />} />
                                 <Route path="words" element={<DictionaryAdminPanel />} />
                                 <Route path="badges" element={<BadgesAdminPanel />} />
                                 <Route path="avatars" element={<AvatarAdminPanel />} />

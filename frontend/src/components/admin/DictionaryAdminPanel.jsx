@@ -106,25 +106,33 @@ function DictionaryAdminPanel() {
     };
 
     const handleDelete = async (id) => {
-        toast('¿ELIMINAR?', {
-            description: "Esta acción es destructiva e irreversible.",
-            action: {
-                label: 'Sí, borrar',
-                onClick: async () => {
-                    try {
-                        await api.delete(`/words/${id}/`);
-                        fetchWords();
-                        toast.success('Borrado');
-                    } catch {
-                        toast.error('Error', { description: 'No se pudo eliminar.' });
-                    }
-                }
-            },
-            cancel: {
-                label: 'Cancelar',
-            },
-            duration: 10000,
-        });
+        toast.custom((t) => (
+            <div className="bg-card border-foreground w-[300px] flex flex-col gap-4 font-mono relative">
+                <div className="flex flex-col gap-1">
+                    <h3 className="font-bold uppercase flex items-center gap-2 text-destructive">
+                        <Trash2 className="w-5 h-5" /> ¿ELIMINAR PALABRA?
+                    </h3>
+                    <p className="text-xs text-muted-foreground leading-tight">Esta acción es destructiva e irreversible.</p>
+                </div>
+                <div className="flex gap-2 mt-2">
+                    <button onClick={() => toast.dismiss(t)} className="flex-1 px-2 py-2 border-2 border-foreground bg-muted hover:bg-background text-xs font-bold transition-colors uppercase">
+                        Cancelar
+                    </button>
+                    <button onClick={async () => {
+                        toast.dismiss(t);
+                        try {
+                            await api.delete(`/words/${id}/`);
+                            fetchWords();
+                            toast.success('Borrado');
+                        } catch {
+                            toast.error('Error', { description: 'No se pudo eliminar.' });
+                        }
+                    }} className="flex-1 px-2 py-2 border-2 border-transparent bg-destructive text-destructive-foreground hover:bg-red-600 text-xs font-bold transition-colors uppercase">
+                        Sí, borrar
+                    </button>
+                </div>
+            </div>
+        ), { duration: 10000 });
     };
 
     const handleFileUpload = async (e) => {

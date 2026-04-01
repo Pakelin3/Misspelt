@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 import SpriteAnimator from "@/components/ui/SpriteAnimator";
 import useAxios from "@/utils/useAxios";
+import AuthContext from '@/context/AuthContext';
 
 const LLM_API_KEY =
     import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_OPENAI_API_KEU;
@@ -35,7 +36,6 @@ export default function OracleChat({ characterId, results, onComplete, userName 
     const [isListening, setIsListening] = useState(false);
     const [ttsEnabled, setTtsEnabled] = useState(false);
     const [turnCount, setTurnCount] = useState(0);
-
     const chatContainerRef = useRef(null);
     const recognitionRef = useRef(null);
     const audioRef = useRef(new Audio());
@@ -198,6 +198,7 @@ STRICT RULE 6: The chat has a maximum of 5 turns. However, YOU CAN DECIDE TO END
                             text:
                                 userText +
                                 (isLastTurn
+                                    // eslint-disable-next-line no-useless-escape
                                     ? '\n[SYSTEM]: This is your LAST mandatory turn. Say goodbye to the player briefly in your character, evaluate their entire performance, and AFTER YOUR FAREWELL TEXT, SPACE, AND WRITE A JSON OBJECT EXACTLY WITH THIS STRUCTURE (without markdown \`\`\`json marks): \n{"evaluacion": {"feedback_general": "your brief evaluation", "calidad": 10, "consistencia": "Neutral"}}'
                                     : ""),
                         },
@@ -398,8 +399,8 @@ STRICT RULE 6: The chat has a maximum of 5 turns. However, YOU CAN DECIDE TO END
                             )}
                         </div>
                         {msg.role === "user" && (
-                            <div className="w-8 h-8 rounded-none border-2 border-accent bg-accent/20 flex shrink-0 items-center justify-center mt-1 overflow-hidden">
-                                <img src={`https://ui-avatars.com/api/?name=${userName}&background=random`} alt="User" className="w-full h-full object-cover" />
+                            <div className="w-8 h-8 rounded-none border-2 border-accent bg-accent/20 flex shrink-0 items-center justify-center mt-1 overflow-hidden shadow-[-2px_2px_0_0_rgba(0,0,0,1)]">
+                                <img src={`https://ui-avatars.com/api/?name=${userName}&background=random`} alt="User" className="w-full h-full object-cover pixel-rendering" />
                             </div>
                         )}
                     </div>

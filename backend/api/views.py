@@ -1,21 +1,19 @@
-# api/views.py
-
-from rest_framework import generics, status, viewsets, mixins
-from rest_framework.decorators import api_view, permission_classes, action
-from rest_framework.pagination import PageNumberPagination
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework_simplejwt.views import TokenObtainPairView
-from api.models import User, Word, Badge, UserStats, EmailVerificationToken, Avatar, GameHistory
-from api.services import award_badge_rewards #
-from api.badge_unlock_logic import check_and_unlock_badges #
-from django.shortcuts import redirect
-from django.conf import settings
+from rest_framework import generics, status, viewsets, mixins # pyright: ignore[reportMissingImports]
+from rest_framework.decorators import api_view, permission_classes, action # pyright: ignore[reportMissingImports]
+from rest_framework.pagination import PageNumberPagination # pyright: ignore[reportMissingImports]
+from django_filters.rest_framework import DjangoFilterBackend # pyright: ignore[reportMissingImports]
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser # pyright: ignore[reportMissingImports]
+from rest_framework.response import Response # pyright: ignore[reportMissingImports]
+from rest_framework.views import APIView # pyright: ignore[reportMissingImports]
+from rest_framework_simplejwt.views import TokenObtainPairView # pyright: ignore[reportMissingImports]
+from api.models import User, Word, Badge, UserStats, EmailVerificationToken, Avatar, GameHistory, Farm
+from api.services import award_badge_rewards
+from api.badge_unlock_logic import check_and_unlock_badges
+from django.shortcuts import redirect  # pyright: ignore[reportMissingImports]
+from django.conf import settings # pyright: ignore[reportMissingImports]
 import os
-import google.generativeai as genai
-from django.db.models import F, ExpressionWrapper, FloatField, Count
+import google.generativeai as genai  # pyright: ignore[reportMissingImports]
+from django.db.models import F, ExpressionWrapper, FloatField, Count # pyright: ignore[reportMissingImports]
 from api.serializer import (
     myTokenObtainPairSerializer,
     RegisterSerializer,
@@ -25,14 +23,17 @@ from api.serializer import (
     AdminUserSerializer,
     AvatarSerializer,
     GameHistorySerializer,
-    ProfileUpdateSerializer
+    ProfileUpdateSerializer,
+    FarmSerializer,
+    FarmDetailSerializer
 )
-
-from google.oauth2 import id_token
-import google.auth.transport.requests
-import requests
+import random
+import string
+from google.oauth2 import id_token # pyright: ignore[reportMissingImports]
+import google.auth.transport.requests # pyright: ignore[reportMissingImports]
+import requests # pyright: ignore[reportMissingImports]
 import uuid
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken # pyright: ignore[reportMissingImports]
 # * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA AUTENTICACION ---
 # * --------------------------------------------------------------------------------------------------
@@ -862,3 +863,110 @@ def oracle_post_game_query(request):
             return Response({'response': text_response}, status=status.HTTP_200_OK)
         except Exception as fallback_e:
             return Response({'error': str(fallback_e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA GRANJAS (FARMS) ---
+# * --------------------------------------------------------------------------------------------------
+
+class FarmViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    
+    def get_serializer_class(self):
+        if self.action in ['retrieve', 'leaderboard']:
+            return FarmDetailSerializer
+        return FarmSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            return Farm.objects.filter(owner=user)
+        return Farm.objects.filter(students=user)
+
+    def create(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            return Response({"error": "Solo Profesores pueden crear Granjas."}, status=status.HTTP_403_FORBIDDEN)
+        return super().create(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        while Farm.objects.filter(invite_code=code).exists():
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        serializer.save(owner=self.request.user, invite_code=code)
+
+    @action(detail=True, methods=['get'])
+    def leaderboard(self, request, pk=None):
+        farm = self.get_object()
+        if not request.user.is_staff and farm not in Farm.objects.filter(students=request.user):
+            return Response({"error": "No tienes acceso a esta granja."}, status=status.HTTP_403_FORBIDDEN)
+        serializer = FarmDetailSerializer(farm)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'], url_path='remove-student')
+    def remove_student(self, request, pk=None):
+        farm = self.get_object()
+        if farm.owner != request.user:
+            return Response({'error': 'No eres el dueño de la granja.'}, status=status.HTTP_403_FORBIDDEN)
+        student_id = request.data.get('student_id')
+        try:
+            student = User.objects.get(id=student_id)
+            farm.students.remove(student)
+            return Response({'status': 'Estudiante removido exitosamente'})
+        except User.DoesNotExist:
+            return Response({'error': 'Estudiante no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=['post'])
+    def join(self, request):
+        code = request.data.get('invite_code')
+        if not code:
+            return Response({'error': 'El código es requerido.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            farm = Farm.objects.get(invite_code=code.upper())
+            farm.students.add(request.user)
+            return Response({'status': '¡Te has unido exitosamente!', 'farm_name': farm.name})
+        except Farm.DoesNotExist:
+            return Response({'error': 'Código inválido o granja no existente.'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['get'], url_path='student-detail/(?P<student_id>[^/.]+)')
+    def student_detail(self, request, pk=None, student_id=None):
+        farm = self.get_object()
+        if farm.owner != request.user and not request.user.is_superuser:
+            return Response({'error': 'No auth'}, status=status.HTTP_403_FORBIDDEN)
+        
+        try:
+            student = farm.students.get(id=student_id)
+        except User.DoesNotExist:
+            return Response({'error': 'Estudiante no encontrado en esta granja.'}, status=status.HTTP_404_NOT_FOUND)
+
+        from api.models import UserStats, GameHistory
+        from api.serializer import UserStatsSerializer, GameHistorySerializer
+
+        try:
+            stats = UserStats.objects.get(user=student)
+            stats_data = UserStatsSerializer(stats, context={'request': request}).data
+        except UserStats.DoesNotExist:
+            stats_data = {}
+
+        history_qs = GameHistory.objects.filter(user=student).order_by('-played_at')
+        total_battles = history_qs.count()
+
+        page = int(request.query_params.get('page', 1))
+        page_size = 5
+        start = (page - 1) * page_size
+        end = start + page_size
+        
+        history_page = history_qs[start:end]
+        history_data = GameHistorySerializer(history_page, many=True).data
+
+        avatar_url = f"https://ui-avatars.com/api/?name={student.username}&background=random"
+        if hasattr(student, 'profile') and student.profile.current_avatar and student.profile.current_avatar.image:
+             if request is not None:
+                 avatar_url = request.build_absolute_uri(student.profile.current_avatar.image.url)
+
+        return Response({
+            'student_id': student.id,
+            'username': student.username,
+            'avatar_url': avatar_url,
+            'stats': stats_data,
+            'total_battles': total_battles,
+            'recent_history': history_data
+        })

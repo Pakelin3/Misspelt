@@ -396,7 +396,7 @@ const WordDetailModal = ({ word, onClose, onOpenOracle }) => {
             const audioBlob = new Blob(chunks, { type: 'audio/mpeg' });
             const audioUrl = URL.createObjectURL(audioBlob);
             const audio = new Audio(audioUrl);
-            audio.playbackRate = 0.55;
+            audio.playbackRate = 0.85;
             audio.onplay = () => console.log("▶️ Reproduciendo IA de ElevenLabs SDK...");
             audio.onended = () => {
                 console.log("⏹️ Audio finalizado.");
@@ -516,7 +516,7 @@ const WordDetailModal = ({ word, onClose, onOpenOracle }) => {
                         PRONUNCIACIÓN
                     </button>
 
-                    <button 
+                    <button
                         onClick={onOpenOracle}
                         className="flex-1 flex items-center justify-center gap-2 bg-accent text-accent-foreground py-3 font-mono text-xs pixel-btn border-4 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:brightness-110 active:translate-y-1 active:shadow-none transition-all"
                     >

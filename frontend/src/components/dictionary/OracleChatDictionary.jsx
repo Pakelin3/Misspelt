@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import useAxios from "@/utils/useAxios";
 import { Loader2, X, Bot } from "lucide-react";
+import AuthContext from '@/context/AuthContext';
 
 export default function OracleChatDictionary({ word, onClose }) {
     // Phases: 'INITIAL' | 'LOADING' | 'ANSWERED_BASE' | 'ANSWERED_EXAMPLES'
@@ -10,6 +11,7 @@ export default function OracleChatDictionary({ word, onClose }) {
     ]);
     const api = useAxios();
     const chatContainerRef = useRef(null);
+    const { user } = useContext(AuthContext);
 
     const INITIAL_OPTIONS = [
         { type: 'WHAT', label: 'El Qué', desc: 'Significado directo' },
@@ -106,6 +108,11 @@ export default function OracleChatDictionary({ word, onClose }) {
                             `}>
                                 {msg.text}
                             </div>
+                            {msg.role === 'user' && (
+                                <div className="w-10 h-10 rounded-none border-2 border-accent bg-accent/20 flex shrink-0 items-center justify-center mt-1 overflow-hidden shadow-[-2px_2px_0_0_rgba(0,0,0,1)]">
+                                    <img src={`https://ui-avatars.com/api/?name=${user?.username || 'Aventurero'}&background=random`} alt="User" className="w-full h-full object-cover pixel-rendering" />
+                                </div>
+                            )}
                         </div>
                     ))}
 
