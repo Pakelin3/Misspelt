@@ -185,7 +185,7 @@ function DictionaryPage() {
                     <div className="inline-flex items-center justify-center p-3 bg-card pixel-border mb-4">
                         <PixelBookOpenIcon className="w-8 h-8 text-primary" />
                     </div>
-                    <h1 className="text-3xl md:text-4xl font-mono text-foreground mb-2">GRAN DICCIONARIO</h1>
+                    <h1 className="text-3xl md:text-4xl font-mono text-foreground mb-2">EL GRIMORIO</h1>
                     <p className="text-xl text-muted-foreground font-sans max-w-lg mx-auto">
                         Consulta tu colección de conocimientos adquiridos en la granja.
                     </p>

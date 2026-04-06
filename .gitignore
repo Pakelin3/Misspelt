@@ -1,3 +1,8 @@
 backend/key.pem
 backend/cert.pem
 .env
+
+.agents
+.windsurf
+.antigravity
+skills-lock.json
