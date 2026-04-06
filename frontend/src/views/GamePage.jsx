@@ -26,6 +26,7 @@ const GamePage = () => {
     const [selectedSkin, setSelectedSkin] = useState('mage');
     const [difficulty, setDifficulty] = useState('NORMAL');
     const [unlockedCharacters, setUnlockedCharacters] = useState(['mage']);
+    const [isTutorial, setIsTutorial] = useState(false);
 
     // --- ESTADOS DEL QUIZ ---
     const [sessionWords, setSessionWords] = useState([]);
@@ -114,7 +115,7 @@ const GamePage = () => {
                     element: 'body', // Sin anclaje, para el tutorial general
                     popover: {
                         title: 'Comprendiendo Misspelt',
-                        description: '<img src="/placeholders/gameplay.gif" class="w-full mb-2 pixel-border" /> Escapa de las letras, asimila las palabras y sobrevive. ¡Presta atención a cómo se escriben correctamente!'
+                        description: 'Escapa de las letras, asimila las palabras y sobrevive. ¡Presta atención a cómo se escriben correctamente!'
                     }
                 },
                 {
@@ -251,6 +252,12 @@ const GamePage = () => {
         };
 
         iframeWindow.handleExitGame = () => {
+            setIsTutorial(false);
+            setGameState('SELECTION');
+        };
+
+        iframeWindow.handleTutorialComplete = () => {
+            setIsTutorial(false);
             setGameState('SELECTION');
         };
     };
@@ -376,6 +383,11 @@ const GamePage = () => {
         } finally {
             setIsPreparing(false);
         }
+    };
+
+    const startTutorialGame = () => {
+        setIsTutorial(true);
+        setGameState('PLAYING');
     };
 
     return (
@@ -533,15 +545,23 @@ const GamePage = () => {
                                     <Button
                                         variant="outline"
                                         onClick={() => navigate('/')}
-                                        className="w-full lg:w-1/3 rounded-none h-14 text-sm pixel-btn border-2 border-foreground hover:bg-muted"
+                                        className="w-full lg:w-1/4 rounded-none h-14 text-sm pixel-btn border-2 border-foreground hover:bg-muted"
                                     >
                                         <PixelArrowLeftIcon className="mr-2 w-6 h-6" /> VOLVER
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        onClick={startTutorialGame}
+                                        id="tutorial-game-howtoplay"
+                                        className="w-full lg:w-1/4 rounded-none h-14 text-sm pixel-btn border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 transition-all"
+                                    >
+                                        <BookIcon className="mr-2 w-5 h-5" /> COMO JUGAR
                                     </Button>
                                     <Button
                                         onClick={startGame}
                                         id="tutorial-game-start"
                                         disabled={isPreparing}
-                                        className={`w-full lg:w-2/3 hover:bg-accent  rounded-none h-14 text-xl pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all bg-accent text-accent-foreground ${isPreparing ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                        className={`w-full lg:w-2/4 hover:bg-accent  rounded-none h-14 text-xl pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all bg-accent text-accent-foreground ${isPreparing ? 'opacity-70 cursor-not-allowed' : ''}`}
                                     >
                                         {isPreparing ? (
                                             <>
@@ -634,7 +654,10 @@ const GamePage = () => {
 
                     <iframe
                         ref={iframeRef}
-                        src={`/game/index.html?skin=${selectedSkin}&difficulty=${difficulty === 'EASY' ? 1 : difficulty === 'NORMAL' ? 2 : 3}&words=${gameWordsTexts.join(',')}`}
+                        src={isTutorial
+                            ? `/game/index.html?skin=mage&mode=tutorial`
+                            : `/game/index.html?skin=${selectedSkin}&difficulty=${difficulty === 'EASY' ? 1 : difficulty === 'NORMAL' ? 2 : 3}&words=${gameWordsTexts.join(',')}`
+                        }
                         onLoad={handleIframeLoad}
                         className="w-full h-full border-none focus:outline-none block"
                         title="Godot Game"
