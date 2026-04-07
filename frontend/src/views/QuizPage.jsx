@@ -1,21 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import useAxios from '@/utils/useAxios';
 import QuizManager from '@/components/quiz/QuizManager';
 import { Button } from '@/components/ui/Button';
 import { Home } from 'lucide-react';
 
 const QuizPage = () => {
-    const [{ sessionWords, loading }, setState] = useState({ sessionWords: [], loading: true });
+    const [{ sessionWords, allWords, loading }, setState] = useState({ sessionWords: [], allWords: [], loading: true });
     const api = useAxios();
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         const fetchQuizWords = async () => {
             try {
                 const response = await api.get('/game/quiz-words/?discovered=true');
                 const data = Array.isArray(response.data) ? response.data : response.data.results || [];
-                setState({ sessionWords: data, loading: false });
+
+                let currentSessionWords = data;
+                let currentAllWords = data;
+                const selectedWord = location.state?.selectedWord;
+
+                if (selectedWord) {
+                    // Put the selected word first
+                    const otherWords = data.filter(w => w.id !== selectedWord.id);
+                    currentSessionWords = [selectedWord, ...otherWords];
+                    currentAllWords = [selectedWord, ...otherWords];
+                }
+
+                setState({ sessionWords: currentSessionWords, allWords: currentAllWords, loading: false });
             } catch (error) {
                 console.error("Error loading quiz words:", error);
                 setState(prev => ({ ...prev, loading: false }));
@@ -23,7 +36,7 @@ const QuizPage = () => {
         };
 
         fetchQuizWords();
-    }, [api]);
+    }, [api, location.state]);
 
     const handleQuizComplete = () => {
         setTimeout(() => {
@@ -51,7 +64,7 @@ const QuizPage = () => {
                 {sessionWords.length > 0 ? (
                     <QuizManager
                         words={sessionWords}
-                        allWords={sessionWords}
+                        allWords={allWords.length > 0 ? allWords : sessionWords}
                         onComplete={handleQuizComplete}
                         onClose={handleQuizClose}
                     />

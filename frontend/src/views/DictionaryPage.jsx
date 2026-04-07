@@ -7,7 +7,7 @@ import UsaFlag from '@/assets/us.svg';
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
 import OracleChatDictionary from "@/components/dictionary/OracleChatDictionary";
-
+import WordSuggestionModal from "@/components/dictionary/WordSuggestionModal";
 
 const getTypeBadgeStyle = (type) => {
     switch (type) {
@@ -47,6 +47,7 @@ function DictionaryPage() {
     const [selectedWord, setSelectedWord] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isOracleOpen, setIsOracleOpen] = useState(false);
+    const [isSuggestionModalOpen, setIsSuggestionModalOpen] = useState(false);
 
     const selectedWordRef = useRef(selectedWord);
     const api = useAxios();
@@ -209,6 +210,13 @@ function DictionaryPage() {
                         )}
                     </div>
 
+                    <button
+                        onClick={() => setIsSuggestionModalOpen(true)}
+                        className="px-6 py-3 bg-accent text-accent-foreground font-mono text-sm md:text-base font-bold whitespace-nowrap shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-y-[2px] transition-all border-2 border-transparent hover:border-foreground"
+                    >
+                        + SUGERIR PALABRA
+                    </button>
+
                     <div className="relative min-w-[180px]">
                         <button
                             onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -329,6 +337,8 @@ function DictionaryPage() {
             {isModalOpen && <WordDetailModal word={selectedWord} onClose={() => setIsModalOpen(false)} onOpenOracle={() => { setIsModalOpen(false); setIsOracleOpen(true); }} />}
 
             {isOracleOpen && <OracleChatDictionary word={selectedWord} onClose={() => setIsOracleOpen(false)} />}
+
+            {isSuggestionModalOpen && <WordSuggestionModal onClose={() => setIsSuggestionModalOpen(false)} />}
 
             {/* Floating Tutorial Button */}
             <button
