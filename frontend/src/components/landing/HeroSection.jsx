@@ -5,6 +5,23 @@ import heroBg from "@/img/background.jpg";
 import TextShuffle from "@/components/ui/TextShuffle";
 
 export function HeroSection() {
+  const [stats, setStats] = React.useState(null);
+
+  React.useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL_API}/landing-stats/`);
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data);
+        }
+      } catch (err) {
+        console.error("Error fetching landing stats:", err);
+      }
+    };
+    fetchStats();
+  }, []);
+
   return (
     <section className="relative overflow-hidden pt-24 pb-12 md:pt-32 md:pb-20 bg-background">
 
@@ -70,23 +87,67 @@ export function HeroSection() {
 
         {/* Estadísticas */}
         <div className="mt-16 flex flex-wrap items-center justify-center gap-8 md:gap-12 opacity-80">
-          <StatItem label="Phrasal Verbs" value="200+" />
+          <StatItem label="Phrasal Verbs" targetValue={stats?.phrasal_verbs} />
           <div className="h-8 w-1 bg-border hidden sm:block" />
-          <StatItem label="Slangs" value="150+" />
+          <StatItem label="Slangs" targetValue={stats?.slangs} />
           <div className="h-8 w-1 bg-border hidden sm:block" />
-          <StatItem label="Idioms" value="100+" />
+          <StatItem label="Idioms" targetValue={stats?.idioms} />
           <div className="h-8 w-1 bg-border hidden sm:block" />
-          <StatItem label="Insignias" value="30+" />
+          <StatItem label="Insignias" targetValue={stats?.badges} />
         </div>
       </div>
     </section>
   );
 }
 
-function StatItem({ label, value }) {
+function StatItem({ label, targetValue }) {
+  const [currentValue, setCurrentValue] = React.useState("0");
+  const [isVisible, setIsVisible] = React.useState(false);
+  const ref = React.useRef(null);
+
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setIsVisible(true);
+      },
+      { threshold: 0.1 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  React.useEffect(() => {
+    if (!isVisible || targetValue == null) return;
+
+    const roundedValue = Math.round(targetValue / 10) * 10;
+    if (roundedValue === 0) {
+      setCurrentValue("0");
+      return;
+    }
+
+    const duration = 1500; // ms
+    const startTime = Date.now();
+    const digits = roundedValue.toString().length;
+
+    const timer = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      if (elapsed < duration) {
+        const randomNum = Math.floor(Math.random() * Math.pow(10, digits));
+        setCurrentValue(randomNum.toString().padStart(digits, '0'));
+      } else {
+        setCurrentValue(roundedValue.toString());
+        clearInterval(timer);
+      }
+    }, 40);
+
+    return () => clearInterval(timer);
+  }, [targetValue, isVisible]);
+
   return (
-    <div className="flex flex-col items-center">
-      <span className="font-mono text-xl md:text-2xl text-accent mb-1">{value}</span>
+    <div ref={ref} className="flex flex-col items-center min-w-[140px]">
+      <span className="font-mono text-xl md:text-2xl text-accent mb-1 min-h-[32px] flex items-center justify-center">
+        {targetValue != null ? `+${currentValue}` : "---"}
+      </span>
       <span className="font-sans text-lg text-muted-foreground uppercase">{label}</span>
     </div>
   );

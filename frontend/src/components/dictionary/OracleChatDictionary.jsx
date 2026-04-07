@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useAxios from "@/utils/useAxios";
 import { Loader2, X, Bot } from "lucide-react";
 import AuthContext from '@/context/AuthContext';
@@ -12,6 +13,7 @@ export default function OracleChatDictionary({ word, onClose }) {
     const api = useAxios();
     const chatContainerRef = useRef(null);
     const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
 
     const INITIAL_OPTIONS = [
         { type: 'WHAT', label: 'El Qué', desc: 'Significado directo' },
@@ -28,9 +30,8 @@ export default function OracleChatDictionary({ word, onClose }) {
 
     const handleOptionSelect = async (optionType, label) => {
         if (optionType === 'TEST') {
-            // Acción final: Cerrar modal (El juego/quiz real se implementaría más adelante)
-            // Aquí cerramos el oráculo invitando a jugar.
             onClose();
+            navigate('/quiz', { state: { selectedWord: word } });
             return;
         }
 
@@ -100,7 +101,7 @@ export default function OracleChatDictionary({ word, onClose }) {
                                 </div>
                             )}
                             <div className={`
-                                relative max-w-[85%] p-4 border-4 text-sm md:text-base leading-relaxed font-sans
+                                relative max-w-[85%] p-4 border-4 text-lg md:text-lg leading-relaxed font-sans
                                 ${msg.role === 'user'
                                     ? 'bg-accent text-accent-foreground border-accent-foreground shadow-[-4px_4px_0_0_rgba(0,0,0,1)] text-right'
                                     : 'bg-background text-foreground border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)]'

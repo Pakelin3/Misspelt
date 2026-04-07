@@ -17,6 +17,7 @@ router.register(r'farms', views.FarmViewSet, basename='farms')
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("dashboard-data/", views.AdminDashboardDataAPIView.as_view(), name="admin_dashboard_data"),
+    path("landing-stats/", views.LandingStatsAPIView.as_view(), name="landing_stats"),
     path("leaderboard/", views.get_leaderboard, name="leaderboard"),
     path("token/", views.MyTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),

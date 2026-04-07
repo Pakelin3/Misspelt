@@ -188,6 +188,21 @@ class AdminDashboardDataAPIView(APIView):
         return Response(dashboard_stats, status=status.HTTP_200_OK)
 
 # * --------------------------------------------------------------------------------------------------
+# ! --- VIEWS PARA LANDING PAGE ESTADISTICAS ---
+# * --------------------------------------------------------------------------------------------------
+class LandingStatsAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        stats = {
+            'phrasal_verbs': Word.objects.filter(word_type=Word.WordType.PHRASAL_VERB).count(),
+            'slangs': Word.objects.filter(word_type=Word.WordType.SLANG).count(),
+            'idioms': Word.objects.filter(word_type=Word.WordType.IDIOM).count(),
+            'badges': Badge.objects.count(),
+        }
+        return Response(stats, status=status.HTTP_200_OK)
+
+# * --------------------------------------------------------------------------------------------------
 # ! --- VIEWS PARA DASHBOARD USUARIO ---
 # * --------------------------------------------------------------------------------------------------
 class UserIsStaffAPIView(APIView): 
