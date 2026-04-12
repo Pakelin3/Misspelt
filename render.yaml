@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: misspelt-backend
+    env: python
+    rootDir: backend
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn backend.wsgi:application"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: misspelt-db
+          property: connectionString
+      - key: ENVIRONMENT
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4
+
+databases:
+  - name: misspelt-db
+    databaseName: misspelt_db
+    user: misspelt_user
+    plan: free
