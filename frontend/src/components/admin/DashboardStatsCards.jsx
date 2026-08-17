@@ -3,6 +3,7 @@ import useAxios from '@/utils/useAxios';
 import axios from 'axios';
 import { PixelFireIcon, PixelUsersIcon, PixelBookOpenIcon, TrophyIcon, PixelTeachIcon } from '@/components/PixelIcons';
 import { SignalIcon } from '@/components/AdminPixelIcons';
+import { Button } from '@/components/ui/Button';
 
 const LazyBar = lazy(() => Promise.all([
     import('chart.js'),
@@ -18,7 +19,6 @@ const LazyBar = lazy(() => Promise.all([
     return { default: reactChartJs.Bar };
 }));
 
-// eslint-disable-next-line no-unused-vars
 const StatCard = ({ title, value, icon: Icon, colorClass, children }) => (
     <div className={`
         relative bg-card pixel-border p-6 flex flex-col justify-between 
@@ -151,9 +151,9 @@ function DashboardStatsCards() {
         return (
             <div className="bg-destructive/10 pixel-border border-destructive p-6 text-center">
                 <p className="font-mono text-destructive text-sm">{error}</p>
-                <button onClick={fetchData} className="mt-4 text-xs underline font-sans text-foreground">
+                <Button variant="link" onClick={fetchData} className="mt-4">
                     Reintentar
-                </button>
+                </Button>
             </div>
         );
     }
@@ -188,7 +188,7 @@ function DashboardStatsCards() {
                     colorClass="text-primary"
                 >
                     <div className="h-12 w-full mt-1 opacity-80">
-                        <Suspense fallback={<div className="font-mono text-[10px] text-muted-foreground w-full h-full flex items-center justify-center">Cargando gráfico...</div>}>
+                        <Suspense fallback={<div className="font-mono text-2xs text-muted-foreground w-full h-full flex items-center justify-center">Cargando gráfico...</div>}>
                             <LazyBar data={activeUsersChartData} options={chartOptions} />
                         </Suspense>
                     </div>
@@ -207,7 +207,7 @@ function DashboardStatsCards() {
                     title="Medallas Otorgadas"
                     value={stats.total_badges}
                     icon={TrophyIcon}
-                    colorClass="text-amber-800"
+                    colorClass="text-accent"
                 />
 
                 {/* 5. Carta Extra: Engagement */}
@@ -223,7 +223,7 @@ function DashboardStatsCards() {
             {/* Leaderboard */}
             <div className="mt-8">
                 <h2 className="font-mono text-xl text-foreground mb-4 flex items-center gap-2">
-                    <span className="w-2 h-8 bg-yellow-500 block"></span>
+                    <span className="w-2 h-8 bg-accent block"></span>
                     MEJORES GRANJEROS (TOP 5)
                 </h2>
                 <div className="bg-card pixel-border p-6 overflow-x-auto">
@@ -245,9 +245,9 @@ function DashboardStatsCards() {
                                     <tr key={userStat.id} className="border-b border-foreground/20 hover:bg-muted/30 transition-colors">
                                         <td className="py-3 px-4 font-bold text-lg">
                                             {index + 1}
-                                            {index === 0 && <span className="text-yellow-500 ml-1">★</span>}
-                                            {index === 1 && <span className="text-gray-400 ml-1">★</span>}
-                                            {index === 2 && <span className="text-amber-700 ml-1">★</span>}
+                                            {index === 0 && <span className="text-accent ml-1" aria-hidden="true">★</span>}
+                                            {index === 1 && <span className="text-muted-foreground ml-1" aria-hidden="true">★</span>}
+                                            {index === 2 && <span className="text-warning ml-1" aria-hidden="true">★</span>}
 
                                         </td>
                                         <td className="py-3 px-4 font-bold text-primary">{userStat.user_username || `User ${userStat.id}`}</td>
@@ -256,7 +256,7 @@ function DashboardStatsCards() {
                                                 <span className="bg-primary/20 text-primary px-2 py-0.5 rounded-sm text-xs w-max">
                                                     Lvl {userStat.level}
                                                 </span>
-                                                <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                                                <span className="text-2xs text-muted-foreground whitespace-nowrap">
                                                     {userStat.true_accuracy}% Efectividad • {userStat.unlocked_count} p.
                                                 </span>
                                             </div>
@@ -264,7 +264,7 @@ function DashboardStatsCards() {
                                         <td className="py-3 px-4 font-bold text-right text-muted-foreground">{userStat.experience.toLocaleString()}</td>
                                         <td className="py-3 px-4 text-right text-muted-foreground">
                                             {userStat.current_streak > 0 ? (
-                                                <span className="text-orange-500 flex items-center justify-end gap-1 font-bold">
+                                                <span className="text-warning flex items-center justify-end gap-1 font-bold">
                                                     {userStat.current_streak}<PixelFireIcon />
                                                 </span>
                                             ) : (

@@ -161,7 +161,13 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 6, # Límite de palabras por página (6 en este caso)
     'PAGE_SIZE_QUERY_PARAM': 'limit', # Permite que el frontend envíe ?limit=X
-    'MAX_PAGE_SIZE': 100, # Límite máximo que el frontend puede solicitar 
+    'MAX_PAGE_SIZE': 100, # Límite máximo que el frontend puede solicitar
+
+    # Techo de gasto en los proxies de terceros (TTS, STT, sugerencias).
+    # Sin esto, la cuota de ElevenLabs se agota igual, solo que autenticada.
+    'DEFAULT_THROTTLE_RATES': {
+        'external_service': '60/hour',
+    },
 }
 
 SIMPLE_JWT = {
@@ -214,6 +220,14 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Resend Settings
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
+
+# Claves de servicios externos.
+# NUNCA usar el prefijo VITE_ para estas: Vite las inlinea en texto plano en el
+# bundle publico. Solo el backend las conoce; el frontend habla con /game/tts/,
+# /game/stt/ y /dictionary/suggest-word/.
+ELEVENLABS_API_KEY = os.environ.get('ELEVENLABS_API_KEY')
+GITHUB_ISSUES_PAT = os.environ.get('GITHUB_ISSUES_PAT')
+GITHUB_ISSUES_REPO = os.environ.get('GITHUB_ISSUES_REPO', 'Pakelin3/Misspelt')
 
 
 FRONTEND_URL = 'https://localhost:5173' 

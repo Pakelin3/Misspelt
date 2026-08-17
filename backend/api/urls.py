@@ -35,6 +35,12 @@ urlpatterns = [
     path("game/oracle-post-game/", views.oracle_post_game_query, name="oracle_post_game_query"),
     # -------------------------------
 
+    # --- PROXIES DE SERVICIOS EXTERNOS (mantienen las claves fuera del navegador) ---
+    path("game/tts/", views.text_to_speech, name="text_to_speech"),
+    path("game/stt/", views.speech_to_text, name="speech_to_text"),
+    path("dictionary/suggest-word/", views.suggest_word, name="suggest_word"),
+    # -------------------------------
+
     # --- RUTAS DE PERFIL ---
     path("game-history/", views.GameHistoryListView.as_view(), name="game_history_list"),
     path("profile/me/", views.ProfileUpdateView.as_view(), name="profile_me"),

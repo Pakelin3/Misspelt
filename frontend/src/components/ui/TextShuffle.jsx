@@ -384,7 +384,10 @@ const TextShuffle = ({
         }
     );
 
-    const baseTw = 'inline-block whitespace-normal break-words will-change-transform uppercase text-[4rem] leading-none';
+    // El tamaño era `text-[4rem]` fijo: 64px por caracter en cualquier viewport, asi
+    // que un titulo de 8 letras medía 512px y se salía de pantalla en un movil de
+    // 360px. Ahora escala con el ancho disponible y `className` puede sobreescribirlo.
+    const baseTw = 'inline-block whitespace-normal break-words will-change-transform uppercase text-[clamp(1.75rem,10vw,4rem)] leading-none';
     const classes = useMemo(
         () => `${baseTw} ${ready ? 'visible' : 'invisible'} ${className}`.trim(),
         [baseTw, ready, className]

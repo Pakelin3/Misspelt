@@ -63,7 +63,7 @@ export function QuizPreview() {
         </div>
 
         {cooldown ? (
-          <div className="bg-card pixel-border p-8 md:p-12 text-center shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-2xl mx-auto">
+          <div className="bg-card pixel-border p-8 md:p-12 text-center shadow-pixel-xl max-w-2xl mx-auto">
             <div className="text-6xl mb-6">🛑</div>
             <h3 className="font-mono text-2xl md:text-3xl text-destructive mb-4">¡Oops! Se te acabó la demo</h3>
             <p className="font-sans text-lg text-muted-foreground mb-8">
@@ -72,14 +72,14 @@ export function QuizPreview() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={() => navigate('/play')}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-destructive text-destructive-foreground font-bold pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] transition-all"
+                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-destructive text-destructive-foreground font-bold pixel-btn shadow-pixel-md hover:translate-y-[2px] transition-all"
               >
                 <Swords size={20} />
                 SUPERVIVENCIA
               </button>
               <button
                 onClick={() => navigate('/quiz')}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-primary text-primary-foreground font-bold pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] transition-all"
+                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-primary text-primary-foreground font-bold pixel-btn shadow-pixel-md hover:translate-y-[2px] transition-all"
               >
                 <Activity size={20} />
                 NUEVA PRÁCTICA
@@ -87,7 +87,7 @@ export function QuizPreview() {
             </div>
           </div>
         ) : hasWon ? (
-          <div className="bg-card pixel-border p-8 md:p-12 text-center shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-2xl mx-auto">
+          <div className="bg-card pixel-border p-8 md:p-12 text-center shadow-pixel-xl max-w-2xl mx-auto">
             <div className="text-6xl mb-6">🏆</div>
             <h3 className="font-mono text-2xl md:text-3xl text-primary mb-4">¡Felicidades! Has completado la demo</h3>
             <p className="font-sans text-lg text-muted-foreground mb-8">
@@ -96,14 +96,14 @@ export function QuizPreview() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={() => navigate('/play')}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-destructive text-destructive-foreground font-bold pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] transition-all"
+                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-destructive text-destructive-foreground font-bold pixel-btn shadow-pixel-md hover:translate-y-[2px] transition-all"
               >
                 <Swords size={20} />
                 SUPERVIVENCIA
               </button>
               <button
                 onClick={() => navigate('/quiz')}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-primary text-primary-foreground font-bold pixel-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] transition-all"
+                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-primary text-primary-foreground font-bold pixel-btn shadow-pixel-md hover:translate-y-[2px] transition-all"
               >
                 <Activity size={20} />
                 NUEVA PRÁCTICA
@@ -123,7 +123,7 @@ export function QuizPreview() {
             />
           </div>
         ) : (
-          <div className="bg-card pixel-border p-8 md:p-12 text-center shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-2xl mx-auto">
+          <div className="bg-card pixel-border p-8 md:p-12 text-center shadow-pixel-xl max-w-2xl mx-auto">
             <h3 className="font-mono text-2xl md:text-3xl text-foreground mb-4">¿Te atreves a probar?</h3>
             <p className="font-sans text-lg text-muted-foreground mb-8">
               Juega una pequeña demostración de nuestros minijuegos integrados con 10 palabras aleatorias.
@@ -133,7 +133,7 @@ export function QuizPreview() {
             <button
               onClick={startGame}
               disabled={isLoading}
-              className="w-full sm:w-auto px-10 py-4 uppercase font-bold text-xl bg-primary text-primary-foreground pixel-btn pixel-border-primary shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all animate-pulse disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto px-10 py-4 uppercase font-bold text-xl bg-primary text-primary-foreground pixel-btn pixel-border-primary shadow-pixel-md hover:translate-y-[2px] hover:shadow-pixel-sm transition-all animate-pulse disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "CARGANDO..." : "INICIAR DEMO"}
             </button>

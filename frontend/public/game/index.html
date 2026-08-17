@@ -2,7 +2,10 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+		<!-- El zoom queda habilitado a proposito: bloquearlo incumple WCAG 1.4.4 y este documento
+		     tambien se puede abrir directamente, no solo dentro del iframe. El pinch
+		     sobre el canvas ya lo controla `touch-action: none` en el CSS de abajo. -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>Misspelt</title>
 		<style>
 html, body, #canvas {

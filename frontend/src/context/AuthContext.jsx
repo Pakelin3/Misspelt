@@ -1,9 +1,10 @@
-import { createContext, useState, useEffect, useCallback, useRef } from "react";
+import { createContext, useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import ScaleLoader from "react-spinners/ScaleLoader";
 import { toast } from "sonner";
+import { refreshAccessToken } from "@/utils/useAxios";
 
 
 const baseURL = import.meta.env.VITE_BACKEND_URL_API;
@@ -11,6 +12,13 @@ const baseURL = import.meta.env.VITE_BACKEND_URL_API;
 const AuthContext = createContext();
 
 export default AuthContext;
+
+// Mensaje único para cualquier ruta de código que descubra que la sesión ya
+// no es válida (token corrupto, refresh fallido, timeout de verificación).
+// Antes había tres textos distintos según qué código detectara el problema;
+// ahora todos dicen lo mismo: qué pasó y qué puede hacer el usuario.
+const SESSION_EXPIRED_TITLE = "Sesión finalizada";
+const SESSION_EXPIRED_MESSAGE = "Tu sesión caducó o no pudo verificarse. Inicia sesión de nuevo para continuar.";
 
 export const AuthProvider = ({ children }) => {
 
@@ -73,7 +81,7 @@ export const AuthProvider = ({ children }) => {
         return translations[errorKey] || defaultMessage || errorKey;
     }, []);
 
-    const loginUser = async (email, password) => {
+    const loginUser = useCallback(async (email, password) => {
         try {
             const response = await axios.post(`${baseURL}/token/`, {
                 email,
@@ -90,11 +98,13 @@ export const AuthProvider = ({ children }) => {
                     navigate('/check-email');
                     showAlert("Falta poco", "Por favor, verifica tu correo electrónico para usar tu cuenta.", "info");
                 } else {
-                    navigate('/');
+                    // Aterrizar en una vista útil según el rol, no en la landing
+                    // de marketing: un usuario normal va al diccionario, un
+                    // staff a su panel de administración.
+                    navigate(decodedUser.is_staff ? '/admin-dashboard' : '/dictionary');
                     showToast("Inicio de sesión exitoso", "success");
                 }
 
-                console.log("Usuario decodificado después del login:", decodedUser);
                 return {};
             }
         } catch (error) {
@@ -122,9 +132,9 @@ export const AuthProvider = ({ children }) => {
             }
         }
         return { general_error: 'Hubo un error inesperado.' };
-    };
+    }, [navigate, showAlert, showToast, translateError]);
 
-    const registerUser = async (email, username, password, confirmPassword) => {
+    const registerUser = useCallback(async (email, username, password, confirmPassword) => {
 
         try {
             const response = await axios.post(`${baseURL}/register/`, {
@@ -157,7 +167,8 @@ export const AuthProvider = ({ children }) => {
                 } else if (translatedErrors.detail && translatedErrors.detail.length > 0) {
                     showAlert('Error en el Registro', translatedErrors.detail[0], 'error');
                 } else if (Object.keys(translatedErrors).length > 0) {
-                    console.log("Errores de campo manejados por el componente, no se muestra alerta general.");
+                    // Errores de campo: el propio formulario los muestra junto a
+                    // cada input, no hace falta un toast general además.
                 } else {
                     showAlert('Error en el Registro', 'Hubo un problema con tu registro.', 'error');
                 }
@@ -168,9 +179,9 @@ export const AuthProvider = ({ children }) => {
             }
         }
         return { general_error: 'Hubo un error inesperado.' };
-    };
+    }, [navigate, showAlert, translateError]);
 
-    const googleAuth = async (token) => {
+    const googleAuth = useCallback(async (token) => {
         try {
             const response = await axios.post(`${baseURL}/auth/google/`, {
                 token: token,
@@ -182,7 +193,7 @@ export const AuthProvider = ({ children }) => {
                 setUser(decodedUser);
                 localStorage.setItem('authTokens', JSON.stringify(response.data));
 
-                navigate('/');
+                navigate(decodedUser.is_staff ? '/admin-dashboard' : '/dictionary');
                 showToast("Autenticación con Google exitosa", "success");
                 return {};
             }
@@ -192,7 +203,7 @@ export const AuthProvider = ({ children }) => {
             return { general_error: 'No se pudo iniciar sesión con Google.' };
         }
         return { general_error: 'Hubo un error inesperado con Google.' };
-    };
+    }, [navigate, showAlert, showToast]);
 
     const logoutUser = useCallback(async () => {
         try {
@@ -201,7 +212,6 @@ export const AuthProvider = ({ children }) => {
                     Authorization: `Bearer ${authTokens?.access}`
                 }
             });
-            console.log("User marked offline in backend.");
         } catch (error) {
             console.error("Error marking user offline on logout:", error.response?.data || error.message);
         } finally {
@@ -211,39 +221,31 @@ export const AuthProvider = ({ children }) => {
             navigate("/login");
             showToast("Has sido desconectado", "success");
         }
-    }, [navigate, showToast, authTokens, setAuthTokens, setUser]);
+    }, [navigate, showToast, authTokens]);
 
     const updateToken = useCallback(async () => {
         if (!authTokens || !authTokens.refresh) {
-            console.log("No refresh token available, logging out.");
             logoutUser();
             return;
         }
 
         try {
-            const response = await axios.post(`${baseURL}/token/refresh/`, {
-                refresh: authTokens.refresh,
-            });
-
-            if (response.status === 200) {
-                setAuthTokens(response.data);
-                setUser(jwtDecode(response.data.access));
-                localStorage.setItem('authTokens', JSON.stringify(response.data));
-                console.log("Token refreshed successfully!");
-            } else {
-                console.error("Failed to refresh token:", response.data);
-                logoutUser();
-            }
+            // Usa el mismo punto de refresh (promesa compartida a nivel de
+            // módulo) que los interceptores de useAxios, para que un refresh en
+            // curso disparado desde cualquier componente y este intervalo de
+            // fondo nunca compitan por el mismo refresh token de un solo uso.
+            const data = await refreshAccessToken(authTokens.refresh);
+            setAuthTokens(data);
+            setUser(jwtDecode(data.access));
+            localStorage.setItem('authTokens', JSON.stringify(data));
         } catch (error) {
             console.error("Error during token refresh:", error.response?.data || error.message);
-            const errorMessage = error.response?.data?.detail || error.response?.data?.code || "Error desconocido al refrescar el token.";
-            showAlert("Error de Sesión", translateError(errorMessage, "Su sesión ha caducado. Por favor, inicie sesión de nuevo."), "error");
+            showAlert(SESSION_EXPIRED_TITLE, SESSION_EXPIRED_MESSAGE, "error");
             logoutUser();
         }
-    }, [authTokens, logoutUser, showAlert, translateError, setUser]);
+    }, [authTokens, logoutUser, showAlert]);
 
     const verifyToken = useCallback(async () => {
-        // ! console.log("verifyToken called");
         if (!authTokens) {
             setLoading(false);
             return;
@@ -254,7 +256,6 @@ export const AuthProvider = ({ children }) => {
             const currentTime = Date.now() / 1000;
 
             if (decodedToken.exp < currentTime) {
-                console.log("Token de acceso expirado localmente, intentando refrescar...");
                 await updateToken();
             } else {
                 setUser(decodedToken);
@@ -264,7 +265,7 @@ export const AuthProvider = ({ children }) => {
             setAuthTokens(null);
             setUser(null);
             localStorage.removeItem("authTokens");
-            showAlert("Sesión Expirada", "Su sesión ha caducado. Por favor, inicie sesión de nuevo.", "info");
+            showAlert(SESSION_EXPIRED_TITLE, SESSION_EXPIRED_MESSAGE, "info");
         } finally {
             setLoading(false);
             if (loadingTimeoutRef.current) {
@@ -272,10 +273,58 @@ export const AuthProvider = ({ children }) => {
                 loadingTimeoutRef.current = null;
             }
         }
-    }, [authTokens, updateToken, setUser, showAlert]);
+    }, [authTokens, updateToken, showAlert]);
 
+    // Efecto de arranque: solo se ocupa de verificar la sesión guardada al
+    // cargar la app y de no dejar al usuario colgado en la pantalla de carga
+    // si la verificación no responde a tiempo.
+    useEffect(() => {
+        const LOADING_TIMEOUT_MS = 5000;
 
-    const contextData = {
+        if (!loading) {
+            return undefined;
+        }
+
+        verifyToken();
+        loadingTimeoutRef.current = setTimeout(() => {
+            console.warn("carga de verificación de sesión excedió el tiempo límite.");
+            showAlert(
+                "Problema de Carga",
+                "No pudimos verificar su sesión a tiempo. Por favor, intente iniciar sesión de nuevo.",
+                "warning"
+            ).then(() => {
+                logoutUser();
+            });
+        }, LOADING_TIMEOUT_MS);
+
+        return () => {
+            if (loadingTimeoutRef.current) {
+                clearTimeout(loadingTimeoutRef.current);
+                loadingTimeoutRef.current = null;
+            }
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [loading]);
+
+    // Efecto de refresco periódico: separado del efecto de arranque para que
+    // no se destruya y reconstruya en cada cambio de authTokens/user/etc.
+    // Solo le importa si hay sesión o no.
+    const hasSession = !!authTokens;
+    useEffect(() => {
+        if (!hasSession) {
+            return undefined;
+        }
+
+        const FOUR_MINUTES = 1000 * 60 * 4;
+        const interval = setInterval(() => {
+            updateToken();
+        }, FOUR_MINUTES);
+
+        return () => clearInterval(interval);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [hasSession]);
+
+    const contextData = useMemo(() => ({
         user,
         setUser,
         authTokens,
@@ -285,52 +334,10 @@ export const AuthProvider = ({ children }) => {
         googleAuth,
         logoutUser,
         updateToken,
+        showAlert,
+        showToast,
         baseURL
-    };
-
-    useEffect(() => {
-        const LOADING_TIMEOUT_MS = 5000;
-
-        if (loading) {
-            verifyToken();
-            loadingTimeoutRef.current = setTimeout(() => {
-                if (loading) {
-                    console.warn("carga de verificación de sesión excedió el tiempo límite.");
-                    showAlert(
-                        "Problema de Carga",
-                        "No pudimos verificar su sesión a tiempo. Por favor, intente iniciar sesión de nuevo.",
-                        "warning"
-                    ).then(() => {
-                        logoutUser();
-                    });
-                }
-            }, LOADING_TIMEOUT_MS);
-        } else {
-            if (loadingTimeoutRef.current) {
-                clearTimeout(loadingTimeoutRef.current);
-                loadingTimeoutRef.current = null;
-            }
-        }
-
-        const FOUR_MINUTES = 1000 * 60 * 4;
-        let interval = null;
-
-        if (authTokens) {
-            interval = setInterval(() => {
-                updateToken();
-            }, FOUR_MINUTES);
-        }
-
-        return () => {
-            if (interval) {
-                clearInterval(interval);
-            }
-            if (loadingTimeoutRef.current) {
-                clearTimeout(loadingTimeoutRef.current);
-                loadingTimeoutRef.current = null;
-            }
-        };
-    }, [authTokens, loading, updateToken, verifyToken, user, logoutUser, showAlert]);
+    }), [user, authTokens, registerUser, loginUser, googleAuth, logoutUser, updateToken, showAlert, showToast]);
 
     if (loading) {
         return (

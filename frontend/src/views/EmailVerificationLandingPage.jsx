@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, Link } from 'react-router-dom';
 import AuthContext from '@/context/AuthContext';
 import LoadingVerification from '@/components/LoadingVerification';
+import { Button } from '@/components/ui/Button';
 
 const EmailVerificationLandingPage = () => {
     const { token } = useParams();
@@ -23,37 +24,37 @@ const EmailVerificationLandingPage = () => {
 
         if (nextStatus) {
             setVerificationStatus(nextStatus);
-        } else {
-            if (showAlert && typeof showAlert === 'function') {
-                showAlert('Información', 'Página de verificación de correo. Si esperas un email, por favor, revisa tu bandeja de entrada.', 'info');
-            }
-            setTimeout(() => {
-                if (showAlert && typeof showAlert === 'function') {
-                    showAlert('Redirigiendo...', null, 'info', false, 1000);
-                }
-            }, 500);
+        } else if (showAlert && typeof showAlert === 'function') {
+            showAlert('Información', 'Página de verificación de correo. Si esperas un email, por favor, revisa tu bandeja de entrada.', 'info');
         }
     }, [token, location.search, showAlert]);
 
     if (!verificationStatus && !token) {
 
         return (
-            <div className="flex justify-center items-center min-h-screen bg-[var(--background)] p-4">
-                <div className={`
-                    p-6 sm:p-8 rounded-none w-full max-w-md text-center
-                    border-4 border-[var(--foreground)] box-border 
-                    shadow-[8px_8px_0_0_hsl(var(--destructive))]
-                    bg-[var(--card)] relative
-                `}>
-                    <div className="absolute -top-4 -left-4 w-8 h-8 bg-[var(--destructive)] border-4 border-[var(--foreground)] aspect-square"></div>
+            <div className="flex justify-center items-center min-h-screen bg-background p-4">
+                <div className="p-6 sm:p-8 rounded-none w-full max-w-md text-center border-4 border-foreground box-border shadow-pixel-xl-destructive bg-card relative">
+                    <div className="absolute -top-4 -left-4 w-8 h-8 bg-destructive border-4 border-foreground aspect-square" aria-hidden="true"></div>
 
-                    <h2 className="text-2xl font-pixel text-[var(--destructive)] mb-4">
+                    <h2 className="text-2xl font-mono text-destructive mb-4">
                         ERROR CRÍTICO
                     </h2>
 
-                    <p className="text-[var(--muted-foreground)]">
-                        No hay información de verificación mágica para procesar. El enlace parece estar corrompido, intenta registrarte nuevamente.
+                    <p className="text-muted-foreground mb-6">
+                        No hay información de verificación mágica para procesar. El enlace parece estar corrompido o incompleto.
                     </p>
+
+                    <div className="flex flex-col gap-3">
+                        <Button asChild variant="secondary" size="lg" className="w-full">
+                            <Link to="/register">REGISTRARME DE NUEVO</Link>
+                        </Button>
+                        <Button asChild variant="outline" size="sm" className="w-full">
+                            <Link to="/login">IR AL INICIO DE SESIÓN</Link>
+                        </Button>
+                        <Button asChild variant="ghost" size="sm" className="w-full">
+                            <Link to="/">VOLVER AL INICIO</Link>
+                        </Button>
+                    </div>
                 </div>
             </div>
         );

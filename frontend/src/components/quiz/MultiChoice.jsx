@@ -35,6 +35,9 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [word.id]);
 
+    const correctOption = options.find((o) => o.isCorrect);
+    const meaningHint = word.translation || word.definition;
+
     const handleSelect = (option) => {
         if (isChecked) return;
         setState(prev => ({ ...prev, selectedOption: option, isChecked: true }));
@@ -42,18 +45,20 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
         if (option.isCorrect) {
             setTimeout(onSuccess, 1000);
         } else {
+            // Un fallo debe enseñar: se mantiene la revelación en pantalla el
+            // tiempo suficiente para leerla antes de reintentar.
             setTimeout(() => {
                 setState(prev => ({ ...prev, selectedOption: null, isChecked: false }));
                 onError();
-            }, 1000);
+            }, 2600);
         }
     };
 
     return (
         <div className="flex flex-col items-center space-y-8 w-full">
-            <div className="text-center space-y-4 bg-muted p-6 border-4 border-primary pixel-border w-full shadow-[4px_4px_0px_0px_rgba(var(--primary),0.3)]">
-                <HelpCircle size={48} className="mx-auto text-primary mb-2" strokeWidth={2.5} />
-                <h3 className="text-lg font-pixel text-primary uppercase tracking-widest">¿Cuál es la palabra?</h3>
+            <div className="text-center space-y-4 bg-muted p-6 border-4 border-primary pixel-border w-full shadow-pixel-md-primary">
+                <HelpCircle size={48} className="mx-auto text-primary mb-2" strokeWidth={2.5} aria-hidden="true" />
+                <h3 className="text-lg font-mono text-primary uppercase tracking-widest">¿Cuál es la palabra?</h3>
 
                 <p className="text-xl md:text-2xl font-bold text-foreground font-sans leading-relaxed">
                     "{word.definition || word.translation}"
@@ -65,10 +70,12 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
                     let btnClass = "bg-background border-primary text-foreground hover:bg-muted";
 
                     if (isChecked) {
-                        if (selectedOption?.id === option.id && option.isCorrect) {
-                            btnClass = "bg-green-500 border-green-700 text-white shadow-none translate-y-[4px]";
-                        } else if (selectedOption?.id === option.id && !option.isCorrect) {
-                            btnClass = "bg-destructive border-red-800 text-white shadow-none translate-y-[4px]";
+                        if (option.isCorrect) {
+                            // La opción correcta siempre se revela, se haya elegido o no:
+                            // es el momento de aprenderla.
+                            btnClass = "bg-success border-success text-success-foreground shadow-none translate-y-[4px]";
+                        } else if (selectedOption?.id === option.id) {
+                            btnClass = "bg-destructive border-destructive text-destructive-foreground shadow-none translate-y-[4px]";
                         } else {
                             btnClass = "opacity-50 bg-muted border-muted-foreground text-muted-foreground shadow-none translate-y-[4px]";
                         }
@@ -80,22 +87,34 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
                             onClick={() => handleSelect(option)}
                             disabled={isChecked}
                             className={`
-                                relative p-5 border-4 font-black text-xl font-pixel uppercase transition-all flex justify-center items-center
-                                ${!isChecked && "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-[4px] active:shadow-none"}
+                                relative p-5 border-4 font-black text-xl font-mono uppercase transition-all flex justify-center items-center
+                                ${!isChecked && "shadow-pixel-md hover:translate-y-[2px] hover:shadow-pixel-sm active:translate-y-[4px] active:shadow-none"}
                                 ${btnClass}
                             `}
                         >
-                            <span>{option.text}</span>
+                            <span lang="en">{option.text}</span>
 
-                            {isChecked && selectedOption?.id === option.id && option.isCorrect && (
-                                <CheckCircle className="absolute top-2 right-2 w-6 h-6 text-white drop-shadow-sm" strokeWidth={3} />
+                            {isChecked && option.isCorrect && (
+                                <CheckCircle aria-hidden="true" className="absolute top-2 right-2 w-6 h-6 text-success-foreground drop-shadow-sm" strokeWidth={3} />
                             )}
-                            {isChecked && selectedOption?.id === option.id && !option.isCorrect && (
-                                <XCircle className="absolute top-2 right-2 w-6 h-6 text-white drop-shadow-sm" strokeWidth={3} />
+                            {isChecked && !option.isCorrect && selectedOption?.id === option.id && (
+                                <XCircle aria-hidden="true" className="absolute top-2 right-2 w-6 h-6 text-destructive-foreground drop-shadow-sm" strokeWidth={3} />
                             )}
                         </button>
                     );
                 })}
+            </div>
+
+            <div role="status" aria-live="polite" className="min-h-16 flex items-center justify-center text-center">
+                {isChecked && selectedOption?.isCorrect && (
+                    <p className="text-success font-sans text-lg">¡Correcto!</p>
+                )}
+                {isChecked && selectedOption && !selectedOption.isCorrect && (
+                    <p className="text-destructive font-sans text-lg">
+                        Incorrecto. La palabra correcta era <strong lang="en">{correctOption?.text}</strong>
+                        {meaningHint ? <> — «{meaningHint}»</> : null}.
+                    </p>
+                )}
             </div>
         </div>
     );

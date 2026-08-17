@@ -6,9 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  <title>Misspelt</title>
-  <script src="https://js.puter.com/v2/"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <meta name="description" content="Misspelt: aprende vocabulario en inglés jugando. Diccionario, retos de escucha y un juego de aventura para practicar palabras nuevas.">
+    <title>Misspelt</title>
+    <script>
+      // Aplica el tema antes del primer pintado. Si esto se hiciera en un
+      // useEffect de React, cada carga mostraria un fogonazo del tema claro.
+      (function () {
+        try {
+          var saved = localStorage.getItem('theme');
+          var dark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          var root = document.documentElement;
+          root.classList.add(dark ? 'dark' : 'light');
+          root.style.colorScheme = dark ? 'dark' : 'light';
+        } catch (e) { /* localStorage bloqueado: se usa el tema claro */ }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

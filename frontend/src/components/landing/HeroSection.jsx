@@ -1,13 +1,16 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import { useContext, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { StarIcon, SwordIcon } from "@/components/PixelIcons";
 import heroBg from "@/img/background.jpg";
 import TextShuffle from "@/components/ui/TextShuffle";
+import AuthContext from "@/context/AuthContext";
 
 export function HeroSection() {
-  const [stats, setStats] = React.useState(null);
+  const [stats, setStats] = useState(null);
+  const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchStats = async () => {
       try {
         const res = await fetch(`${import.meta.env.VITE_BACKEND_URL_API}/landing-stats/`);
@@ -25,21 +28,23 @@ export function HeroSection() {
   return (
     <section className="relative overflow-hidden pt-24 pb-12 md:pt-32 md:pb-20 bg-background">
 
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-base">
         <img
           src={heroBg}
-          alt="Pixel Art Landscape"
+          alt=""
+          aria-hidden="true"
+          fetchPriority="high"
           className="w-full h-full object-cover pixel-rendering opacity-30"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-5xl px-4 text-center">
+      <div className="relative z-raised mx-auto max-w-5xl px-4 text-center">
 
         <div className="flex justify-center gap-4 mb-6">
-          <StarIcon className="w-8 h-8 animate-sparkle text-accent" />
-          <StarIcon className="w-6 h-6 animate-sparkle stagger-1 text-accent" />
-          <StarIcon className="w-8 h-8 animate-sparkle stagger-2 text-accent" />
+          <StarIcon aria-hidden="true" className="w-8 h-8 animate-sparkle text-accent" />
+          <StarIcon aria-hidden="true" className="w-6 h-6 animate-sparkle stagger-1 text-accent" />
+          <StarIcon aria-hidden="true" className="w-8 h-8 animate-sparkle stagger-2 text-accent" />
         </div>
 
         <h1 className="font-mono  text-foreground leading-tight mb-6 animate-slide-up">
@@ -71,11 +76,21 @@ export function HeroSection() {
         {/* Botones de Acción */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up stagger-3">
           <button
-            onClick={() => window.dispatchEvent(new CustomEvent('start-game-loading'))}
-            className="flex items-center gap-3 bg-primary text-primary-foreground px-8 py-4 font-mono text-sm pixel-border-primary pixel-btn hover:text-primary-foreground"
+            type="button"
+            onClick={() => {
+              // Antes esto siempre llevaba a /play, una ruta privada: el boton
+              // mas grande de la landing rebotaba a los visitantes al login en
+              // lugar de llevarlos a registrarse.
+              if (user) {
+                window.dispatchEvent(new CustomEvent('start-game-loading'));
+              } else {
+                navigate('/register');
+              }
+            }}
+            className="flex min-h-14 items-center gap-3 bg-primary text-primary-foreground px-8 py-4 font-mono text-sm pixel-border-primary pixel-btn hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
-            <SwordIcon className="w-5 h-5" />
-            COMENZAR AVENTURA
+            <SwordIcon aria-hidden="true" className="w-5 h-5" />
+            {user ? "COMENZAR AVENTURA" : "CREAR MI CUENTA"}
           </button>
           <a
             href="#quiz-preview"
@@ -101,11 +116,11 @@ export function HeroSection() {
 }
 
 function StatItem({ label, targetValue }) {
-  const [currentValue, setCurrentValue] = React.useState("0");
-  const [isVisible, setIsVisible] = React.useState(false);
-  const ref = React.useRef(null);
+  const [currentValue, setCurrentValue] = useState("0");
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) setIsVisible(true);
@@ -116,7 +131,7 @@ function StatItem({ label, targetValue }) {
     return () => observer.disconnect();
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isVisible || targetValue == null) return;
 
     const roundedValue = Math.round(targetValue / 10) * 10;

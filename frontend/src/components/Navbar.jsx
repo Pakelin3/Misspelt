@@ -86,7 +86,10 @@ function Navbar() {
     const noNavbarPaths = ['/login', '/register', '/check-email', '/verify-email/:token'];
     const shouldShowNavbar = !noNavbarPaths.some(path => {
         if (path.includes(':')) {
-            const regexPath = new RegExp(`^ ${path.replace(/:[^/]+/g, '[^/]+')} $`);
+            // El patron llevaba espacios literales dentro de la plantilla
+            // (`^ ... $`), asi que nunca coincidia y la navbar seguia visible
+            // en /verify-email/:token.
+            const regexPath = new RegExp(`^${path.replace(/:[^/]+/g, '[^/]+')}$`);
             return regexPath.test(location.pathname);
         }
         return location.pathname === path;
@@ -118,12 +121,12 @@ function Navbar() {
     `;
 
     return (
-        <header id="main-navbar" className="fixed top-0 left-0 right-0 z-50 border-b-4 border-foreground bg-card shadow-sm">
+        <header id="main-navbar" className="fixed top-0 left-0 right-0 z-navbar border-b-4 border-foreground bg-card shadow-sm">
             <nav className="mx-auto flex max-w-7xl items-center justify-between px-3 sm:px-4 py-2 sm:py-3 gap-2 lg:gap-4">
 
                 {/* --- LOGO --- */}
                 <div className="flex items-center shrink-0">
-                    <Link to="/" className="flex items-center gap-2 group text-decoration-none ">
+                    <Link to="/" aria-label="Misspelt, ir al inicio" className="flex min-h-11 items-center gap-2 group text-decoration-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                         <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-none bg-primary pixel-border-primary group-hover:scale-105 transition-transform">
                             <LeafIcon className="w-4 h-4 md:w-6 md:h-6 text-primary-foreground" />
                         </div>
@@ -156,23 +159,29 @@ function Navbar() {
 
                     {/* Botón JUGAR destacado */}
                     <button
+                        type="button"
                         onClick={() => setIsStartingPlay(true)}
-                        className="hidden md:flex items-center gap-2 bg-primary text-primary-foreground px-3 lg:px-4 py-2 font-mono text-[10px] sm:text-xs pixel-border-primary-foreground pixel-btn text-decoration-none"
+                        aria-label="Jugar"
+                        className="hidden md:flex min-h-11 items-center gap-2 bg-primary text-primary-foreground px-3 lg:px-4 py-2 font-mono text-2xs lg:text-xs pixel-border-primary-foreground pixel-btn text-decoration-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
-                        <SwordIcon className="w-4 h-4 shrink-0" /> <span className="hidden lg:inline">JUGAR</span>
+                        <SwordIcon aria-hidden="true" className="w-4 h-4 shrink-0" /> <span className="hidden lg:inline">JUGAR</span>
                     </button>
 
 
                     {user ? (
                         <div className="relative" ref={profileDropdownRef}>
                             <button
+                                type="button"
                                 onClick={toggleProfileDropdown}
-                                className="flex items-center gap-2 focus:outline-none hover:opacity-80 transition-opacity"
+                                aria-expanded={isProfileDropdownOpen}
+                                aria-haspopup="menu"
+                                aria-label="Abrir menú de perfil"
+                                className="flex min-h-11 items-center gap-2 hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                             >
                                 <img
                                     src={finalProfileImageSrc}
                                     alt="Profile"
-                                    className="w-8 h-8 md:w-10 md:h-10 pixel-border rounded-none bg-background object-cover shrink-0"
+                                    className="w-11 h-11 pixel-border rounded-none bg-background object-cover shrink-0"
                                 />
                                 <span className="hidden xl:block font-mono text-xs truncate max-w-[100px]">
                                     {user.username}
@@ -180,9 +189,9 @@ function Navbar() {
                             </button>
 
                             {isProfileDropdownOpen && (
-                                <div className="absolute right-0 mt-2 w-48 bg-card pixel-border z-50 p-1 animate-in fade-in zoom-in-95 duration-200">
+                                <div className="absolute right-0 mt-2 w-48 bg-card pixel-border z-dropdown p-1 animate-in fade-in zoom-in-95 duration-200">
                                     <div className="px-4 py-2 border-b-2 border-muted mb-1">
-                                        <p className="font-mono text-[10px] text-muted-foreground">
+                                        <p className="font-mono text-2xs text-muted-foreground">
                                             Nivel {userStats?.level || 1} • {profileData?.current_title || 'Aventurero'}
                                         </p>
                                     </div>
@@ -199,7 +208,7 @@ function Navbar() {
                                             onClick={logoutUser}
                                             className="w-full text-left flex items-center gap-2 p-2 bg-muted/50 hover:bg-destructive hover:text-destructive-foreground border-2 border-foreground transition-colors pixel-btn"
                                         >
-                                            Cerrar Sesión
+                                            Cerrar sesión
                                         </button>
                                     </div>
 
@@ -210,15 +219,15 @@ function Navbar() {
                         <div className="hidden md:flex items-center gap-2">
                             <Link
                                 to="/login"
-                                className="font-mono text-xs px-3 py-2 text-foreground hover:underline"
+                                className="flex min-h-11 items-center font-mono text-2xs lg:text-xs px-3 py-2 text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                             >
-                                LOGIN
+                                ENTRAR
                             </Link>
                             <Link
                                 to="/register"
-                                className="bg-accent text-accent-foreground px-3 py-2 font-mono text-xs pixel-border-accent pixel-btn text-decoration-none"
+                                className="flex min-h-11 items-center bg-accent text-accent-foreground px-3 py-2 font-mono text-2xs lg:text-xs pixel-border-accent pixel-btn text-decoration-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                             >
-                                REGISTRO
+                                CREAR CUENTA
                             </Link>
                         </div>
                     )}
@@ -226,7 +235,7 @@ function Navbar() {
                     {/* --- MOBILE TOGGLE --- */}
                     <button
                         ref={mobileMenuButtonRef}
-                        className="md:hidden p-2 flex flex-col gap-1 justify-center items-center w-10 h-10 active:scale-95 transition-transform"
+                        className="md:hidden p-2 flex flex-col gap-1 justify-center items-center size-11 active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         onClick={toggleMobileMenu}
                     >
                         <span className={`block h-1 w-6 bg-foreground transition-transform ${isMobileMenuOpen ? "rotate-45 translate-y-2" : ""}`} />
@@ -271,7 +280,7 @@ function Navbar() {
                             {user ? (
                                 <>
                                     <Link to="/profile" onClick={toggleMobileMenu} className="flex items-center gap-2 px-3 py-2 font-sans text-lg">
-                                        <img src={finalProfileImageSrc} className="w-6 h-6 rounded-sm pixel-border" />
+                                        <img src={finalProfileImageSrc} alt="" aria-hidden="true" width="24" height="24" loading="lazy" className="w-6 h-6 rounded-sm pixel-border" />
                                         Mi Perfil
                                     </Link>
                                     <button
@@ -284,10 +293,10 @@ function Navbar() {
                             ) : (
                                 <div className="flex flex-col gap-2 mt-2">
                                     <Link to="/login" onClick={toggleMobileMenu} className="text-center font-mono text-xs border-2 border-foreground py-2">
-                                        INICIAR SESIÓN
+                                        ENTRAR
                                     </Link>
                                     <Link to="/register" onClick={toggleMobileMenu} className="text-center font-mono text-xs bg-primary text-primary-foreground py-2 pixel-border-primary">
-                                        REGISTRARSE
+                                        CREAR CUENTA
                                     </Link>
                                 </div>
                             )}

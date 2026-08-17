@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { BookIcon, SwordIcon, PixelChevronIcon, PixelUsersIcon, TrophyIcon, PixelAvatarIcon } from '@/components/PixelIcons';
-import { VillagerIcon, SignalIcon, MedalRibbonIcon } from '@/components/AdminPixelIcons';
+import { SignalIcon } from '@/components/AdminPixelIcons';
 import { Menu, X } from 'lucide-react';
 import DashboardStatsCards from '@/components/admin/DashboardStatsCards';
 import DictionaryAdminPanel from '@/components/admin/DictionaryAdminPanel';
@@ -10,6 +10,7 @@ import AvatarAdminPanel from '@/components/admin/AvatarAdminPanel';
 import FarmsAdminPanel from '@/components/admin/FarmsAdminPanel';
 import FarmDetail from '@/components/admin/FarmDetail';
 import { Button } from '@/components/ui/Button';
+import { Dialog, DialogContent } from '@/components/ui/Dialog';
 
 
 const ADMIN_MENU = [
@@ -82,17 +83,17 @@ function AdminDashboard() {
 
             <aside
                 className={`
-                    hidden md:flex flex-col border-r-4 border-foreground bg-card h-[calc(100vh-72px)] sticky top-[72px] transition-all duration-300 z-20
+                    hidden md:flex flex-col border-r-4 border-foreground bg-card h-[calc(100vh-72px)] sticky top-[72px] transition-all duration-300 z-dropdown
                     ${isSidebarOpen ? 'w-64' : 'w-20'}
                 `}
             >
                 <div className="h-16 flex items-center justify-center border-b-4 border-foreground bg-muted/30">
                     <div className={`flex items-center gap-2 overflow-hidden ${!isSidebarOpen && 'justify-center'}`}>
                         <div className="w-8 h-8 bg-destructive rounded-sm flex items-center justify-center shrink-0 pixel-border border-2 border-foreground">
-                            <span className="font-mono text-[10px] text-white font-bold">OP</span>
+                            <span className="font-mono text-2xs text-destructive-foreground font-bold">OP</span>
                         </div>
                         <span className={`font-mono text-xs font-bold whitespace-nowrap transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'hidden'}`}>
-                            PANEL OP
+                            PANEL DE PROFESOR
                         </span>
                     </div>
                 </div>
@@ -109,17 +110,19 @@ function AdminDashboard() {
                 </nav>
 
                 <div className="p-2 border-t-4 border-foreground bg-muted/30">
-                    <button
+                    <Button
+                        variant="ghost"
+                        className="w-full mb-2"
                         onClick={() => setSidebarOpen(!isSidebarOpen)}
-                        className="w-full rounded-none flex items-center justify-center p-2 text-foreground hover:bg-muted transition-colors mb-2"
-                        title={isSidebarOpen ? "Colapsar" : "Expandir"}
+                        aria-label={isSidebarOpen ? "Colapsar menú" : "Expandir menú"}
+                        aria-expanded={isSidebarOpen}
                     >
-                        {isSidebarOpen ? <PixelChevronIcon className="rotate-90 w-6 h-6" /> : <PixelChevronIcon className="rotate-270 w-6 h-6" />}
-                    </button>
+                        {isSidebarOpen ? <PixelChevronIcon className="rotate-90 w-6 h-6" aria-hidden="true" /> : <PixelChevronIcon className="rotate-270 w-6 h-6" aria-hidden="true" />}
+                    </Button>
 
                     {isSidebarOpen && (
                         <div className="px-2 pb-2">
-                            <div className="text-[10px] font-mono text-center text-muted-foreground opacity-70">
+                            <div className="text-2xs font-mono text-center text-muted-foreground opacity-70">
                                 v1.5.01-BETA
                             </div>
                         </div>
@@ -127,41 +130,49 @@ function AdminDashboard() {
                 </div>
             </aside>
 
-            {isMobileMenuOpen && (
-                <div className="fixed inset-0 z-50 md:hidden pt-[72px]">
-                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
-                    <div className="absolute left-0 top-[72px] bottom-0 w-3/4 max-w-xs bg-card border-r-4 border-foreground p-4 shadow-xl animate-in slide-in-from-left">
-                        <div className="flex justify-between items-center mb-6 border-b-4 border-muted pb-4">
-                            <span className="font-mono text-sm font-bold">PANEL ADMIN</span>
-                            <button onClick={() => setMobileMenuOpen(false)} className="pixel-btn">
-                                <X className="w-6 h-6 text-foreground" />
-                            </button>
-                        </div>
-                        <nav className="space-y-2">
-                            {ADMIN_MENU.map((item) => (
-                                <AdminSidebarLink
-                                    key={item.path}
-                                    item={item}
-                                    isActive={location.pathname === item.path}
-                                    isCollapsed={false}
-                                    onClick={() => setMobileMenuOpen(false)}
-                                />
-                            ))}
-                        </nav>
+            <Dialog open={isMobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <DialogContent
+                    showCloseButton={false}
+                    className="md:hidden fixed inset-y-0 left-0 top-0 translate-x-0 translate-y-0 h-full w-3/4 max-w-xs max-h-none rounded-none p-4 shadow-pixel-lg data-[state=open]:slide-in-from-left data-[state=closed]:slide-out-to-left"
+                >
+                    <div className="flex justify-between items-center mb-6 border-b-4 border-muted pb-4">
+                        <span className="font-mono text-sm font-bold">PANEL DE PROFESOR</span>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Cerrar menú"
+                            onClick={() => setMobileMenuOpen(false)}
+                        >
+                            <X className="w-6 h-6 text-foreground" aria-hidden="true" />
+                        </Button>
                     </div>
-                </div>
-            )}
+                    <nav className="space-y-2">
+                        {ADMIN_MENU.map((item) => (
+                            <AdminSidebarLink
+                                key={item.path}
+                                item={item}
+                                isActive={location.pathname === item.path}
+                                isCollapsed={false}
+                                onClick={() => setMobileMenuOpen(false)}
+                            />
+                        ))}
+                    </nav>
+                </DialogContent>
+            </Dialog>
 
             <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">
 
-                <header className="h-16 border-b-4 border-foreground bg-card flex items-center justify-between px-4 sm:px-6 sticky top-0 z-10">
+                <header className="h-16 border-b-4 border-foreground bg-card flex items-center justify-between px-4 sm:px-6 sticky top-0 z-raised">
                     <div className="flex items-center gap-4">
-                        <button
-                            className="md:hidden p-2 -ml-2 text-foreground pixel-btn"
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="md:hidden -ml-2"
                             onClick={() => setMobileMenuOpen(true)}
+                            aria-label="Abrir menú"
                         >
-                            <Menu className="w-6 h-6" />
-                        </button>
+                            <Menu className="w-6 h-6" aria-hidden="true" />
+                        </Button>
 
                         <div className="flex flex-col justify-center">
                             <h1 className="text-sm md:text-base font-mono font-bold leading-none uppercase tracking-wider">
@@ -175,12 +186,12 @@ function AdminDashboard() {
 
                     <div className="flex items-center gap-3">
                         <Button
-                            variant="submit"
+                            variant="secondary"
                             size="sm"
-                            className="hidden sm:flex gap-2 font-mono text-xs bg-secondary pixel-btn rounded-none border-2 border-foreground"
+                            className="hidden sm:flex gap-2"
                             onClick={() => navigate('/')}
                         >
-                            <SwordIcon className="w-4 h-4" />
+                            <SwordIcon className="w-4 h-4" aria-hidden="true" />
                             VOLVER
                         </Button>
                     </div>

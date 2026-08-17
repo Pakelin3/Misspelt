@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import useAxios from '@/utils/useAxios';
-import { Plus, Edit, Trash2, Save, X, Search, Loader2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, Search, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/Dialog';
 
 function DictionaryAdminPanel() {
     const api = useAxios();
@@ -17,6 +18,7 @@ function DictionaryAdminPanel() {
     const [isUploadOpen, setIsUploadOpen] = useState(false);
     const [uploadFile, setUploadFile] = useState(null);
     const [editingWord, setEditingWord] = useState(null);
+    const [wordToDelete, setWordToDelete] = useState(null);
     const [formData, setFormData] = useState({
         text: '',
         translation: '',
@@ -38,7 +40,7 @@ function DictionaryAdminPanel() {
             setTotalPages(Math.ceil(totalCount / itemsPerPage));
         } catch (err) {
             console.error("Error fetching words:", err);
-            toast.error("Error", { description: "No se pudo cargar el diccionario." });
+            toast.error("No se pudo cargar el diccionario", { description: "Revisa tu conexión y vuelve a intentarlo." });
         } finally {
             setLoading(false);
         }
@@ -101,38 +103,20 @@ function DictionaryAdminPanel() {
             fetchWords();
         } catch (err) {
             console.error(err);
-            toast.error('Error', { description: 'No se pudo guardar la palabra.' });
+            toast.error('No se pudo guardar la palabra', { description: 'Revisa que todos los campos obligatorios estén completos y vuelve a intentarlo.' });
         }
     };
 
-    const handleDelete = async (id) => {
-        toast.custom((t) => (
-            <div className="bg-card border-foreground w-[300px] flex flex-col gap-4 font-mono relative">
-                <div className="flex flex-col gap-1">
-                    <h3 className="font-bold uppercase flex items-center gap-2 text-destructive">
-                        <Trash2 className="w-5 h-5" /> ¿ELIMINAR PALABRA?
-                    </h3>
-                    <p className="text-xs text-muted-foreground leading-tight">Esta acción es destructiva e irreversible.</p>
-                </div>
-                <div className="flex gap-2 mt-2">
-                    <button onClick={() => toast.dismiss(t)} className="flex-1 px-2 py-2 border-2 border-foreground bg-muted hover:bg-background text-xs font-bold transition-colors uppercase">
-                        Cancelar
-                    </button>
-                    <button onClick={async () => {
-                        toast.dismiss(t);
-                        try {
-                            await api.delete(`/words/${id}/`);
-                            fetchWords();
-                            toast.success('Borrado');
-                        } catch {
-                            toast.error('Error', { description: 'No se pudo eliminar.' });
-                        }
-                    }} className="flex-1 px-2 py-2 border-2 border-transparent bg-destructive text-destructive-foreground hover:bg-red-600 text-xs font-bold transition-colors uppercase">
-                        Sí, borrar
-                    </button>
-                </div>
-            </div>
-        ), { duration: 10000 });
+    const handleConfirmDelete = async () => {
+        if (!wordToDelete) return;
+        try {
+            await api.delete(`/words/${wordToDelete.id}/`);
+            setWordToDelete(null);
+            fetchWords();
+            toast.success('Palabra borrada');
+        } catch {
+            toast.error('No se pudo eliminar la palabra', { description: 'Inténtalo de nuevo en unos segundos.' });
+        }
     };
 
     const handleFileUpload = async (e) => {
@@ -152,15 +136,9 @@ function DictionaryAdminPanel() {
             fetchWords();
         } catch (err) {
             console.error(err);
-            let errorMessage = 'Error al subir el archivo.';
-            if (err.response && err.response.data) {
-                if (err.response.data.errors && Array.isArray(err.response.data.errors)) {
-                    errorMessage = err.response.data.errors.join(' | ');
-                } else if (err.response.data.error) {
-                    errorMessage = err.response.data.error;
-                }
-            }
-            toast.error('Error de Importación', { description: errorMessage });
+            toast.error('No se pudo importar el CSV', {
+                description: 'Revisa que el archivo tenga las columnas exactas indicadas abajo y que no contenga filas vacías.'
+            });
         }
     };
 
@@ -187,13 +165,26 @@ function DictionaryAdminPanel() {
 
     const getTypeBadgeStyle = (type) => {
         switch (type) {
-            case 'SLANG': return 'bg-yellow-100 text-yellow-800 border-yellow-800';
-            case 'PHRASAL_VERB': return 'bg-blue-100 text-blue-800 border-blue-800';
-            case 'IDIOM': return 'bg-purple-100 text-purple-800 border-purple-800';
-            case 'VOCABULARY': return 'bg-emerald-100 text-emerald-800 border-emerald-800';
-            default: return 'bg-gray-100 text-gray-800 border-gray-800';
+            case 'SLANG': return 'bg-word-slang/15 text-word-slang border-word-slang';
+            case 'PHRASAL_VERB': return 'bg-word-noun/15 text-word-noun border-word-noun';
+            case 'IDIOM': return 'bg-word-idiom/15 text-word-idiom border-word-idiom';
+            case 'VOCABULARY': return 'bg-word-verb/15 text-word-verb border-word-verb';
+            default: return 'bg-muted text-muted-foreground border-foreground';
         }
     };
+
+    const CSV_COLUMNS = [
+        { name: 'word', label: 'Palabra' },
+        { name: 'translation', label: 'Traducción' },
+        { name: 'word_type', label: 'Tipo (SLANG, PHRASAL_VERB, IDIOM, VOCABULARY)' },
+        { name: 'difficulty_level', label: 'Nivel de dificultad (1-10)' },
+        { name: 'definition', label: 'Definición en inglés' },
+        { name: 'tags', label: 'Etiquetas separadas por coma' },
+        { name: 'ex1_en', label: 'Ejemplo 1 en inglés' },
+        { name: 'ex1_es', label: 'Ejemplo 1 en español' },
+        { name: 'ex2_en', label: 'Ejemplo 2 en inglés' },
+        { name: 'ex2_es', label: 'Ejemplo 2 en español' },
+    ];
 
     return (
         <div className="space-y-6 font-mono">
@@ -207,8 +198,10 @@ function DictionaryAdminPanel() {
 
                 <div className="flex w-full sm:w-auto gap-2">
                     <div className="relative w-full sm:w-64">
-                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                        <label htmlFor="word-search" className="sr-only">Buscar palabra</label>
                         <Input
+                            id="word-search"
                             placeholder="Buscar palabra..."
                             className="pl-8 h-10 border-2 border-foreground rounded-none focus:ring-0 focus:border-primary"
                             value={searchTerm}
@@ -218,15 +211,15 @@ function DictionaryAdminPanel() {
                             }}
                         />
                     </div>
-                    <Button onClick={() => handleOpenForm()} className="pixel-btn h-10 border-2 border-foreground rounded-none bg-primary text-primary-foreground transition-transform">
-                        <Plus className="w-4 h-4 mr-2" />
+                    <Button onClick={() => handleOpenForm()}>
+                        <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
                         NUEVA
                     </Button>
                     <Button
+                        variant="accent"
                         onClick={() => setIsUploadOpen(true)}
-                        className="pixel-btn h-10 border-2 border-foreground hover:bg-a rounded-none bg-accent text-accent-foreground transition-transform"
                     >
-                        <Plus className="w-4 h-4 mr-2" />
+                        <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
                         IMPORTAR CSV
                     </Button>
                 </div>
@@ -234,9 +227,9 @@ function DictionaryAdminPanel() {
 
             <div className="bg-card border-4 border-foreground overflow-hidden relative min-h-[400px]">
                 {loading && (
-                    <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-raised flex items-center justify-center" role="status" aria-live="polite">
                         <div className="flex flex-col items-center gap-2">
-                            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                            <Loader2 className="w-8 h-8 animate-spin text-primary" aria-hidden="true" />
                             <span className="text-xs font-bold animate-pulse">CARGANDO DATOS...</span>
                         </div>
                     </div>
@@ -270,7 +263,7 @@ function DictionaryAdminPanel() {
                                             <div className="text-xs text-muted-foreground line-clamp-1">{word.definition}</div>
                                         </td>
                                         <td className="p-4 border-r-2 border-foreground/10">
-                                            <span className={`px-2 py-1 text-[10px] font-bold border-2 rounded-none ${getTypeBadgeStyle(word.word_type)}`}>
+                                            <span className={`px-2 py-1 text-2xs font-bold border-2 rounded-none ${getTypeBadgeStyle(word.word_type)}`}>
                                                 {word.word_type === 'PHRASAL_VERB' ? 'P. VERB' : word.word_type}
                                             </span>
                                         </td>
@@ -286,20 +279,24 @@ function DictionaryAdminPanel() {
                                         </td>
                                         <td className="p-4 text-center">
                                             <div className="flex justify-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                                                <button
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
                                                     onClick={() => handleOpenForm(word)}
-                                                    className="p-2 hover:bg-blue-100 border-2 border-transparent hover:border-blue-500 transition-all text-blue-600"
-                                                    title="Editar"
+                                                    className="text-info hover:bg-info/10"
+                                                    aria-label={`Editar la palabra ${word.text}`}
                                                 >
-                                                    <Edit className="w-6 h-6" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(word.id)}
-                                                    className="p-2 hover:bg-red-100 border-2 border-transparent hover:border-red-500 transition-all text-red-600"
-                                                    title="Eliminar"
+                                                    <Edit className="w-5 h-5" aria-hidden="true" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => setWordToDelete(word)}
+                                                    className="text-destructive hover:bg-destructive/10"
+                                                    aria-label={`Eliminar la palabra ${word.text}`}
                                                 >
-                                                    <Trash2 className="w-6 h-6" />
-                                                </button>
+                                                    <Trash2 className="w-5 h-5" aria-hidden="true" />
+                                                </Button>
                                             </div>
                                         </td>
                                     </tr>
@@ -313,9 +310,9 @@ function DictionaryAdminPanel() {
             <div className="flex justify-between items-center bg-card border-4 border-foreground p-2">
                 <Button
                     variant="outline"
+                    size="sm"
                     disabled={page <= 1}
                     onClick={() => setPage(p => p - 1)}
-                    className="h-8 text-xs border-2 border-foreground rounded-none pixel-btn disabled:opacity-50"
                 >
                     ANTERIOR
                 </Button>
@@ -324,224 +321,249 @@ function DictionaryAdminPanel() {
                 </span>
                 <Button
                     variant="outline"
+                    size="sm"
                     disabled={page >= totalPages}
                     onClick={() => setPage(p => p + 1)}
-                    className="h-8 text-xs border-2 border-foreground rounded-none pixel-btn disabled:opacity-50"
                 >
                     SIGUIENTE
                 </Button>
             </div>
 
-            {isFormOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                    <div className="bg-card w-full max-w-lg border-4 border-foreground shadow-2xl relative animate-in zoom-in-95 duration-200">
-                        <div className="bg-primary text-primary-foreground p-3 flex justify-between items-center border-b-4 border-foreground">
-                            <h3 className="font-bold text-lg uppercase flex items-center gap-2">
-                                {editingWord ? <Edit className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-                                {editingWord ? 'Editar Palabra' : 'Nueva Palabra'}
-                            </h3>
-                            <button onClick={() => setIsFormOpen(false)} className="flex items-center justify-center hover:bg-red-500 hover:text-white px-2 py-1 font-mono  border-2 border-transparent hover:border-foreground transition-colors">
-                                X
-                            </button>
+            <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+                <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            {editingWord ? <Edit className="w-5 h-5" aria-hidden="true" /> : <Plus className="w-5 h-5" aria-hidden="true" />}
+                            {editingWord ? 'Editar Palabra' : 'Nueva Palabra'}
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <label htmlFor="word-text" className="text-xs font-bold uppercase">Palabra</label>
+                                <Input
+                                    id="word-text"
+                                    required
+                                    value={formData.text}
+                                    onChange={e => setFormData({ ...formData, text: e.target.value })}
+                                    className="border-2 border-foreground rounded-none focus:ring-0 focus:border-primary bg-background"
+                                    placeholder="Ej: Break down"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label htmlFor="word-translation" className="text-xs font-bold uppercase">Traducción</label>
+                                <Input
+                                    id="word-translation"
+                                    value={formData.translation}
+                                    onChange={e => setFormData({ ...formData, translation: e.target.value })}
+                                    className="border-2 border-foreground rounded-none focus:ring-0 focus:border-primary bg-background"
+                                    placeholder="Ej: Descomponerse"
+                                />
+                            </div>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase">Palabra</label>
-                                    <Input
-                                        required
-                                        value={formData.text}
-                                        onChange={e => setFormData({ ...formData, text: e.target.value })}
-                                        className="border-2 border-foreground rounded-none focus:ring-0 focus:border-primary bg-background"
-                                        placeholder="Ej: Break down"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase">Traducción</label>
-                                    <Input
-                                        value={formData.translation}
-                                        onChange={e => setFormData({ ...formData, translation: e.target.value })}
-                                        className="border-2 border-foreground rounded-none focus:ring-0 focus:border-primary bg-background"
-                                        placeholder="Ej: Descomponerse"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase">Tipo</label>
-                                    <select
-                                        className="w-full h-10 px-3 bg-background border-2 border-foreground rounded-none focus:outline-none focus:border-primary text-sm"
-                                        value={formData.word_type}
-                                        onChange={e => setFormData({ ...formData, word_type: e.target.value })}
-                                    >
-                                        <option value="SLANG">Slang (Jerga)</option>
-                                        <option value="PHRASAL_VERB">Phrasal Verb</option>
-                                        <option value="IDIOM">Idiom (Modismo)</option>
-                                        <option value="VOCABULARY">Vocabulary</option>
-                                    </select>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase">Tags (Separados por coma)</label>
-                                    <Input
-                                        value={formData.tags}
-                                        onChange={e => setFormData({ ...formData, tags: e.target.value })}
-                                        className="border-2 border-foreground rounded-none focus:ring-0 focus:border-primary bg-background"
-                                        placeholder="Ej: travel, emergency"
-                                    />
-                                </div>
-                            </div>
-
+                        <div className="space-y-4">
                             <div className="space-y-2">
-                                <label className="text-xs font-bold uppercase">Definición (En inglés)</label>
-                                <textarea
-                                    required
-                                    className="w-full p-3 bg-background border-2 border-foreground rounded-none focus:outline-none focus:border-primary text-sm min-h-[80px]"
-                                    value={formData.definition}
-                                    onChange={e => setFormData({ ...formData, definition: e.target.value })}
-                                    placeholder="Ej: To stop functioning (for a machine or vehicle)."
+                                <label htmlFor="word-type" className="text-xs font-bold uppercase">Tipo</label>
+                                <select
+                                    id="word-type"
+                                    className="w-full h-10 px-3 bg-background border-2 border-foreground rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus:border-primary text-sm"
+                                    value={formData.word_type}
+                                    onChange={e => setFormData({ ...formData, word_type: e.target.value })}
+                                >
+                                    <option value="SLANG">Slang (Jerga)</option>
+                                    <option value="PHRASAL_VERB">Phrasal Verb</option>
+                                    <option value="IDIOM">Idiom (Modismo)</option>
+                                    <option value="VOCABULARY">Vocabulary</option>
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label htmlFor="word-tags" className="text-xs font-bold uppercase">Tags (Separados por coma)</label>
+                                <Input
+                                    id="word-tags"
+                                    value={formData.tags}
+                                    onChange={e => setFormData({ ...formData, tags: e.target.value })}
+                                    className="border-2 border-foreground rounded-none focus:ring-0 focus:border-primary bg-background"
+                                    placeholder="Ej: travel, emergency"
                                 />
                             </div>
+                        </div>
 
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold uppercase">Nivel Dificultad ({formData.difficulty_level})</label>
-                                <input
-                                    type="range"
-                                    min="1"
-                                    max="10"
-                                    step="1"
-                                    className="w-full accent-primary h-2 bg-muted rounded-none appearance-none cursor-pointer border border-foreground"
-                                    value={formData.difficulty_level}
-                                    onChange={e => setFormData({ ...formData, difficulty_level: e.target.value })}
-                                />
-                                <div className="flex justify-between text-[10px] text-muted-foreground px-1 font-sans">
-                                    <span>Principiante (1)</span>
-                                    <span>Experto (10)</span>
-                                </div>
+                        <div className="space-y-2">
+                            <label htmlFor="word-definition" className="text-xs font-bold uppercase">Definición (En inglés)</label>
+                            <textarea
+                                id="word-definition"
+                                required
+                                className="w-full p-3 bg-background border-2 border-foreground rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus:border-primary text-sm min-h-[80px]"
+                                value={formData.definition}
+                                onChange={e => setFormData({ ...formData, definition: e.target.value })}
+                                placeholder="Ej: To stop functioning (for a machine or vehicle)."
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label htmlFor="word-difficulty" className="text-xs font-bold uppercase">Nivel Dificultad ({formData.difficulty_level})</label>
+                            <input
+                                id="word-difficulty"
+                                type="range"
+                                min="1"
+                                max="10"
+                                step="1"
+                                className="w-full accent-primary h-2 bg-muted rounded-none appearance-none cursor-pointer border border-foreground"
+                                value={formData.difficulty_level}
+                                onChange={e => setFormData({ ...formData, difficulty_level: e.target.value })}
+                            />
+                            <div className="flex justify-between text-2xs text-muted-foreground px-1 font-sans">
+                                <span>Principiante (1)</span>
+                                <span>Experto (10)</span>
+                            </div>
+                        </div>
+
+                        <div className="space-y-3 p-4 bg-muted/20 border-2 border-foreground">
+                            <div className="flex justify-between items-center">
+                                <span className="text-xs font-bold uppercase">Ejemplos de Uso</span>
+                                <Button
+                                    type="button"
+                                    size="xs"
+                                    onClick={handleAddExample}
+                                >
+                                    <Plus className="w-3 h-3 mr-1" aria-hidden="true" /> OTRO EJEMPLO
+                                </Button>
                             </div>
 
-                            <div className="space-y-3 p-4 bg-muted/20 border-2 border-foreground">
-                                <div className="flex justify-between items-center">
-                                    <label className="text-xs font-bold uppercase">Ejemplos de Uso</label>
+                            {formData.examples.map((example, index) => (
+                                <div key={`example-input-${index}`} className="flex gap-2 items-start relative bg-background p-3 border-2 border-foreground/30">
+                                    <div className="flex-1 space-y-2">
+                                        <label htmlFor={`example-en-${index}`} className="sr-only">Ejemplo {index + 1} en inglés</label>
+                                        <input
+                                            id={`example-en-${index}`}
+                                            type="text"
+                                            className="w-full p-2 bg-transparent border-b-2 border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus:border-primary text-sm font-sans placeholder:italic"
+                                            placeholder="Ejemplo en inglés (e.g. The car broke down.)"
+                                            value={example.en}
+                                            onChange={(e) => handleExampleChange(index, 'en', e.target.value)}
+                                        />
+                                        <label htmlFor={`example-es-${index}`} className="sr-only">Ejemplo {index + 1} en español</label>
+                                        <input
+                                            id={`example-es-${index}`}
+                                            type="text"
+                                            className="w-full p-2 bg-transparent border-b-2 border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus:border-primary text-sm font-sans placeholder:italic text-muted-foreground"
+                                            placeholder="Traducción en español (e.g. El coche se descompuso.)"
+                                            value={example.es}
+                                            onChange={(e) => handleExampleChange(index, 'es', e.target.value)}
+                                        />
+                                    </div>
                                     <Button
                                         type="button"
-                                        onClick={handleAddExample}
-                                        className="h-6 px-2 py-0 text-[10px] rounded-none bg-primary text-primary-foreground pixel-btn border-2 border-primary"
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => handleRemoveExample(index)}
+                                        className="text-destructive hover:bg-destructive/10 shrink-0"
+                                        aria-label={`Eliminar ejemplo ${index + 1}`}
                                     >
-                                        <Plus className="w-3 h-3 mr-1" /> OTRO EJEMPLO
+                                        <Trash2 className="w-4 h-4" aria-hidden="true" />
                                     </Button>
                                 </div>
+                            ))}
+                            <p className="text-2xs text-muted-foreground italic">
+                                * Los ejemplos que dejes en blanco serán ignorados.
+                            </p>
+                        </div>
 
-                                {formData.examples.map((example, index) => (
-                                    <div key={`example-input-${index}`} className="flex gap-2 items-start relative bg-background p-3 border-2 border-foreground/30">
-                                        <div className="flex-1 space-y-2">
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 bg-transparent border-b-2 border-foreground/20 focus:outline-none focus:border-primary text-sm font-sans placeholder:italic"
-                                                placeholder="Ejemplo en inglés (e.g. The car broke down.)"
-                                                value={example.en}
-                                                onChange={(e) => handleExampleChange(index, 'en', e.target.value)}
-                                            />
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 bg-transparent border-b-2 border-foreground/20 focus:outline-none focus:border-primary text-sm font-sans placeholder:italic text-muted-foreground"
-                                                placeholder="Traducción en español (e.g. El coche se descompuso.)"
-                                                value={example.es}
-                                                onChange={(e) => handleExampleChange(index, 'es', e.target.value)}
-                                            />
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveExample(index)}
-                                            className="p-2 text-destructive hover:bg-destructive/10 border-2 border-transparent hover:border-destructive transition-colors shrink-0 mt-2"
-                                            title="Eliminar Ejemplo"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                ))}
-                                <p className="text-[10px] text-muted-foreground italic">
-                                    * Los ejemplos que dejes en blanco serán ignorados.
-                                </p>
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)}>
+                                CANCELAR
+                            </Button>
+                            <Button type="submit">
+                                <Save className="w-4 h-4 mr-2" aria-hidden="true" />
+                                GUARDAR
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isUploadOpen} onOpenChange={(open) => { setIsUploadOpen(open); if (!open) setUploadFile(null); }}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>IMPORTAR CSV</DialogTitle>
+                    </DialogHeader>
+
+                    <form onSubmit={handleFileUpload} className="space-y-6">
+                        <div className="text-sm font-sans text-muted-foreground space-y-2">
+                            <p>Sube un archivo .csv cuya primera fila tenga exactamente estas columnas:</p>
+                            <div className="overflow-x-auto border-2 border-foreground">
+                                <table className="w-full text-left text-xs">
+                                    <thead className="bg-muted uppercase text-2xs">
+                                        <tr>
+                                            <th className="p-2 border-b-2 border-foreground font-bold">Columna (CSV)</th>
+                                            <th className="p-2 border-b-2 border-foreground font-bold">Qué va aquí</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-foreground/20">
+                                        {CSV_COLUMNS.map(col => (
+                                            <tr key={col.name}>
+                                                <td className="p-2 font-mono font-bold text-foreground whitespace-nowrap"><code>{col.name}</code></td>
+                                                <td className="p-2">{col.label}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
+                        </div>
 
-                            <div className="pt-4 flex gap-3">
-                                <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)} className="flex-1 border-2 border-foreground rounded-none pixel-btn">
-                                    CANCELAR
-                                </Button>
-                                <Button type="submit" className="flex-1 border-2 border-foreground rounded-none pixel-btn bg-primary text-primary-foreground">
-                                    <Save className="w-4 h-4 mr-2" />
-                                    GUARDAR
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+                        <div className="space-y-2">
+                            <label htmlFor="csv-file-input" className="block text-sm font-bold text-foreground tracking-wider">ARCHIVO CSV</label>
+                            <input
+                                id="csv-file-input"
+                                type="file"
+                                accept=".csv"
+                                onChange={(e) => setUploadFile(e.target.files[0])}
+                                className="w-full px-3 cursor-pointer py-2 bg-card border-2 border-foreground focus:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 font-sans text-sm shadow-pixel-sm"
+                                required
+                            />
+                        </div>
 
-            {isUploadOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                    <div className="bg-card border-4 border-foreground w-full max-w-md max-h-[90vh] flex flex-col relative z-50 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                        <div className="flex justify-between items-center p-4 border-b-4 border-foreground bg-accent shrink-0 text-accent-foreground">
-                            <h2 className="font-mono text-xl font-bold uppercase">IMPORTAR CSV</h2>
-                            <button
+                        <DialogFooter>
+                            <Button
+                                type="button"
+                                variant="outline"
                                 onClick={() => {
                                     setIsUploadOpen(false);
                                     setUploadFile(null);
                                 }}
-                                className="flex items-center justify-center hover:bg-red-500 hover:text-white px-2 py-1 font-mono  border-2 border-transparent hover:border-foreground transition-colors"
                             >
-                                X
-                            </button>
-                        </div>
+                                CANCELAR
+                            </Button>
+                            <Button type="submit" disabled={!uploadFile}>
+                                <Save className="w-4 h-4 mr-2" aria-hidden="true" /> SUBIR CSV
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
 
-                        <div className="p-6 overflow-y-auto font-mono bg-background">
-                            <form onSubmit={handleFileUpload} className="space-y-6">
-                                <p className="text-sm font-sans text-muted-foreground mb-4">
-                                    Sube un archivo .csv con este formato exacto de columnas en la cabecera:
-                                    <br /><br />
-                                    <code className="bg-muted p-2 border-2 border-foreground block text-xs whitespace-normal break-words text-foreground font-bold shadow-inner">
-                                        word, translation, word_type, difficulty_level, definition, tags, ex1_en, ex1_es, ex2_en, ex2_es
-                                    </code>
-                                </p>
-
-                                <div className="space-y-2">
-                                    <label className="block text-sm font-bold text-foreground tracking-wider">ARCHIVO CSV</label>
-                                    <input
-                                        type="file"
-                                        accept=".csv"
-                                        onChange={(e) => setUploadFile(e.target.files[0])}
-                                        className="w-full px-3 cursor-pointer py-2 bg-card border-2 border-foreground focus:border-primary focus:outline-none font-sans text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-                                        required
-                                    />
-                                </div>
-
-                                <div className="flex gap-4 pt-4 border-t-2 border-foreground/20">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => {
-                                            setIsUploadOpen(false);
-                                            setUploadFile(null);
-                                        }}
-                                        className="flex-1 cursor-pointer border-2 border-foreground rounded-none pixel-btn text-xs px-2"
-                                    >
-                                        CANCELAR
-                                    </Button>
-                                    <Button
-                                        type="submit"
-                                        disabled={!uploadFile}
-                                        className="flex-1 cursor-pointer border-2 border-foreground rounded-none pixel-btn bg-primary text-primary-foreground text-xs px-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] transition-all"
-                                    >
-                                        <Save className="w-4 h-4 mr-2" /> SUBIR CSV
-                                    </Button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <Dialog open={!!wordToDelete} onOpenChange={(open) => !open && setWordToDelete(null)}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-destructive">¿Borrar la palabra "{wordToDelete?.text}"?</DialogTitle>
+                        <DialogDescription>
+                            Esta acción es irreversible. Los alumnos que ya hayan desbloqueado esta
+                            palabra la conservarán en su colección, pero dejará de aparecer en el
+                            juego para todos los demás.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setWordToDelete(null)}>
+                            Cancelar
+                        </Button>
+                        <Button variant="destructive" onClick={handleConfirmDelete}>
+                            Sí, borrar esta palabra
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
