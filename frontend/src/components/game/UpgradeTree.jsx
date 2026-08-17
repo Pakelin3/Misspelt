@@ -6,7 +6,7 @@ import { PixelSparklesIcon } from '@/components/PixelIcons';
  * el panel derecho de la pantalla de seleccion de personaje.
  */
 const UpgradeTree = ({ character, upgrades, onClose }) => (
-    <div className="absolute inset-0 z-30 bg-background/95 backdrop-blur-md flex flex-col animate-in fade-in zoom-in-95 duration-200 border-4 border-accent shadow-2xl">
+    <div className="absolute inset-0 z-30 bg-background/95 backdrop-blur-md flex flex-col animate-in fade-in zoom-in-95 duration-200 border-4 border-accent-strong shadow-2xl">
         <div className="bg-accent text-accent-foreground px-5 py-4 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-3">
                 <PixelSparklesIcon className="w-5 h-5 animate-pulse" />
@@ -46,7 +46,7 @@ const UpgradeTree = ({ character, upgrades, onClose }) => (
                                     >
                                         {upg.name}
                                     </span>
-                                    <span className={`text-xs font-black uppercase px-1.5 py-0.5 border ${upg.ultimate ? 'bg-accent/20 border-accent/50 text-accent' : 'bg-foreground/10 border-foreground/30 text-foreground'}`}>
+                                    <span className={`text-xs font-black uppercase px-1.5 py-0.5 border ${upg.ultimate ? 'bg-accent/20 border-accent-strong/50 text-accent-strong' : 'bg-foreground/10 border-foreground/30 text-foreground'}`}>
                                         {upg.tier}
                                     </span>
                                 </div>
@@ -57,7 +57,7 @@ const UpgradeTree = ({ character, upgrades, onClose }) => (
                 ))}
             </div>
         </div>
-        <div className="p-3 bg-muted/40 text-center text-base text-muted-foreground uppercase border-t-2 border-accent/20">
+        <div className="p-3 bg-muted/40 text-center text-base text-muted-foreground uppercase border-t-2 border-accent-strong/20">
             Asciende de nivel en la partida para desbloquear estas habilidades
         </div>
     </div>

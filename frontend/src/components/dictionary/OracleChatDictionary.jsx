@@ -126,7 +126,7 @@ export default function OracleChatDictionary({ word, onClose }) {
                                 {msg.text}
                             </div>
                             {msg.role === 'user' && (
-                                <div className="w-10 h-10 border-2 border-accent bg-accent/20 flex shrink-0 items-center justify-center mt-1 overflow-hidden shadow-pixel-sm-left">
+                                <div className="w-10 h-10 border-2 border-accent-strong bg-accent/20 flex shrink-0 items-center justify-center mt-1 overflow-hidden shadow-pixel-sm-left">
                                     <img
                                         src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.username || 'Aventurero')}&background=random`}
                                         alt=""

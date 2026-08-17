@@ -150,7 +150,7 @@ export default function DictionaryWordFormDialog({
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => onRemoveExample(index)}
-                                    className="text-destructive hover:bg-destructive/10 shrink-0"
+                                    className="text-destructive hover:bg-destructive hover:text-destructive-foreground/10 shrink-0"
                                     aria-label={`Eliminar ejemplo ${index + 1}`}
                                 >
                                     <Trash2 className="w-4 h-4" aria-hidden="true" />

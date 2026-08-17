@@ -4,6 +4,7 @@ import useAxios from "@/utils/useAxios";
 import AuthContext from '@/context/AuthContext';
 import { PixelBookOpenIcon, BrainIcon, TrophyIcon, LeafIcon, SwordIcon, GearIcon } from "@/components/PixelIcons";
 import LoadingScreen from "@/components/ui/LoadingScreen";
+import ThemeButton from "@/components/ThemeButton";
 
 function Navbar() {
     const { user, logoutUser } = useContext(AuthContext);
@@ -156,6 +157,10 @@ function Navbar() {
 
                 {/* --- RIGHT SECTION (Botones + User) --- */}
                 <div className="flex items-center gap-2 lg:gap-3 shrink-0">
+
+                    {/* Cambio rapido de tema. El control completo, con la opcion
+                        "seguir al sistema", esta en Perfil > Ajustes. */}
+                    <ThemeButton />
 
                     {/* Botón JUGAR destacado */}
                     <button

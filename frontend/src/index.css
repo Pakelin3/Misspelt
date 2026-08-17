@@ -34,15 +34,21 @@
     --pixel-green-500: 100 38% 35%;
     --pixel-gold-400: 38 85% 60%;
     --pixel-gold-500: 38 79% 50%;
+    /* El dorado y el ambar brillantes solo contrastan sobre fondo oscuro: sobre el
+       pergamino claro dan 1.9:1, practicamente invisibles. Estas variantes oscuras
+       existen para usarlos como TEXTO o icono en el tema claro. Medido con el test
+       de contraste en src/test/contrast.test.js. */
+    --pixel-gold-700: 38 79% 29%;
 
     /* Estados */
     --pixel-ember-500: 0 60% 50%;
     --pixel-ember-400: 0 65% 62%;
-    --pixel-leaf-500: 110 45% 38%;
+    --pixel-leaf-500: 110 45% 34%;
     --pixel-leaf-400: 110 45% 50%;
     --pixel-amber-500: 42 90% 48%;
     --pixel-amber-400: 42 92% 58%;
-    --pixel-sky-500: 205 70% 45%;
+    --pixel-amber-700: 42 90% 26%;
+    --pixel-sky-500: 205 70% 41%;
     --pixel-sky-400: 205 75% 60%;
     --pixel-arcane-500: 280 45% 52%;
     --pixel-arcane-400: 280 55% 66%;
@@ -82,8 +88,11 @@
     --muted: var(--pixel-parchment-700);
     --muted-foreground: 20 20% 34%;
 
-    --accent: var(--pixel-gold-500); /* El dorado de las estrellas */
+    --accent: var(--pixel-gold-500); /* El dorado de las estrellas: para SUPERFICIES */
     --accent-foreground: 20 36% 15%;
+    /* Para TEXTO, iconos y bordes dorados sobre una superficie neutra. `--accent`
+       a secas no llega a 3:1 en tema claro. */
+    --accent-strong: var(--pixel-gold-700);
 
     --destructive: var(--pixel-ember-500);
     --destructive-foreground: 0 0% 98%;
@@ -91,19 +100,19 @@
     /* Estados que antes se resolvian con literales bg-green-500 / bg-yellow-500 */
     --success: var(--pixel-leaf-500);
     --success-foreground: var(--pixel-parchment-50);
-    --warning: var(--pixel-amber-500);
-    --warning-foreground: 20 36% 15%;
+    --warning: var(--pixel-amber-700);
+    --warning-foreground: var(--pixel-parchment-50);
     --info: var(--pixel-sky-500);
     --info-foreground: var(--pixel-parchment-50);
 
     /* Dominio: dificultad y tipos de palabra */
     --difficulty-easy: var(--pixel-leaf-500);
-    --difficulty-medium: var(--pixel-amber-500);
+    --difficulty-medium: var(--pixel-amber-700);
     --difficulty-hard: var(--pixel-ember-500);
     --word-noun: var(--pixel-sky-500);
     --word-verb: var(--pixel-leaf-500);
     --word-adjective: var(--pixel-arcane-500);
-    --word-slang: var(--pixel-gold-500);
+    --word-slang: var(--pixel-gold-700);
     --word-idiom: var(--pixel-ember-500);
 
     /* Rareza de insignia: es un eje de dominio propio, no reutilizable desde
@@ -111,10 +120,13 @@
     --rarity-basic: 20 20% 45%;
     --rarity-rare: var(--pixel-sky-500);
     --rarity-epic: var(--pixel-arcane-500);
-    --rarity-legendary: var(--pixel-gold-500);
+    --rarity-legendary: var(--pixel-gold-700);
 
+    /* Separadores y marcos decorativos: no son el limite de un control, asi que
+       no les aplica el minimo de 3:1 de WCAG 1.4.11. */
     --border: var(--pixel-clay-600);
-    --input: var(--pixel-clay-600);
+    /* El borde de un input SI es el limite de un control: necesita 3:1. */
+    --input: 28 30% 47%;
     --ring: var(--pixel-green-500);
 
     --radius: 0.25rem;
@@ -143,6 +155,7 @@
 
     --accent: var(--pixel-gold-400);
     --accent-foreground: var(--pixel-bark-950);
+    --accent-strong: var(--pixel-gold-400);
 
     --destructive: var(--pixel-ember-400);
     --destructive-foreground: var(--pixel-bark-950);
@@ -169,7 +182,7 @@
     --rarity-legendary: var(--pixel-gold-400);
 
     --border: 28 20% 34%;
-    --input: 28 20% 34%;
+    --input: 28 20% 43%;
     --ring: var(--pixel-green-400);
   }
 
@@ -248,6 +261,7 @@
 
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-strong: hsl(var(--accent-strong));
 
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));

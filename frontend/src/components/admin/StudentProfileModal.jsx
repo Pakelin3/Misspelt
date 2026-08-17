@@ -98,7 +98,7 @@ export default function StudentProfileModal({ farmId, studentId, onClose }) {
                             <span className="text-2xs md:text-xs uppercase font-bold text-muted-foreground text-center">Partidas</span>
                         </div>
                         <div className="bg-card border-4 border-foreground p-4 flex flex-col items-center justify-center gap-2 shadow-pixel-md hover:-translate-y-1 hover:shadow-pixel-lg transition-all group">
-                            <TrophyIcon className="w-8 h-8 text-accent group-hover:scale-110 transition-transform" />
+                            <TrophyIcon className="w-8 h-8 text-accent-strong group-hover:scale-110 transition-transform" />
                             <span className="font-mono text-2xl md:text-3xl font-black">{stats?.total_bosses_killed || 0}</span>
                             <span className="text-2xs md:text-xs uppercase font-bold text-muted-foreground text-center">Jefes Derrotados</span>
                         </div>
@@ -167,7 +167,7 @@ export default function StudentProfileModal({ farmId, studentId, onClose }) {
                                                             </div>
                                                         )}
                                                         <div className="text-right">
-                                                            <p className="font-mono text-lg font-bold text-accent">+{game.score}</p>
+                                                            <p className="font-mono text-lg font-bold text-accent-strong">+{game.score}</p>
                                                             <p className="text-3xs font-mono text-muted-foreground uppercase">XP</p>
                                                         </div>
                                                     </div>

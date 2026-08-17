@@ -129,7 +129,7 @@ export default function FarmDetail() {
                                 <th className="p-4 w-16 text-center">Rango</th>
                                 <th className="p-4">Granjero</th>
                                 <th className="p-4 text-center">Nivel</th>
-                                <th className="p-4 text-center text-accent">Experiencia (XP)</th>
+                                <th className="p-4 text-center text-accent-strong">Experiencia (XP)</th>
                                 <th className="p-4 text-center text-info">Precisión</th>
                                 <th className="p-4 text-center text-word-slang">Palabras Aprendidas</th>
                                 <th className="p-4 text-right">Acciones</th>
@@ -146,7 +146,7 @@ export default function FarmDetail() {
                                 farm.students_data.map((student, index) => (
                                     <tr key={student.id} className="hover:bg-muted/10 transition-colors">
                                         <td className="p-4 text-center font-bold">
-                                            {index === 0 ? <PixelCrownIcon className="w-5 h-5 text-accent" aria-hidden="true" /> : index === 1 ? <PixelCrownIcon className="w-5 h-5 text-muted-foreground" aria-hidden="true" /> : index === 2 ? <PixelCrownIcon className="w-5 h-5 text-warning" aria-hidden="true" /> : (index + 1)}
+                                            {index === 0 ? <PixelCrownIcon className="w-5 h-5 text-accent-strong" aria-hidden="true" /> : index === 1 ? <PixelCrownIcon className="w-5 h-5 text-muted-foreground" aria-hidden="true" /> : index === 2 ? <PixelCrownIcon className="w-5 h-5 text-warning" aria-hidden="true" /> : (index + 1)}
                                         </td>
                                         <td className="p-4">
                                             <div className="flex items-center gap-3">
@@ -173,7 +173,7 @@ export default function FarmDetail() {
                                                     variant="ghost"
                                                     size="icon"
                                                     onClick={() => setSelectedStudentId(student.id)}
-                                                    className="text-primary hover:bg-primary/20"
+                                                    className="text-primary hover:bg-primary hover:text-primary-foreground/20"
                                                     aria-label={`Ver detalles de ${student.username}`}
                                                 >
                                                     <Eye className="w-5 h-5" aria-hidden="true" />
@@ -182,7 +182,7 @@ export default function FarmDetail() {
                                                     variant="ghost"
                                                     size="icon"
                                                     onClick={() => setStudentToRemove({ id: student.id, username: student.username })}
-                                                    className="text-destructive hover:bg-destructive/20"
+                                                    className="text-destructive hover:bg-destructive hover:text-destructive-foreground/20"
                                                     aria-label={`Remover a ${student.username} de la granja`}
                                                 >
                                                     <Trash2 className="w-5 h-5" aria-hidden="true" />

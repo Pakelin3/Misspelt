@@ -10,7 +10,7 @@ import { getPerformanceTextClass } from '@/lib/performance';
 // usuario no podía distinguir qué importaba más de un vistazo.
 const PrimaryStatCard = ({ icon, label, value, valueClass = 'text-foreground' }) => (
     <div className="flex items-center gap-3 p-4 bg-card pixel-border">
-        <div className="shrink-0 flex items-center justify-center w-10 h-10 bg-accent/10 border-2 border-accent/30">
+        <div className="shrink-0 flex items-center justify-center w-10 h-10 bg-accent/10 border-2 border-accent-strong/30">
             {icon}
         </div>
         <div>
@@ -25,18 +25,18 @@ const StatsTab = ({ userStats, generalAccuracy, slangAccuracy, pvAccuracy, forma
         {/* ─── Métricas principales ─── */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <PrimaryStatCard
-                icon={<PixelTargetIcon className="w-5 h-5 text-accent" aria-hidden="true" />}
+                icon={<PixelTargetIcon className="w-5 h-5 text-accent-strong" aria-hidden="true" />}
                 label="Precisión General"
                 value={`${generalAccuracy.toFixed(1)}%`}
                 valueClass={getPerformanceTextClass(generalAccuracy)}
             />
             <PrimaryStatCard
-                icon={<PixelFireIcon className="w-5 h-5 text-accent" aria-hidden="true" />}
+                icon={<PixelFireIcon className="w-5 h-5 text-accent-strong" aria-hidden="true" />}
                 label="Racha Actual"
                 value={userStats.current_streak}
             />
             <PrimaryStatCard
-                icon={<SwordIcon className="w-5 h-5 text-accent" aria-hidden="true" />}
+                icon={<SwordIcon className="w-5 h-5 text-accent-strong" aria-hidden="true" />}
                 label="Nivel"
                 value={userStats.level}
             />

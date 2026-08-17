@@ -134,7 +134,7 @@ const QuizManager = ({ words = EMPTY_WORDS, allWords = EMPTY_ALL_WORDS, onComple
     if (gameStatus === 'won') {
         return (
             <div className="flex flex-col items-center justify-center p-8 text-center bg-background rounded-none border-4 border-primary pixel-border animate-in zoom-in duration-300 shadow-pixel-xl-primary">
-                <Trophy size={80} aria-hidden="true" className="text-accent mb-6 motion-safe:animate-in zoom-in-50 duration-700 ease-out drop-shadow-md" />
+                <Trophy size={80} aria-hidden="true" className="text-accent-strong mb-6 motion-safe:animate-in zoom-in-50 duration-700 ease-out drop-shadow-md" />
                 <h2 className="text-4xl font-black text-primary mb-4 font-mono tracking-wider drop-shadow-sm">
                     {mode === 'game' ? '¡VAMOS!' : '¡COMPLETADO!'}
                 </h2>
@@ -170,7 +170,7 @@ const QuizManager = ({ words = EMPTY_WORDS, allWords = EMPTY_ALL_WORDS, onComple
                 </div>
 
                 {mode !== 'game' && (
-                    <button onClick={onClose} aria-label="Cerrar el desafío" className="text-muted-foreground hover:text-destructive font-mono text-xl transition-colors p-3 hover:bg-destructive/10 active:scale-95 border-2 border-transparent hover:border-destructive pixel-border">
+                    <button onClick={onClose} aria-label="Cerrar el desafío" className="text-muted-foreground hover:text-destructive font-mono text-xl transition-colors p-3 hover:bg-destructive hover:text-destructive-foreground/10 active:scale-95 border-2 border-transparent hover:border-destructive pixel-border">
                         <X aria-hidden="true" className="w-5 h-5" />
                     </button>
                 )}

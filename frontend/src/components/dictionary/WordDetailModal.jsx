@@ -32,13 +32,13 @@ const WordDetailModal = ({ word, onClose, onOpenOracle }) => {
 
                 <div className="space-y-6 font-sans text-xl">
                     <section className="bg-background p-4 border-2 border-dashed border-border">
-                        <h3 className="font-mono text-2xs text-accent mb-2 uppercase">Definición</h3>
+                        <h3 className="font-mono text-2xs text-accent-strong mb-2 uppercase">Definición</h3>
                         <p className="text-foreground leading-relaxed max-w-prose">{word.definition}</p>
                     </section>
 
                     <section>
                         <div className="flex items-center justify-between mb-4 gap-3">
-                            <h3 className="font-mono text-2xs text-accent uppercase">Ejemplos de uso</h3>
+                            <h3 className="font-mono text-2xs text-accent-strong uppercase">Ejemplos de uso</h3>
                             {examples.length > 1 && (
                                 <div className="flex items-center gap-2">
                                     <Button

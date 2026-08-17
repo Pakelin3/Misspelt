@@ -151,7 +151,7 @@ export default function FarmsAdminPanel() {
                                         e.stopPropagation();
                                         setFarmToDelete(farm);
                                     }}
-                                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                    className="text-muted-foreground hover:text-destructive hover:bg-destructive hover:text-destructive-foreground/10"
                                     aria-label={`Eliminar la granja ${farm.name}`}
                                 >
                                     <Trash2 className="w-4 h-4" aria-hidden="true" />

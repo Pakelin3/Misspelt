@@ -42,9 +42,9 @@ export function HeroSection() {
       <div className="relative z-raised mx-auto max-w-5xl px-4 text-center">
 
         <div className="flex justify-center gap-4 mb-6">
-          <StarIcon aria-hidden="true" className="w-8 h-8 animate-sparkle text-accent" />
-          <StarIcon aria-hidden="true" className="w-6 h-6 animate-sparkle stagger-1 text-accent" />
-          <StarIcon aria-hidden="true" className="w-8 h-8 animate-sparkle stagger-2 text-accent" />
+          <StarIcon aria-hidden="true" className="w-8 h-8 animate-sparkle text-accent-strong" />
+          <StarIcon aria-hidden="true" className="w-6 h-6 animate-sparkle stagger-1 text-accent-strong" />
+          <StarIcon aria-hidden="true" className="w-8 h-8 animate-sparkle stagger-2 text-accent-strong" />
         </div>
 
         <h1 className="font-mono  text-foreground leading-tight mb-6 animate-slide-up">
@@ -54,14 +54,12 @@ export function HeroSection() {
             duration={1}
             animationMode="evenodd"
             shuffleTimes={1}
-            ease="back.out(1.1)"
+            ease="power4.out"
             stagger={0.2}
             threshold={0.1}
             triggerOnce={true}
             triggerOnHover
             respectReducedMotion={true}
-            loop
-            loopDelay={1}
           />
         </h1>
 
@@ -160,7 +158,7 @@ function StatItem({ label, targetValue }) {
 
   return (
     <div ref={ref} className="flex flex-col items-center min-w-[140px]">
-      <span className="font-mono text-xl md:text-2xl text-accent mb-1 min-h-[32px] flex items-center justify-center">
+      <span className="font-mono text-xl md:text-2xl text-accent-strong mb-1 min-h-[32px] flex items-center justify-center">
         {targetValue != null ? `+${currentValue}` : "---"}
       </span>
       <span className="font-sans text-lg text-muted-foreground uppercase">{label}</span>

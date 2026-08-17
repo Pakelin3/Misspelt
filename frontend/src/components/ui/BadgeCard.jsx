@@ -69,7 +69,7 @@ const BadgeCard = ({ badge, status }) => {
                 </p>
 
                 {finalRewardText && (
-                    <div className="text-2xs font-mono text-accent bg-accent/10 px-2 py-1 mb-4 pixel-border-accent border-2">
+                    <div className="text-2xs font-mono text-accent-strong bg-accent/10 px-2 py-1 mb-4 pixel-border-accent border-2">
                         <span aria-hidden="true">🎁</span> {finalRewardText}
                     </div>
                 )}

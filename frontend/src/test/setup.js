@@ -30,3 +30,20 @@ if (!window.ResizeObserver) {
     disconnect() {}
   };
 }
+
+// jsdom no implementa localStorage en esta version, y varios componentes lo usan
+// para recordar preferencias. Sin esto los tests no podrian cubrir ese camino.
+if (!window.localStorage) {
+  let datos = {};
+  Object.defineProperty(window, 'localStorage', {
+    configurable: true,
+    value: {
+      getItem: (k) => (k in datos ? datos[k] : null),
+      setItem: (k, v) => { datos[k] = String(v); },
+      removeItem: (k) => { delete datos[k]; },
+      clear: () => { datos = {}; },
+      key: (i) => Object.keys(datos)[i] ?? null,
+      get length() { return Object.keys(datos).length; },
+    },
+  });
+}

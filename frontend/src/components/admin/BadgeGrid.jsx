@@ -76,7 +76,7 @@ export default function BadgeGrid({ badges, loading, onEdit, onDeleteRequest, cu
                                         variant="outline"
                                         size="icon"
                                         onClick={() => onDeleteRequest(badge)}
-                                        className="text-destructive hover:bg-destructive/10"
+                                        className="text-destructive hover:bg-destructive hover:text-destructive-foreground/10"
                                         aria-label={`Eliminar insignia ${badge.title}`}
                                     >
                                         <Trash2 className="w-3 h-3" aria-hidden="true" />

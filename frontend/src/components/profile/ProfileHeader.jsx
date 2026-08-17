@@ -26,7 +26,7 @@ const ProfileHeader = ({
                 <button
                     onClick={onStartEditing}
                     aria-label="Editar perfil"
-                    className="absolute bottom-4 right-4 p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors border-2 border-transparent hover:border-primary"
+                    className="absolute bottom-4 right-4 p-2 text-muted-foreground hover:text-primary hover:bg-primary hover:text-primary-foreground/10 transition-colors border-2 border-transparent hover:border-primary"
                 >
                     <PixelEditIcon className="w-4 h-4" aria-hidden="true" />
                 </button>
@@ -132,8 +132,8 @@ const ProfileHeader = ({
                 <div id="tutorial-quick-stats" className="hidden md:grid grid-cols-2 gap-2 shrink-0">
                     {[
                         { label: 'Racha', value: userStats.current_streak, icon: <PixelFireIcon className="w-6 h-6 text-warning" aria-hidden="true" /> },
-                        { label: 'Récord', value: userStats.longest_streak, icon: <PixelStarIcon className="w-6 h-6 text-accent" aria-hidden="true" /> },
-                        { label: 'Insignias', value: userStats.unlocked_badges?.length || 0, icon: <TrophyIcon className="w-6 h-6 text-accent" aria-hidden="true" /> },
+                        { label: 'Récord', value: userStats.longest_streak, icon: <PixelStarIcon className="w-6 h-6 text-accent-strong" aria-hidden="true" /> },
+                        { label: 'Insignias', value: userStats.unlocked_badges?.length || 0, icon: <TrophyIcon className="w-6 h-6 text-accent-strong" aria-hidden="true" /> },
                         { label: 'Avatares', value: userStats.unlocked_avatars?.length || 0, icon: <SwordIcon className="w-6 h-6" aria-hidden="true" /> },
                     ].map(s => (
                         <div key={s.label} className="flex items-center gap-2 px-3 py-2 bg-muted/20 border border-foreground/20">

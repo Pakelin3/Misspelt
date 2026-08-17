@@ -59,7 +59,7 @@ export function QuizPreview() {
       <div className="mx-auto max-w-4xl px-4">
         <div className="flex items-center justify-around text-center mb-12">
           <h2 className="font-mono text-2xl md:text-4xl text-foreground">PRUEBA UN QUIZ</h2>
-          <span className="font-mono text-xs text-accent bg-accent/10 px-3 py-1 mb-4 inline-block pixel-border-accent">DEMO JUGABLE</span>
+          <span className="font-mono text-xs text-accent-strong bg-accent/10 px-3 py-1 mb-4 inline-block pixel-border-accent">DEMO JUGABLE</span>
         </div>
 
         {cooldown ? (

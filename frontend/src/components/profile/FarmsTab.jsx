@@ -5,7 +5,7 @@ const FarmsTab = ({ farmsLoading, userFarms }) => {
     if (farmsLoading) {
         return (
             <div role="status" aria-live="polite" className="flex flex-col items-center justify-center py-12 gap-3 animate-in fade-in duration-300">
-                <div aria-hidden="true" className="w-10 h-10 border-4 border-accent border-t-transparent motion-safe:animate-spin rounded-full" />
+                <div aria-hidden="true" className="w-10 h-10 border-4 border-accent-strong border-t-transparent motion-safe:animate-spin rounded-full" />
                 <p className="font-mono text-xs text-muted-foreground animate-pulse">CARGANDO GRANJAS...</p>
             </div>
         );

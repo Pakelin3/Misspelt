@@ -91,7 +91,7 @@ const LoadingVerification = ({ status, showAlert }) => {
                 <button
                     type="button"
                     onClick={goNow}
-                    className="text-accent hover:text-accent-foreground hover:underline decoration-2 underline-offset-4 font-sans text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    className="text-accent-strong hover:text-accent-foreground hover:underline decoration-2 underline-offset-4 font-sans text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                     Continuar ahora
                 </button>

@@ -41,10 +41,10 @@ const Toaster = (props) => {
                     description: "font-sans text-base tracking-wide text-muted-foreground font-normal empty:hidden",
                     actionButton: "bg-primary text-primary-foreground font-mono text-2xs pixel-border-primary pixel-btn px-4 py-2",
                     cancelButton: "bg-muted text-muted-foreground font-mono text-2xs pixel-border pixel-btn px-4 py-2",
-                    icon: "group-data-[type=error]:text-destructive group-data-[type=success]:text-success group-data-[type=warning]:text-accent group-data-[type=info]:text-info",
+                    icon: "group-data-[type=error]:text-destructive group-data-[type=success]:text-success group-data-[type=warning]:text-accent-strong group-data-[type=info]:text-info",
                     success: "!border-success",
                     error: "!border-destructive",
-                    warning: "!border-accent",
+                    warning: "!border-accent-strong",
                     info: "!border-info",
                 },
             }}

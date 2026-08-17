@@ -17,7 +17,7 @@ const HistoryTab = ({
     if (historyLoading) {
         return (
             <div role="status" aria-live="polite" className="flex flex-col items-center justify-center py-12 gap-3 animate-in fade-in duration-300">
-                <div aria-hidden="true" className="w-10 h-10 border-4 border-accent border-t-transparent motion-safe:animate-spin rounded-full" />
+                <div aria-hidden="true" className="w-10 h-10 border-4 border-accent-strong border-t-transparent motion-safe:animate-spin rounded-full" />
                 <p className="font-mono text-xs text-muted-foreground animate-pulse">CARGANDO HISTORIAL...</p>
             </div>
         );
@@ -78,7 +78,7 @@ const HistoryTab = ({
                                         </div>
                                     )}
                                     <div className="text-right">
-                                        <p className="font-mono text-lg font-bold text-accent">+{game.score}</p>
+                                        <p className="font-mono text-lg font-bold text-accent-strong">+{game.score}</p>
                                         <p className="text-3xs font-mono text-muted-foreground uppercase">XP</p>
                                     </div>
                                 </div>

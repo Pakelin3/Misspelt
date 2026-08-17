@@ -11,6 +11,7 @@ import StatsTab from '@/components/profile/StatsTab';
 import HistoryTab from '@/components/profile/HistoryTab';
 import BadgesTab from '@/components/profile/BadgesTab';
 import FarmsTab from '@/components/profile/FarmsTab';
+import ThemeSelector from '@/components/profile/ThemeSelector';
 
 function ProfilePage() {
     const api = useAxios();
@@ -232,7 +233,7 @@ function ProfilePage() {
         return (
             <main id="main-content" className="min-h-screen bg-background flex flex-col">
                 <div role="status" aria-live="polite" className="flex-1 flex flex-col items-center justify-center gap-4 mt-16">
-                    <div aria-hidden="true" className="w-16 h-16 border-4 border-accent border-t-transparent motion-safe:animate-spin rounded-full" />
+                    <div aria-hidden="true" className="w-16 h-16 border-4 border-accent-strong border-t-transparent motion-safe:animate-spin rounded-full" />
                     <p className="font-mono text-xs text-muted-foreground animate-pulse">CARGANDO PERFIL...</p>
                 </div>
             </main>
@@ -293,9 +294,18 @@ function ProfilePage() {
                     <TabButton active={activeTab === 'farms'} onClick={() => setActiveTab('farms')}>
                         Granjas
                     </TabButton>
+                    <TabButton active={activeTab === 'settings'} onClick={() => setActiveTab('settings')}>
+                        Ajustes
+                    </TabButton>
                 </div>
 
                 {/* ═══════════ TAB CONTENT ═══════════ */}
+
+                {activeTab === 'settings' && (
+                    <div className="space-y-6 max-w-2xl">
+                        <ThemeSelector />
+                    </div>
+                )}
 
                 {activeTab === 'stats' && (
                     <StatsTab

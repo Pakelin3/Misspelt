@@ -42,6 +42,7 @@ const TextShuffle = ({
     const tlRef = useRef(null);
     const playingRef = useRef(false);
     const hoverHandlerRef = useRef(null);
+    const roRef = useRef(null);
 
     const userHasFont = useMemo(
         () => (style && style.fontFamily) || (className && /font[-[]/i.test(className)),
@@ -58,15 +59,25 @@ const TextShuffle = ({
     }, [threshold, rootMargin]);
 
     useEffect(() => {
-        const check = () => {
-            if ('fonts' in document) {
-                if (document.fonts.status === 'loaded') return true;
-                document.fonts.ready.then(() => setFontsLoaded(true));
-                return false;
-            }
+        // `document.fonts.ready` solo espera a las cargas PENDIENTES. Si la fuente
+        // del elemento aun no se ha solicitado, resuelve de inmediato y medimos con
+        // la tipografia de respaldo: en produccion eso daba ventanas de 38.4px para
+        // glifos de 64px (el avance 0.6em del monospace generico) y el titulo salia
+        // recortado y superpuesto. Hay que pedir la familia concreta y esperarla.
+        let cancelado = false;
+        const esperarFuente = async () => {
+            if (!('fonts' in document)) return true;
+            try {
+                const el = ref.current;
+                const familia = el ? getComputedStyle(el).fontFamily : '';
+                const tamano = el ? getComputedStyle(el).fontSize : '1rem';
+                if (familia) await document.fonts.load(`${tamano} ${familia}`);
+                await document.fonts.ready;
+            } catch { /* si falla, se mide con lo que haya */ }
             return true;
         };
-        if (check()) setFontsLoaded(true);
+        esperarFuente().then(() => { if (!cancelado) setFontsLoaded(true); });
+        return () => { cancelado = true; };
     }, []);
 
     useGSAP(
@@ -88,6 +99,11 @@ const TextShuffle = ({
             }
 
             const start = scrollTriggerStart;
+
+            const disconnectRo = () => {
+                roRef.current?.disconnect();
+                roRef.current = null;
+            };
 
             const removeHover = () => {
                 if (hoverHandlerRef.current && ref.current) {
@@ -350,8 +366,25 @@ const TextShuffle = ({
 
             const st = ScrollTrigger.create({ trigger: el, start, once: triggerOnce, onEnter: create });
 
+            // Las ventanas de cada letra llevan un ancho fijo en px calculado al
+            // construir. Sin esto, al rotar el movil o redimensionar la ventana el
+            // texto conserva las medidas del tamano anterior y se recorta.
+            let anchoPrevio = el.getBoundingClientRect().width;
+            const ro = new ResizeObserver(() => {
+                const ancho = el.getBoundingClientRect().width;
+                if (Math.abs(ancho - anchoPrevio) < 1) return;
+                anchoPrevio = ancho;
+                if (playingRef.current) return;
+                build();
+                if (scrambleCharset) randomizeScrambles();
+                play();
+            });
+            ro.observe(el);
+            roRef.current = ro;
+
             return () => {
                 st.kill();
+                disconnectRo();
                 removeHover();
                 teardown();
                 setReady(false);

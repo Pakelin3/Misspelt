@@ -225,7 +225,7 @@ function AvatarAdminPanel() {
                                         variant="outline"
                                         size="icon"
                                         onClick={() => setAvatarToDelete(avatar)}
-                                        className="text-destructive hover:bg-destructive/10"
+                                        className="text-destructive hover:bg-destructive hover:text-destructive-foreground/10"
                                         aria-label={`Eliminar avatar ${avatar.name}`}
                                     >
                                         <Trash2 className="w-4 h-4" aria-hidden="true" />

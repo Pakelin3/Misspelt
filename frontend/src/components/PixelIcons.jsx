@@ -7,11 +7,14 @@
  * existe para detectar componentes que mezclan demasiadas responsabilidades;
  * este archivo tiene una sola responsabilidad (iconografía) repetida N veces.
  */
+// Cada icono propaga `...props` al <svg>: sin eso, un `aria-hidden` o un
+// `aria-label` escrito en el punto de uso se descartaba en silencio, que es
+// justo lo contrario de lo que espera quien lo escribe.
 import React from "react";
 
-export function BookIcon({ className = "w-6 h-6" }) {
+export function BookIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <rect x="4" y="2" width="16" height="20" rx="1" fill="hsl(var(--card))" stroke="hsl(var(--foreground))" strokeWidth="2" />
       <path d="M8 2V22" stroke="hsl(var(--foreground))" strokeWidth="2" />
       <rect x="10" y="6" width="6" height="2" fill="hsl(var(--primary))" />
@@ -21,9 +24,9 @@ export function BookIcon({ className = "w-6 h-6" }) {
   );
 }
 
-export function BrainIcon({ className = "w-6 h-6" }) {
+export function BrainIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" fill="hsl(var(--card))" stroke="hsl(var(--foreground))" strokeWidth="2" />
       <path d="M12 16V12" stroke="hsl(var(--foreground))" strokeWidth="2" />
       <path d="M8 12C8 12 10 10 12 10C14 10 16 12 16 12" stroke="hsl(var(--foreground))" strokeWidth="2" />
@@ -33,45 +36,45 @@ export function BrainIcon({ className = "w-6 h-6" }) {
   );
 }
 
-export function TrophyIcon({ className = "w-6 h-6" }) {
+export function TrophyIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M16 17h-3v2h2v2H9v-2h2v-2H8v-2h8v2Zm2-12h4v6h-2V7h-2v4h2v2h-2v2h-2V5H8v10H6v-2H4v-2h2V7H4v4H2V5h4V3h12v2Z" /></svg>
+    <svg className={className} {...props} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M16 17h-3v2h2v2H9v-2h2v-2H8v-2h8v2Zm2-12h4v6h-2V7h-2v4h2v2h-2v2h-2V5H8v10H6v-2H4v-2h2V7H4v4H2V5h4V3h12v2Z" /></svg>
 
   );
 }
 
-export function StarIcon({ className = "w-6 h-6" }) {
+export function StarIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="hsl(var(--accent))" stroke="hsl(var(--foreground))" strokeWidth="2" />
     </svg>
   );
 }
 
-export function SwordIcon({ className = "w-6 h-6" }) {
+export function SwordIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="11" y="2" width="2" height="2" fill="white" />
-      <rect x="9" y="4" width="2" height="12" fill="white" />
-      <rect x="13" y="4" width="2" height="12" fill="white" />
-      <rect x="7" y="16" width="10" height="2" fill="yellow" />
-      <rect x="11" y="18" width="2" height="4" fill="black" />
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="11" y="2" width="2" height="2" fill="currentColor" />
+      <rect x="9" y="4" width="2" height="12" fill="currentColor" />
+      <rect x="13" y="4" width="2" height="12" fill="currentColor" />
+      <rect x="7" y="16" width="10" height="2" fill="hsl(var(--accent))" />
+      <rect x="11" y="18" width="2" height="4" fill="currentColor" />
     </svg>
 
   );
 }
 
-export function HeartIcon({ className = "w-6 h-6" }) {
+export function HeartIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M13 22H11V20H13V22ZM11 20H9V18H11V20ZM15 20H13V18H15V20ZM9 18H7V16H9V18ZM17 18H15V16H17V18ZM7 16H5V14H7V16ZM19 16H17V14H19V16ZM5 14H3V12H5V14ZM21 14H19V12H21V14ZM3 12H1V6H3V12ZM23 12H21V6H23V12ZM13 8H11V6H13V8ZM5 6H3V4H5V6ZM11 6H9V4H11V6ZM15 6H13V4H15V6ZM21 6H19V4H21V6ZM9 4H5V2H9V4ZM19 4H15V2H19V4Z" fill="black" />
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M13 22H11V20H13V22ZM11 20H9V18H11V20ZM15 20H13V18H15V20ZM9 18H7V16H9V18ZM17 18H15V16H17V18ZM7 16H5V14H7V16ZM19 16H17V14H19V16ZM5 14H3V12H5V14ZM21 14H19V12H21V14ZM3 12H1V6H3V12ZM23 12H21V6H23V12ZM13 8H11V6H13V8ZM5 6H3V4H5V6ZM11 6H9V4H11V6ZM15 6H13V4H15V6ZM21 6H19V4H21V6ZM9 4H5V2H9V4ZM19 4H15V2H19V4Z" fill="currentColor" />
     </svg>
   );
 }
 
-export function LeafIcon({ className = "w-5 h-5" }) {
+export function LeafIcon({ className = "w-5 h-5", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M12 21V10" stroke="hsl(var(--foreground))" strokeWidth="2" strokeLinecap="round" />
       <path d="M12 10C12 5 8 2 3 2C3 7 6 11 12 12" fill="hsl(var(--primary))" stroke="hsl(var(--foreground))" strokeWidth="2" />
       <path d="M12 10C12 5 16 2 21 2C21 7 18 11 12 12" fill="hsl(var(--primary))" fillOpacity="0.7" stroke="hsl(var(--foreground))" strokeWidth="2" />
@@ -79,9 +82,9 @@ export function LeafIcon({ className = "w-5 h-5" }) {
   );
 }
 
-export function GearIcon({ className = "w-6 h-6" }) {
+export function GearIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect x="9" y="11" width="2" height="2" fill="currentColor" />
       <rect x="13" y="11" width="2" height="2" fill="currentColor" />
       <rect x="5" y="7" width="14" height="2" fill="currentColor" />
@@ -102,9 +105,9 @@ export function GearIcon({ className = "w-6 h-6" }) {
   );
 }
 
-export function PixelCrownIcon({ className = "w-6 h-6" }) {
+export function PixelCrownIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect x="3" y="3" width="2" height="12" fill="currentColor" />
       <rect x="19" y="3" width="2" height="12" fill="currentColor" />
       <rect x="11" y="3" width="2" height="2" fill="currentColor" />
@@ -121,58 +124,58 @@ export function PixelCrownIcon({ className = "w-6 h-6" }) {
   )
 }
 
-export function PixelHeartIcon({ className = "w-6 h-6" }) {
+export function PixelHeartIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
       <path d="M6 6H10V8H14V6H18V10H20V14H18V16H16V18H14V20H10V18H8V16H6V14H4V10H6V6Z" strokeWidth="2" strokeLinejoin="miter" strokeLinecap="square" />
     </svg>
   );
 }
 
-export function PixelHeartFillIcon({ className = "w-6 h-6" }) {
+export function PixelHeartFillIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
-      <path d="M6 6H10V8H14V6H18V10H20V14H18V16H16V18H14V20H10V18H8V16H6V14H4V10H6V6Z" fill="#ad46ff" strokeWidth="2" strokeLinejoin="miter" strokeLinecap="square" />
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 6H10V8H14V6H18V10H20V14H18V16H16V18H14V20H10V18H8V16H6V14H4V10H6V6Z" fill="hsl(var(--word-adjective))" strokeWidth="2" strokeLinejoin="miter" strokeLinecap="square" />
     </svg>
   );
 }
 
-export function PixelDiamondIcon({ className = "w-6 h-6" }) {
+export function PixelDiamondIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="7" y="1" width="10" height="2" fill="#2B7FFF" />
-      <rect x="5" y="3" width="2" height="2" fill="#2B7FFF" />
-      <rect x="17" y="3" width="2" height="2" fill="#2B7FFF" />
-      <rect x="19" y="5" width="2" height="2" fill="#2B7FFF" />
-      <rect x="19" y="13" width="2" height="2" fill="#2B7FFF" />
-      <rect x="17" y="15" width="2" height="2" fill="#2B7FFF" />
-      <rect x="15" y="17" width="2" height="2" fill="#2B7FFF" />
-      <rect x="13" y="19" width="2" height="2" fill="#2B7FFF" />
-      <rect x="11" y="21" width="2" height="2" fill="#2B7FFF" />
-      <rect x="9" y="19" width="2" height="2" fill="#2B7FFF" />
-      <rect x="7" y="17" width="2" height="2" fill="#2B7FFF" />
-      <rect x="5" y="15" width="2" height="2" fill="#2B7FFF" />
-      <rect x="3" y="13" width="2" height="2" fill="#2B7FFF" />
-      <rect x="3" y="5" width="2" height="2" fill="#2B7FFF" />
-      <rect x="1" y="7" width="2" height="6" fill="#2B7FFF" />
-      <rect x="21" y="7" width="2" height="6" fill="#2B7FFF" />
-      <rect x="3" y="9" width="18" height="2" fill="#2B7FFF" />
-      <rect x="9" y="3" width="2" height="3" fill="#2B7FFF" />
-      <rect x="7" y="6" width="2" height="3" fill="#2B7FFF" />
-      <rect x="15" y="6" width="2" height="3" fill="#2B7FFF" />
-      <rect x="7" y="11" width="2" height="2" fill="#2B7FFF" />
-      <rect x="9" y="13" width="2" height="3" fill="#2B7FFF" />
-      <rect x="11" y="16" width="2" height="3" fill="#2B7FFF" />
-      <rect x="13" y="13" width="2" height="3" fill="#2B7FFF" />
-      <rect x="15" y="11" width="2" height="2" fill="#2B7FFF" />
-      <rect x="13" y="3" width="2" height="3" fill="#2B7FFF" />
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="7" y="1" width="10" height="2" fill="hsl(var(--info))" />
+      <rect x="5" y="3" width="2" height="2" fill="hsl(var(--info))" />
+      <rect x="17" y="3" width="2" height="2" fill="hsl(var(--info))" />
+      <rect x="19" y="5" width="2" height="2" fill="hsl(var(--info))" />
+      <rect x="19" y="13" width="2" height="2" fill="hsl(var(--info))" />
+      <rect x="17" y="15" width="2" height="2" fill="hsl(var(--info))" />
+      <rect x="15" y="17" width="2" height="2" fill="hsl(var(--info))" />
+      <rect x="13" y="19" width="2" height="2" fill="hsl(var(--info))" />
+      <rect x="11" y="21" width="2" height="2" fill="hsl(var(--info))" />
+      <rect x="9" y="19" width="2" height="2" fill="hsl(var(--info))" />
+      <rect x="7" y="17" width="2" height="2" fill="hsl(var(--info))" />
+      <rect x="5" y="15" width="2" height="2" fill="hsl(var(--info))" />
+      <rect x="3" y="13" width="2" height="2" fill="hsl(var(--info))" />
+      <rect x="3" y="5" width="2" height="2" fill="hsl(var(--info))" />
+      <rect x="1" y="7" width="2" height="6" fill="hsl(var(--info))" />
+      <rect x="21" y="7" width="2" height="6" fill="hsl(var(--info))" />
+      <rect x="3" y="9" width="18" height="2" fill="hsl(var(--info))" />
+      <rect x="9" y="3" width="2" height="3" fill="hsl(var(--info))" />
+      <rect x="7" y="6" width="2" height="3" fill="hsl(var(--info))" />
+      <rect x="15" y="6" width="2" height="3" fill="hsl(var(--info))" />
+      <rect x="7" y="11" width="2" height="2" fill="hsl(var(--info))" />
+      <rect x="9" y="13" width="2" height="3" fill="hsl(var(--info))" />
+      <rect x="11" y="16" width="2" height="3" fill="hsl(var(--info))" />
+      <rect x="13" y="13" width="2" height="3" fill="hsl(var(--info))" />
+      <rect x="15" y="11" width="2" height="2" fill="hsl(var(--info))" />
+      <rect x="13" y="3" width="2" height="3" fill="hsl(var(--info))" />
     </svg>
   );
 }
 
-export function PixelStarIcon({ className = "w-6 h-6" }) {
+export function PixelStarIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect x="11" y="1" width="2" height="4" fill="currentColor" />
       <rect width="2" height="4" transform="matrix(1 0 0 -1 11 23)" fill="currentColor" />
       <rect x="9" y="5" width="2" height="4" fill="currentColor" />
@@ -195,94 +198,94 @@ export function PixelStarIcon({ className = "w-6 h-6" }) {
   );
 }
 
-export function PixelShieldIcon({ className = "w-6 h-6" }) {
+export function PixelShieldIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="4" y="2" width="16" height="2" fill="black" />
-      <rect x="2" y="4" width="2" height="10" fill="black" />
-      <rect x="20" y="4" width="2" height="10" fill="black" />
-      <rect x="4" y="14.0001" width="2" height="2" fill="black" />
-      <rect x="6" y="16.0001" width="2" height="2" fill="black" />
-      <rect x="10" y="20" width="4" height="2" fill="black" />
-      <rect width="2" height="2" transform="matrix(-1 0 0 1 20 14.0001)" fill="black" />
-      <rect width="2" height="2" transform="matrix(-1 0 0 1 18 16.0001)" fill="black" />
-      <rect width="2" height="2" transform="matrix(-1 0 0 1 16 18)" fill="black" />
-      <rect width="2" height="2" transform="matrix(-1 0 0 1 10 18)" fill="black" />
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="4" y="2" width="16" height="2" fill="currentColor" />
+      <rect x="2" y="4" width="2" height="10" fill="currentColor" />
+      <rect x="20" y="4" width="2" height="10" fill="currentColor" />
+      <rect x="4" y="14.0001" width="2" height="2" fill="currentColor" />
+      <rect x="6" y="16.0001" width="2" height="2" fill="currentColor" />
+      <rect x="10" y="20" width="4" height="2" fill="currentColor" />
+      <rect width="2" height="2" transform="matrix(-1 0 0 1 20 14.0001)" fill="currentColor" />
+      <rect width="2" height="2" transform="matrix(-1 0 0 1 18 16.0001)" fill="currentColor" />
+      <rect width="2" height="2" transform="matrix(-1 0 0 1 16 18)" fill="currentColor" />
+      <rect width="2" height="2" transform="matrix(-1 0 0 1 10 18)" fill="currentColor" />
     </svg>
   );
 }
 
-export function PixelChevronIcon({ className = "w-6 h-6" }) {
+export function PixelChevronIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={`transition-transform duration-300 ${className}`} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M13 16H11V14H13V16ZM11 14H9V12H11V14ZM15 14H13V12H15V14ZM9 12H7V10H9V12ZM17 12H15V10H17V12ZM7 10H5V8H7V10ZM19 10H17V8H19V10Z" fill="black" />
+    <svg className={`transition-transform duration-300 ${className}`} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M13 16H11V14H13V16ZM11 14H9V12H11V14ZM15 14H13V12H15V14ZM9 12H7V10H9V12ZM17 12H15V10H17V12ZM7 10H5V8H7V10ZM19 10H17V8H19V10Z" fill="currentColor" />
     </svg>
   );
 }
 
-export function PixelMicIcon({ className = "w-6 h-6" }) {
+export function PixelMicIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="10" y="2" width="4" height="2" fill="black" />
-      <rect x="8" y="4" width="2" height="10" fill="black" />
-      <rect x="10" y="14" width="4" height="2" fill="black" />
-      <rect x="14" y="4" width="2" height="10" fill="black" />
-      <rect x="4" y="10" width="2" height="6" fill="black" />
-      <rect x="6" y="16" width="2" height="2" fill="black" />
-      <rect x="8" y="18" width="8" height="2" fill="black" />
-      <rect x="16" y="16" width="2" height="2" fill="black" />
-      <rect x="18" y="10" width="2" height="6" fill="black" />
-      <rect x="11" y="20" width="2" height="2" fill="black" />
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="2" width="4" height="2" fill="currentColor" />
+      <rect x="8" y="4" width="2" height="10" fill="currentColor" />
+      <rect x="10" y="14" width="4" height="2" fill="currentColor" />
+      <rect x="14" y="4" width="2" height="10" fill="currentColor" />
+      <rect x="4" y="10" width="2" height="6" fill="currentColor" />
+      <rect x="6" y="16" width="2" height="2" fill="currentColor" />
+      <rect x="8" y="18" width="8" height="2" fill="currentColor" />
+      <rect x="16" y="16" width="2" height="2" fill="currentColor" />
+      <rect x="18" y="10" width="2" height="6" fill="currentColor" />
+      <rect x="11" y="20" width="2" height="2" fill="currentColor" />
     </svg>
   );
 }
 
-export function PixelMicOffIcon({ className = "w-6 h-6" }) {
+export function PixelMicOffIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="10" y="2" width="4" height="2" fill="black" />
-      <rect x="8" y="8" width="2" height="6" fill="black" />
-      <rect x="10" y="14" width="4" height="2" fill="black" />
-      <rect x="14" y="4" width="2" height="6" fill="black" />
-      <rect x="4" y="10" width="2" height="6" fill="black" />
-      <rect x="6" y="16" width="2" height="2" fill="black" />
-      <rect x="8" y="18" width="8" height="2" fill="black" />
-      <rect x="16" y="16" width="2" height="2" fill="black" />
-      <rect x="14" y="14" width="2" height="2" fill="black" />
-      <rect x="12" y="12" width="2" height="2" fill="black" />
-      <rect x="10" y="10" width="2" height="2" fill="black" />
-      <rect x="8" y="8" width="2" height="2" fill="black" />
-      <rect x="6" y="6" width="2" height="2" fill="black" />
-      <rect x="4" y="4" width="2" height="2" fill="black" />
-      <rect x="2" y="2" width="2" height="2" fill="black" />
-      <rect x="18" y="18" width="2" height="2" fill="black" />
-      <rect x="20" y="20" width="2" height="2" fill="black" />
-      <rect x="18" y="10" width="2" height="4" fill="black" />
-      <rect x="11" y="20" width="2" height="2" fill="black" />
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="2" width="4" height="2" fill="currentColor" />
+      <rect x="8" y="8" width="2" height="6" fill="currentColor" />
+      <rect x="10" y="14" width="4" height="2" fill="currentColor" />
+      <rect x="14" y="4" width="2" height="6" fill="currentColor" />
+      <rect x="4" y="10" width="2" height="6" fill="currentColor" />
+      <rect x="6" y="16" width="2" height="2" fill="currentColor" />
+      <rect x="8" y="18" width="8" height="2" fill="currentColor" />
+      <rect x="16" y="16" width="2" height="2" fill="currentColor" />
+      <rect x="14" y="14" width="2" height="2" fill="currentColor" />
+      <rect x="12" y="12" width="2" height="2" fill="currentColor" />
+      <rect x="10" y="10" width="2" height="2" fill="currentColor" />
+      <rect x="8" y="8" width="2" height="2" fill="currentColor" />
+      <rect x="6" y="6" width="2" height="2" fill="currentColor" />
+      <rect x="4" y="4" width="2" height="2" fill="currentColor" />
+      <rect x="2" y="2" width="2" height="2" fill="currentColor" />
+      <rect x="18" y="18" width="2" height="2" fill="currentColor" />
+      <rect x="20" y="20" width="2" height="2" fill="currentColor" />
+      <rect x="18" y="10" width="2" height="4" fill="currentColor" />
+      <rect x="11" y="20" width="2" height="2" fill="currentColor" />
     </svg>
 
   );
 }
 
-export function PixelVolume3Icon({ className = "w-6 h-6" }) {
+export function PixelVolume3Icon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M11 22H9V20H7V18H9V6H7V4H9V2H11V22ZM19 22H13V20H19V22ZM21 20H19V18H21V20ZM7 18H5V16H7V18ZM17 18H13V16H17V18ZM23 18H21V6H23V18ZM5 10H3V14H5V16H1V8H5V10ZM19 16H17V8H19V16ZM15 14H13V10H15V14ZM7 8H5V6H7V8ZM17 8H13V6H17V8ZM21 6H19V4H21V6ZM19 4H13V2H19V4Z" fill="black" />
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M11 22H9V20H7V18H9V6H7V4H9V2H11V22ZM19 22H13V20H19V22ZM21 20H19V18H21V20ZM7 18H5V16H7V18ZM17 18H13V16H17V18ZM23 18H21V6H23V18ZM5 10H3V14H5V16H1V8H5V10ZM19 16H17V8H19V16ZM15 14H13V10H15V14ZM7 8H5V6H7V8ZM17 8H13V6H17V8ZM21 6H19V4H21V6ZM19 4H13V2H19V4Z" fill="currentColor" />
     </svg>
   );
 }
 
-export function PixelVolume0Icon({ className = "w-6 h-6" }) {
+export function PixelVolume0Icon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M17 22H15V20H13V18H15V6H13V4H15V2H17V22ZM13 18H11V16H13V18ZM11 8V10H9V14H11V16H7V8H11ZM13 8H11V6H13V8Z" fill="black" />
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M17 22H15V20H13V18H15V6H13V4H15V2H17V22ZM13 18H11V16H13V18ZM11 8V10H9V14H11V16H7V8H11ZM13 8H11V6H13V8Z" fill="currentColor" />
     </svg>
   );
 }
 
-export function PixelBookOpenIcon({ className = "w-6 h-6" }) {
+export function PixelBookOpenIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <rect x="2" y="3" width="9" height="2" fill="currentColor" />
       <rect y="19" width="11" height="2" fill="currentColor" />
       <rect x="13" y="3" width="9" height="2" fill="currentColor" />
@@ -297,88 +300,88 @@ export function PixelBookOpenIcon({ className = "w-6 h-6" }) {
   );
 }
 
-export function PixelLockIcon({ className = "w-6 h-6" }) {
+export function PixelLockIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="5" y="8" width="14" height="2" fill="black" />
-      <rect x="5" y="20" width="14" height="2" fill="black" />
-      <rect x="3" y="10" width="2" height="10" fill="black" />
-      <rect x="19" y="10" width="2" height="10" fill="black" />
-      <rect x="7" y="4" width="2" height="4" fill="black" />
-      <rect x="9" y="2" width="6" height="2" fill="black" />
-      <rect x="15" y="4" width="2" height="4" fill="black" />
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="5" y="8" width="14" height="2" fill="currentColor" />
+      <rect x="5" y="20" width="14" height="2" fill="currentColor" />
+      <rect x="3" y="10" width="2" height="10" fill="currentColor" />
+      <rect x="19" y="10" width="2" height="10" fill="currentColor" />
+      <rect x="7" y="4" width="2" height="4" fill="currentColor" />
+      <rect x="9" y="2" width="6" height="2" fill="currentColor" />
+      <rect x="15" y="4" width="2" height="4" fill="currentColor" />
     </svg>
   );
 }
 
-export function PixelCheckIcon({ className = "w-6 h-6" }) {
+export function PixelCheckIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M10 18H8V16H10V18ZM8 16H6V14H8V16ZM12 14V16H10V14H12ZM6 14H4V12H6V14ZM14 14H12V12H14V14ZM16 12H14V10H16V12ZM18 10H16V8H18V10ZM20 8H18V6H20V8Z" fill="black" />
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10 18H8V16H10V18ZM8 16H6V14H8V16ZM12 14V16H10V14H12ZM6 14H4V12H6V14ZM14 14H12V12H14V14ZM16 12H14V10H16V12ZM18 10H16V8H18V10ZM20 8H18V6H20V8Z" fill="currentColor" />
     </svg>
   );
 }
 
-export function PixelSearchIcon({ className = "w-6 h-6" }) {
+export function PixelSearchIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M22 22H20V20H22V22ZM20 20H18V18H20V20ZM14 18H6V16H14V18ZM18 18H16V16H18V18ZM6 16H4V14H6V16ZM16 16H14V14H16V16ZM4 14H2V6H4V14ZM18 14H16V6H18V14ZM6 6H4V4H6V6ZM16 6H14V4H16V6ZM14 4H6V2H14V4Z" fill="black" />
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22 22H20V20H22V22ZM20 20H18V18H20V20ZM14 18H6V16H14V18ZM18 18H16V16H18V18ZM6 16H4V14H6V16ZM16 16H14V14H16V16ZM4 14H2V6H4V14ZM18 14H16V6H18V14ZM6 6H4V4H6V6ZM16 6H14V4H16V6ZM14 4H6V2H14V4Z" fill="currentColor" />
     </svg>
   );
 }
 
-export function PixelPlayIcon({ className = "w-6 h-6" }) {
+export function PixelPlayIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="15" y="11" width="2" height="2" transform="rotate(180 15 11)" fill="black" />
-      <rect x="15" y="15" width="2" height="2" transform="rotate(180 15 15)" fill="black" />
-      <rect x="13" y="17" width="2" height="2" transform="rotate(180 13 17)" fill="black" />
-      <rect x="13" y="9" width="2" height="2" transform="rotate(180 13 9)" fill="black" />
-      <rect x="11" y="7" width="2" height="2" transform="rotate(180 11 7)" fill="black" />
-      <rect x="9" y="21" width="2" height="18" transform="rotate(180 9 21)" fill="black" />
-      <rect width="2" height="2" transform="matrix(1 0 0 -1 15 13)" fill="black" />
-      <rect x="9" y="17" width="2" height="2" fill="black" />
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="15" y="11" width="2" height="2" transform="rotate(180 15 11)" fill="currentColor" />
+      <rect x="15" y="15" width="2" height="2" transform="rotate(180 15 15)" fill="currentColor" />
+      <rect x="13" y="17" width="2" height="2" transform="rotate(180 13 17)" fill="currentColor" />
+      <rect x="13" y="9" width="2" height="2" transform="rotate(180 13 9)" fill="currentColor" />
+      <rect x="11" y="7" width="2" height="2" transform="rotate(180 11 7)" fill="currentColor" />
+      <rect x="9" y="21" width="2" height="18" transform="rotate(180 9 21)" fill="currentColor" />
+      <rect width="2" height="2" transform="matrix(1 0 0 -1 15 13)" fill="currentColor" />
+      <rect x="9" y="17" width="2" height="2" fill="currentColor" />
     </svg>
   );
 }
 
-export function PixelClockIcon({ className = "w-6 h-6" }) {
+export function PixelClockIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect x="4" y="4" width="16" height="16" stroke="currentColor" strokeWidth="2" strokeLinecap="square" fill="none" />
       <path d="M12 8V12H16M12 2V4M12 20V22M2 12H4M20 12H22" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
     </svg>
   );
 }
 
-export function PixelHomeIcon({ className = "w-6 h-6" }) {
+export function PixelHomeIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M4 10V20H9V14H15V20H20V10L12 4L4 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="square" fill="none" />
     </svg>
   );
 }
 
-export function PixelRestartIcon({ className = "w-6 h-6" }) {
+export function PixelRestartIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" xmlns="http://www.w3.org/2000/svg">
       <path d="M6 10H2V6" />
       <path d="M2.5 10C3.5 6 7 3 11.5 3.5C16.5 4 20.5 8 20.5 13C20.5 18 16.5 22 11.5 22C8 22 5 19.5 3.5 16" />
     </svg>
   );
 }
 
-export function PixelArrowLeftIcon({ className = "w-6 h-6" }) {
+export function PixelArrowLeftIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" xmlns="http://www.w3.org/2000/svg">
       <path d="M20 12H4M10 6L4 12L10 18" />
     </svg>
   );
 }
 
-export function PixelSparklesIcon({ className = "w-6 h-6" }) {
+export function PixelSparklesIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect x="11" y="1" width="2" height="4" fill="currentColor" />
       <rect width="2" height="4" transform="matrix(1 0 0 -1 11 23)" fill="currentColor" />
       <rect x="9" y="5" width="2" height="4" fill="currentColor" />
@@ -401,9 +404,9 @@ export function PixelSparklesIcon({ className = "w-6 h-6" }) {
   );
 }
 
-export function PixelSkullIcon({ className = "w-6 h-6" }) {
+export function PixelSkullIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect x="7" y="20" width="2" height="2" fill="currentColor" />
       <rect x="11" y="20" width="2" height="2" fill="currentColor" />
       <rect x="15" y="20" width="2" height="2" fill="currentColor" />
@@ -422,38 +425,38 @@ export function PixelSkullIcon({ className = "w-6 h-6" }) {
   );
 }
 
-export function PixelLightningIcon({ className = "w-6 h-6" }) {
+export function PixelLightningIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter" xmlns="http://www.w3.org/2000/svg">
-      <path d="M14 2L4 13H11L10 22L20 11H13L14 2Z" fill="#fbbf24" stroke="none" />
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 2L4 13H11L10 22L20 11H13L14 2Z" fill="hsl(var(--accent-strong))" stroke="none" />
     </svg>
   );
 }
 
-export function PixelFireIcon({ className = "w-6 h-6" }) {
+export function PixelFireIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="9" y="2" width="2" height="4" fill="#fc7e2f" />
-      <rect x="7" y="6" width="2" height="2" fill="#fc7e2f" />
-      <rect x="5" y="8" width="2" height="2" fill="#fc7e2f" />
-      <rect x="13" y="10" width="2" height="2" fill="#fc7e2f" />
-      <rect x="15" y="8" width="2" height="2" fill="#fc7e2f" />
-      <rect x="17" y="10" width="2" height="2" fill="#fc7e2f" />
-      <rect x="19" y="12" width="2" height="6" fill="#fc7e2f" />
-      <rect x="3" y="10" width="2" height="8" fill="#fc7e2f" />
-      <rect x="11" y="6" width="2" height="4" fill="#fc7e2f" />
-      <rect x="17" y="18" width="2" height="2" fill="#fc7e2f" />
-      <rect x="7" y="20" width="10" height="2" fill="#fc7e2f" />
-      <rect x="5" y="18" width="2" height="2" fill="#fc7e2f" />
-      <rect x="9" y="16" width="6" height="4" fill="#fcfc2f" />
-      <rect x="11" y="14" width="2" height="3" fill="#fcfc2f" />
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="9" y="2" width="2" height="4" fill="hsl(var(--warning))" />
+      <rect x="7" y="6" width="2" height="2" fill="hsl(var(--warning))" />
+      <rect x="5" y="8" width="2" height="2" fill="hsl(var(--warning))" />
+      <rect x="13" y="10" width="2" height="2" fill="hsl(var(--warning))" />
+      <rect x="15" y="8" width="2" height="2" fill="hsl(var(--warning))" />
+      <rect x="17" y="10" width="2" height="2" fill="hsl(var(--warning))" />
+      <rect x="19" y="12" width="2" height="6" fill="hsl(var(--warning))" />
+      <rect x="3" y="10" width="2" height="8" fill="hsl(var(--warning))" />
+      <rect x="11" y="6" width="2" height="4" fill="hsl(var(--warning))" />
+      <rect x="17" y="18" width="2" height="2" fill="hsl(var(--warning))" />
+      <rect x="7" y="20" width="10" height="2" fill="hsl(var(--warning))" />
+      <rect x="5" y="18" width="2" height="2" fill="hsl(var(--warning))" />
+      <rect x="9" y="16" width="6" height="4" fill="hsl(var(--accent-strong))" />
+      <rect x="11" y="14" width="2" height="3" fill="hsl(var(--accent-strong))" />
     </svg>
   );
 }
 
-export function PixelMagicOrbIcon({ className = "w-6 h-6" }) {
+export function PixelMagicOrbIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect x="6" y="2" width="12" height="2" fill="currentColor" />
       <rect x="6" y="20" width="12" height="2" fill="currentColor" />
       <rect x="4" y="4" width="2" height="2" fill="currentColor" />
@@ -475,25 +478,48 @@ export function PixelMagicOrbIcon({ className = "w-6 h-6" }) {
   );
 }
 
-export function PixelMoonIcon({ className = "w-6 h-6" }) {
+export function PixelSunIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M13 22h-2v-3h2v3Zm-6-3H5v-2h2v2Zm12 0h-2v-2h2v2Zm-4-2H9v-2h6v2Zm-6-2H7V9h2v6Zm8 0h-2V9h2v6ZM5 13H2v-2h3v2Zm17 0h-3v-2h3v2Zm-7-4H9V7h6v2ZM7 7H5V5h2v2Zm12 0h-2V5h2v2Zm-6-2h-2V2h2v3Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+// Pantalla para la opcion "seguir al sistema". Dibujada sobre la misma rejilla de
+// 2px que el resto del set para que no desentone junto al sol y la luna.
+export function PixelScreenIcon({ className = "w-6 h-6", ...props }) {
+  return (
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="4" width="20" height="2" fill="currentColor" />
+      <rect x="2" y="6" width="2" height="8" fill="currentColor" />
+      <rect x="20" y="6" width="2" height="8" fill="currentColor" />
+      <rect x="2" y="14" width="20" height="2" fill="currentColor" />
+      <rect x="11" y="16" width="2" height="2" fill="currentColor" />
+      <rect x="7" y="18" width="10" height="2" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function PixelMoonIcon({ className = "w-6 h-6", ...props }) {
+  return (
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M18 22H8V20H18V22ZM8 20H6V18H8V20ZM20 20H18V18H20V20ZM6 18H4V16H6V18ZM22 18H20V14H18V12H20V10H22V18ZM4 16H2V6H4V16ZM18 16H12V14H18V16ZM12 14H10V12H12V14ZM10 12H8V6H10V12ZM6 6H4V4H6V6ZM14 4H12V6H10V4H6V2H14V4Z" fill="currentColor" />
     </svg>
   );
 }
 
-export function PixelHoleIcon({ className = "w-6 h-6" }) {
+export function PixelHoleIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <ellipse cx="12" cy="16" rx="8" ry="4" stroke="#7f1d1d" strokeWidth="2" fill="#ef4444" fillOpacity="0.8" />
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="12" cy="16" rx="8" ry="4" stroke="hsl(var(--destructive))" strokeWidth="2" fill="hsl(var(--destructive))" fillOpacity="0.8" />
     </svg>
   );
 }
 
-export function PixelTargetIcon({ className = "w-6 h-6" }) {
+export function PixelTargetIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="square" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" stroke="hsl(var(--destructive))" strokeWidth="2" strokeLinecap="square" xmlns="http://www.w3.org/2000/svg">
       <circle cx="12" cy="12" r="9" />
       <circle cx="12" cy="12" r="5" />
       <circle cx="12" cy="12" r="1" />
@@ -501,9 +527,9 @@ export function PixelTargetIcon({ className = "w-6 h-6" }) {
     </svg>
   );
 }
-export function PixelEditIcon({ className = "w-6 h-6" }) {
+export function PixelEditIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect x="16" y="2" width="4" height="2" fill="currentColor" />
       <rect x="18" y="4" width="2" height="2" fill="currentColor" />
       <rect x="16" y="6" width="2" height="2" fill="currentColor" />
@@ -541,9 +567,9 @@ export function PixelEditIcon({ className = "w-6 h-6" }) {
   );
 }
 
-export function PixelSaveIcon({ className = "w-6 h-6" }) {
+export function PixelSaveIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect x="5" y="3" width="14" height="2" fill="currentColor" />
       <rect x="3" y="5" width="2" height="14" fill="currentColor" />
       <rect x="19" y="5" width="2" height="14" fill="currentColor" />
@@ -554,34 +580,34 @@ export function PixelSaveIcon({ className = "w-6 h-6" }) {
   );
 }
 
-export function PixelCopyPasteIcon({ className = "w-6 h-6" }) {
+export function PixelCopyPasteIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M20 22H8v-2h12v2ZM8 20H6v-2H4v-2h2V8h2v12Zm14 0h-2V8h2v12ZM4 16H2V4h2v12ZM18 6h2v2H8V6h8V4h2v2Zm-2-2H4V2h12v2Z" fill="currentColor" />
     </svg>
   );
 }
 
-export function PixelUsersIcon({ className = "w-6 h-6" }) {
+export function PixelUsersIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M2 22H0v-4h2v4Zm14 0h-2v-4h2v4Zm8 0h-2v-4h2v4ZM4 18H2v-2h2v2Zm10 0h-2v-2h2v2Zm8 0h-2v-2h2v2Zm-10-2H4v-2h8v2Zm8 0h-4v-2h4v2Zm-9-4H5v-2h6v2Zm8 0h-4v-2h4v2ZM5 10H3V4h2v6Zm8 0h-2V4h2v6Zm8 0h-2V4h2v6ZM11 4H5V2h6v2Zm8 0h-4V2h4v2Z" /></svg>
+    <svg className={className} {...props} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M2 22H0v-4h2v4Zm14 0h-2v-4h2v4Zm8 0h-2v-4h2v4ZM4 18H2v-2h2v2Zm10 0h-2v-2h2v2Zm8 0h-2v-2h2v2Zm-10-2H4v-2h8v2Zm8 0h-4v-2h4v2Zm-9-4H5v-2h6v2Zm8 0h-4v-2h4v2ZM5 10H3V4h2v6Zm8 0h-2V4h2v6Zm8 0h-2V4h2v6ZM11 4H5V2h6v2Zm8 0h-4V2h4v2Z" /></svg>
   );
 }
 
-export function PixelAvatarIcon({ className = "w-6 h-6" }) {
+export function PixelAvatarIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M8 20h8v-2h4v2h-2v2H6v-2H4v-2h4v2Zm-4-2H2V6h2v12Zm12 0H8v-2h8v2Zm6 0h-2V6h2v12Zm-8-4h-4v-2h4v2Zm-4-2H8V8h2v4Zm6 0h-2V8h2v4Zm-2-4h-4V6h4v2ZM6 6H4V4h2v2Zm14 0h-2V4h2v2Zm-2-2H6V2h12v2Z" /></svg>
+    <svg className={className} {...props} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M8 20h8v-2h4v2h-2v2H6v-2H4v-2h4v2Zm-4-2H2V6h2v12Zm12 0H8v-2h8v2Zm6 0h-2V6h2v12Zm-8-4h-4v-2h4v2Zm-4-2H8V8h2v4Zm6 0h-2V8h2v4Zm-2-4h-4V6h4v2ZM6 6H4V4h2v2Zm14 0h-2V4h2v2Zm-2-2H6V2h12v2Z" /></svg>
   );
 }
 
-export function PixelSignalIcon({ className = "w-6 h-6" }) {
+export function PixelSignalIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M8 20H2v-4h2v-2h4v6Zm7 0H9v-8h2v-2h4v10Zm7 0h-6V6h2V4h4v16Z" /></svg>
+    <svg className={className} {...props} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M8 20H2v-4h2v-2h4v6Zm7 0H9v-8h2v-2h4v10Zm7 0h-6V6h2V4h4v16Z" /></svg>
   );
 }
 
-export function PixelTeachIcon({ className = "w-6 h-6" }) {
+export function PixelTeachIcon({ className = "w-6 h-6", ...props }) {
   return (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M14 10H8v10H6v-4H4v4H2V8h12v2Zm6 6H10v-2h10v2Zm2-2h-2V6h2v8ZM7 6H3V2h4v4Zm13 0H9V4h11v2Z" /></svg>
+    <svg className={className} {...props} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M14 10H8v10H6v-4H4v4H2V8h12v2Zm6 6H10v-2h10v2Zm2-2h-2V6h2v8ZM7 6H3V2h4v4Zm13 0H9V4h11v2Z" /></svg>
   )
 }

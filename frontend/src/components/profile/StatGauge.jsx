@@ -6,7 +6,7 @@ const StatGauge = ({ label, value, maxValue, suffix = '', isPercentage = false }
     const percentage = maxValue > 0 ? Math.min(100, (value / maxValue) * 100) : 0;
     const displayValue = isPercentage ? `${value.toFixed(1)}%` : `${value}${suffix}`;
     const color = isPercentage ? getPerformanceBgClass(value) : 'bg-accent';
-    const textColor = isPercentage ? getPerformanceTextClass(value) : 'text-accent';
+    const textColor = isPercentage ? getPerformanceTextClass(value) : 'text-accent-strong';
 
     return (
         <div className="p-3 bg-muted/20 border-2 border-foreground/20 hover:border-foreground/40 transition-colors">

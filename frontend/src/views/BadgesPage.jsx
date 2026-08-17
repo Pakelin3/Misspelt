@@ -172,7 +172,7 @@ function BadgesPage() {
                 {/* HEADER */}
                 <div className="text-center mb-10">
                     <div className="inline-flex items-center justify-center p-4 bg-accent/20 rounded-full pixel-border-accent mb-4">
-                        <TrophyIcon className="w-8 h-8 text-accent" aria-hidden="true" />
+                        <TrophyIcon className="w-8 h-8 text-accent-strong" aria-hidden="true" />
                     </div>
                     <h1 className="text-3xl md:text-4xl font-mono text-foreground mb-3">SALA DE TROFEOS</h1>
                     <p className="text-xl text-muted-foreground font-sans max-w-2xl mx-auto mb-4">
@@ -183,7 +183,7 @@ function BadgesPage() {
                     {!loading && totalBadges > 0 && (
                         <div className="inline-flex items-center gap-3 px-4 py-2 bg-card pixel-border font-mono text-sm">
                             <span className="text-muted-foreground">Colección:</span>
-                            <span className="text-accent font-bold">{totalUnlocked}</span>
+                            <span className="text-accent-strong font-bold">{totalUnlocked}</span>
                             <span className="text-muted-foreground">/</span>
                             <span className="text-foreground">{totalBadges}</span>
                             <div className="w-24 h-3 bg-muted border-2 border-foreground relative ml-2">
@@ -212,7 +212,7 @@ function BadgesPage() {
                 {/* LOADING */}
                 {loading ? (
                     <div role="status" aria-live="polite" className="flex flex-col items-center justify-center h-64 gap-4">
-                        <div aria-hidden="true" className="w-16 h-16 border-4 border-accent border-t-transparent motion-safe:animate-spin rounded-full"></div>
+                        <div aria-hidden="true" className="w-16 h-16 border-4 border-accent-strong border-t-transparent motion-safe:animate-spin rounded-full"></div>
                         <p className="font-mono text-xs text-muted-foreground animate-pulse">PULIENDO TROFEOS...</p>
                     </div>
                 ) : (

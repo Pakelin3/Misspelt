@@ -38,7 +38,7 @@ const GameResults = ({ results, seenWordsRef, correctWordsRef, onPlayAgain, onGo
             <Card className="w-full max-w-2xl rounded-none border-4 border-primary bg-background p-0 overflow-hidden">
                 {/* Header */}
                 <div className="bg-primary text-primary-foreground px-6 py-4 flex items-center justify-center gap-3 border-b-4 border-foreground">
-                    <TrophyIcon className="w-8 h-8 animate-bounce" />
+                    <TrophyIcon aria-hidden="true" className="w-8 h-8 motion-safe:animate-in motion-safe:zoom-in-50 duration-700 ease-out" />
                     <h2 className="text-2xl md:text-3xl font-black uppercase tracking-wider">Resumen de Partida</h2>
                 </div>
 
@@ -46,7 +46,7 @@ const GameResults = ({ results, seenWordsRef, correctWordsRef, onPlayAgain, onGo
                     {/* Main Stats Grid */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div className="bg-muted/50 p-4 border-2 border-foreground/30 text-center">
-                            <PixelStarIcon aria-hidden="true" className="w-5 h-5 text-accent mx-auto mb-1" />
+                            <PixelStarIcon aria-hidden="true" className="w-5 h-5 text-accent-strong mx-auto mb-1" />
                             <p className="text-2xs uppercase font-bold text-muted-foreground">XP Ganada</p>
                             <p className="text-2xl font-black text-primary">+{results.xp_earned}</p>
                         </div>

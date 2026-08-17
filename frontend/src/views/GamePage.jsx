@@ -134,7 +134,7 @@ const GamePage = () => {
                 response.data.badges_unlocked.forEach(badge => {
                     toast('¡Insignia Desbloqueada!', {
                         description: badge.title,
-                        icon: badge.image ? <img src={badge.image} alt="" aria-hidden="true" width="32" height="32" loading="lazy" className="w-8 h-8 rounded-full pixel-rendering" /> : <TrophyIcon aria-hidden="true" className="w-6 h-6 text-accent" />,
+                        icon: badge.image ? <img src={badge.image} alt="" aria-hidden="true" width="32" height="32" loading="lazy" className="w-8 h-8 rounded-full pixel-rendering" /> : <TrophyIcon aria-hidden="true" className="w-6 h-6 text-accent-strong" />,
                         duration: 5000,
                     });
                 });

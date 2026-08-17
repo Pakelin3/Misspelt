@@ -92,7 +92,7 @@ function LoginPage({ onScreenChange }) {
                         onClick={() => handleGoogleLogin()}
                         // El fondo blanco y el texto negro los exige la guia de marca de
                         // Google para su boton de acceso: no son tokens del tema.
-                        className="flex items-center justify-center gap-3 px-4 py-3 min-h-11 border-2 border-foreground bg-white text-black font-sans text-xl hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        className="flex items-center justify-center gap-3 px-4 py-3 min-h-11 border-2 border-foreground bg-white text-black font-sans text-xl transition hover:brightness-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
                         <img src={googleIcon} alt="" aria-hidden="true" width="20" height="20" className="w-5 h-5 pixel-rendering" />
                         CONTINUAR CON GOOGLE
@@ -192,7 +192,7 @@ function LoginPage({ onScreenChange }) {
                                 e.preventDefault();
                                 onScreenChange ? onScreenChange('register') : navigate('/register');
                             }}
-                            className="ml-2 text-accent hover:text-accent-foreground hover:underline decoration-2 underline-offset-4 font-bold"
+                            className="ml-2 text-accent-strong hover:text-accent-foreground hover:underline decoration-2 underline-offset-4 font-bold"
                         >
                             CREAR CUENTA
                         </Link>

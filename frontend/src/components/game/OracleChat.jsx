@@ -340,14 +340,14 @@ STRICT RULE 7: The chat has a maximum of 5 turns. However, YOU CAN DECIDE TO END
                                     type="button"
                                     onClick={() => playTTS(msg.content, true)}
                                     aria-label="Escuchar este mensaje"
-                                    className="absolute right-2 bottom-2 text-primary transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    className="absolute right-2 bottom-2 text-primary transition-colors hover:text-accent-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 >
                                     <Volume2 aria-hidden="true" size={18} className={isPlaying ? "motion-safe:animate-pulse" : ""} />
                                 </button>
                             )}
                         </div>
                         {msg.role === "user" && (
-                            <div className="w-8 h-8 border-2 border-accent bg-accent/20 flex shrink-0 items-center justify-center mt-1 overflow-hidden">
+                            <div className="w-8 h-8 border-2 border-accent-strong bg-accent/20 flex shrink-0 items-center justify-center mt-1 overflow-hidden">
                                 <img
                                     src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random`}
                                     alt=""

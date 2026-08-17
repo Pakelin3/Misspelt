@@ -207,7 +207,7 @@ function DashboardStatsCards() {
                     title="Medallas Otorgadas"
                     value={stats.total_badges}
                     icon={TrophyIcon}
-                    colorClass="text-accent"
+                    colorClass="text-accent-strong"
                 />
 
                 {/* 5. Carta Extra: Engagement */}
@@ -245,7 +245,7 @@ function DashboardStatsCards() {
                                     <tr key={userStat.id} className="border-b border-foreground/20 hover:bg-muted/30 transition-colors">
                                         <td className="py-3 px-4 font-bold text-lg">
                                             {index + 1}
-                                            {index === 0 && <span className="text-accent ml-1" aria-hidden="true">★</span>}
+                                            {index === 0 && <span className="text-accent-strong ml-1" aria-hidden="true">★</span>}
                                             {index === 1 && <span className="text-muted-foreground ml-1" aria-hidden="true">★</span>}
                                             {index === 2 && <span className="text-warning ml-1" aria-hidden="true">★</span>}
 

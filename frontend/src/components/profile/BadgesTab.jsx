@@ -34,7 +34,7 @@ const BadgesTab = ({ badges }) => (
                                 {badge.image ? (
                                     <img src={badge.image} alt={badge.title} loading="lazy" width={64} height={64} className="w-full h-full object-contain" />
                                 ) : (
-                                    <TrophyIcon className="w-10 h-10 text-accent/80" aria-hidden="true" />
+                                    <TrophyIcon className="w-10 h-10 text-accent-strong/80" aria-hidden="true" />
                                 )}
                             </div>
                             <h4 className="font-mono text-2xs font-bold text-foreground leading-tight mb-1">{badge.title}</h4>

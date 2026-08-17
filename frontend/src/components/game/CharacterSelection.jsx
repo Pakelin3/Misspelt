@@ -130,9 +130,11 @@ const CharacterSelection = ({
                             <h3 className="text-3xl font-black text-primary uppercase mb-2 drop-shadow-sm">
                                 {currentCharacter.name}
                             </h3>
-                            <p className="text-base font-sans text-muted-foreground italic mb-2 leading-relaxed border-l-4 border-primary pl-4">
-                                "{currentCharacter.lore}"
-                            </p>
+                            {/* Es una cita del personaje, no el acento lateral de una
+                                tarjeta: el borde izquierdo es la marca de citacion. */}
+                            <blockquote className="text-base font-sans text-muted-foreground italic mb-2 leading-relaxed border-l-4 border-primary pl-4 max-w-prose">
+                                {currentCharacter.lore}
+                            </blockquote>
 
                             {!unlockedCharacters.includes(currentCharacter.id) && (
                                 <div className="mb-6 p-3 border-2 border-destructive/50 bg-destructive/10 flex items-start gap-3 animate-in pulse duration-1000">
@@ -174,7 +176,7 @@ const CharacterSelection = ({
                                 id="tutorial-game-upgrades"
                                 variant="outline"
                                 onClick={() => setShowUpgrades(true)}
-                                className="w-full mb-6 relative h-12 text-xs rounded-none font-bold uppercase pixel-btn border-2 border-accent hover:bg-accent hover:text-accent-foreground text-accent group overflow-hidden shadow-pixel-sm hover:shadow-pixel-sm hover:-translate-y-0.5 transition-all"
+                                className="w-full mb-6 relative h-12 text-xs rounded-none font-bold uppercase pixel-btn border-2 border-accent-strong hover:bg-accent hover:text-accent-foreground text-accent-strong group overflow-hidden shadow-pixel-sm hover:shadow-pixel-sm hover:-translate-y-0.5 transition-all"
                             >
                                 <PixelSparklesIcon className="w-4 h-4 mr-2 group-hover:animate-spin" />
                                 Ver Árbol de Mejoras
@@ -213,7 +215,7 @@ const CharacterSelection = ({
                                 variant="outline"
                                 onClick={startTutorialGame}
                                 id="tutorial-game-howtoplay"
-                                className="w-full lg:w-1/4 rounded-none h-14 text-sm pixel-btn border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground shadow-pixel-sm hover:shadow-pixel-sm hover:-translate-y-0.5 transition-all"
+                                className="w-full lg:w-1/4 rounded-none h-14 text-sm pixel-btn border-2 border-accent-strong text-accent-strong hover:bg-accent hover:text-accent-foreground shadow-pixel-sm hover:shadow-pixel-sm hover:-translate-y-0.5 transition-all"
                             >
                                 <BookIcon className="mr-2 w-5 h-5" /> COMO JUGAR
                             </Button>

@@ -1,4 +1,4 @@
-import { Moon, Sun } from 'lucide-react';
+import { PixelMoonIcon, PixelSunIcon } from '@/components/PixelIcons';
 import { useTheme } from '@/context/theme-context';
 
 export default function ThemeButton() {
@@ -17,8 +17,8 @@ export default function ThemeButton() {
             className="flex size-11 items-center justify-center text-foreground transition-colors hover:bg-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
             {isDark
-                ? <Sun aria-hidden="true" className="w-5 h-5" />
-                : <Moon aria-hidden="true" className="w-5 h-5" />}
+                ? <PixelSunIcon aria-hidden="true" className="w-5 h-5" />
+                : <PixelMoonIcon aria-hidden="true" className="w-5 h-5" />}
         </button>
     );
 }

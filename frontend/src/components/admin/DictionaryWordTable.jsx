@@ -76,7 +76,7 @@ export default function DictionaryWordTable({ words, loading, onEdit, onDeleteRe
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={() => onEdit(word)}
-                                                className="text-info hover:bg-info/10"
+                                                className="text-info hover:bg-info hover:text-info-foreground/10"
                                                 aria-label={`Editar la palabra ${word.text}`}
                                             >
                                                 <Edit className="w-5 h-5" aria-hidden="true" />
@@ -85,7 +85,7 @@ export default function DictionaryWordTable({ words, loading, onEdit, onDeleteRe
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={() => onDeleteRequest(word)}
-                                                className="text-destructive hover:bg-destructive/10"
+                                                className="text-destructive hover:bg-destructive hover:text-destructive-foreground/10"
                                                 aria-label={`Eliminar la palabra ${word.text}`}
                                             >
                                                 <Trash2 className="w-5 h-5" aria-hidden="true" />

@@ -174,3 +174,70 @@ describe('contrato de accesibilidad', () => {
         expect(hits, `Anade focus-visible:ring-2 ring-ring:\n${report(hits)}`).toEqual([]);
     });
 });
+
+describe('contraste y color heredado', () => {
+    it('los iconos monocromos pintan con currentColor, no con un color fijo', () => {
+        // Con `fill="black"` ninguna clase text-* afectaba al icono, asi que en el
+        // tema oscuro quedaban negros sobre fondo negro. Los iconos multicolor
+        // (fuego, rayo, diana) si llevan color propio: forma parte del dibujo.
+        const hits = [];
+        for (const file of jsxFiles) {
+            const text = readFileSync(file, 'utf8');
+            for (const bloque of text.split(/(?=export function )/)) {
+                const nombre = bloque.match(/export function (\w+)/)?.[1];
+                if (!nombre) continue;
+                const esMulticolor = /(fill|stroke)="#[0-9a-fA-F]{3,8}"/.test(bloque);
+                if (esMulticolor) continue;
+                if (/(fill|stroke)="(black|white|#000|#000000|#fff|#ffffff)"/.test(bloque)) {
+                    hits.push(`${relative(process.cwd(), file)}  ${nombre}`);
+                }
+            }
+        }
+        expect(hits, `Usa fill="currentColor":\n${report(hits)}`).toEqual([]);
+    });
+
+    it('todo hover a un fondo saturado lleva su color de texto', () => {
+        // Si el fondo salta a primary/destructive pero el texto se queda en
+        // text-foreground, el resultado es ilegible en al menos uno de los temas.
+        const PARES = {
+            primary: 'primary-foreground', accent: 'accent-foreground',
+            destructive: 'destructive-foreground', success: 'success-foreground',
+            warning: 'warning-foreground', info: 'info-foreground',
+            secondary: 'secondary-foreground',
+        };
+        const hits = [];
+        for (const file of jsxFiles) {
+            const text = readFileSync(file, 'utf8');
+            for (const m of text.matchAll(/className=(?:"([^"]*)"|\{`([^`]*)`\})/g)) {
+                const cls = m[1] ?? m[2] ?? '';
+                for (const [tono, fg] of Object.entries(PARES)) {
+                    const salta = new RegExp(`hover:bg-${tono}\\b`).test(cls);
+                    const cubierto = new RegExp(`hover:text-${fg}\\b|\\btext-${fg}\\b`).test(cls);
+                    if (salta && !cubierto) {
+                        hits.push(`${relative(process.cwd(), file)}  hover:bg-${tono} sin hover:text-${fg}`);
+                    }
+                }
+            }
+        }
+        expect(hits, `Anade el color de texto correspondiente:\n${report(hits)}`).toEqual([]);
+    });
+
+    it('ningun color fijo por marca cambia de fondo al hacer hover', () => {
+        // El boton de Google mantiene fondo blanco y texto negro por guia de marca.
+        // Si el hover lo cambiara a un token del tema (hover:bg-muted), en oscuro
+        // el texto negro quedaria sobre un fondo oscuro.
+        const hits = [];
+        for (const file of jsxFiles) {
+            const text = readFileSync(file, 'utf8');
+            for (const m of text.matchAll(/className=(?:"([^"]*)"|\{`([^`]*)`\})/g)) {
+                const cls = m[1] ?? m[2] ?? '';
+                const fijo = /\b(bg-white|text-black)\b/.test(cls);
+                const hoverTema = /hover:bg-(?!white)[a-z-]+/.test(cls);
+                if (fijo && hoverTema) {
+                    hits.push(`${relative(process.cwd(), file)}  ${cls.trim().slice(0, 80)}`);
+                }
+            }
+        }
+        expect(hits, `Usa hover:brightness-* en lugar de un token del tema:\n${report(hits)}`).toEqual([]);
+    });
+});
