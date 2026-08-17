@@ -1,3 +1,12 @@
+/* eslint-disable max-lines -- Este archivo es un catálogo de iconos SVG en
+ * estilo pixel-art: cada export es un componente independiente y trivial
+ * (un <svg> con unas pocas formas). No hay lógica que dividir en módulos
+ * más pequeños sin fragmentar artificialmente un único set de iconos
+ * cohesivo, y partirlo en varios archivos solo para bajar el recuento de
+ * líneas dificultaría encontrar un icono dado. El límite de max-lines
+ * existe para detectar componentes que mezclan demasiadas responsabilidades;
+ * este archivo tiene una sola responsabilidad (iconografía) repetida N veces.
+ */
 import React from "react";
 
 export function BookIcon({ className = "w-6 h-6" }) {

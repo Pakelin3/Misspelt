@@ -1,10 +1,20 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import useAxios from '@/utils/useAxios';
-import { Plus, Trash2, Save, Search, Loader2, Upload, Image as ImageIcon, User, CheckCircle } from 'lucide-react';
+import { Plus, Search, User, CheckCircle, Loader2, Trash2, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/Dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog';
+import ImageUploadField from './ImageUploadField';
+import ConfirmDeleteDialog from './ConfirmDeleteDialog';
+import AdminPagination from './AdminPagination';
+
+const EMPTY_FORM = {
+    name: '',
+    is_default: false,
+    unlock_condition_description: '',
+    image: null
+};
 
 function AvatarAdminPanel() {
     const api = useAxios();
@@ -19,12 +29,7 @@ function AvatarAdminPanel() {
     const [editingAvatar, setEditingAvatar] = useState(null);
     const [avatarToDelete, setAvatarToDelete] = useState(null);
 
-    const [formData, setFormData] = useState({
-        name: '',
-        is_default: false,
-        unlock_condition_description: '',
-        image: null
-    });
+    const [formData, setFormData] = useState(EMPTY_FORM);
     const [previewUrl, setPreviewUrl] = useState(null);
 
     useEffect(() => {
@@ -73,12 +78,7 @@ function AvatarAdminPanel() {
             setPreviewUrl(avatar.image);
         } else {
             setEditingAvatar(null);
-            setFormData({
-                name: '',
-                is_default: false,
-                unlock_condition_description: '',
-                image: null
-            });
+            setFormData(EMPTY_FORM);
             setPreviewUrl(null);
         }
         setIsFormOpen(true);
@@ -237,25 +237,11 @@ function AvatarAdminPanel() {
                 )}
 
                 {!loading && totalPages > 1 && (
-                    <div className="flex justify-between items-center mt-6 pt-4 border-t-4 border-foreground w-full">
-                        <Button
-                            variant="accent"
-                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                            disabled={currentPage === 1}
-                        >
-                            ANTERIOR
-                        </Button>
-                        <span className="font-mono text-sm uppercase bg-foreground text-background px-3 py-1 font-bold">
-                            PÁG {currentPage} DE {totalPages}
-                        </span>
-                        <Button
-                            variant="accent"
-                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                            disabled={currentPage === totalPages}
-                        >
-                            SIGUIENTE
-                        </Button>
-                    </div>
+                    <AdminPagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                    />
                 )}
             </div>
 
@@ -266,38 +252,21 @@ function AvatarAdminPanel() {
                     </DialogHeader>
 
                     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-                        <div className="flex flex-col items-center gap-3">
-                            <button
-                                type="button"
-                                onClick={() => fileInputRef.current.click()}
-                                className="w-40 h-40 border-4 border-dashed border-foreground/40 hover:border-primary/60 transition-colors bg-muted/20 flex flex-col items-center justify-center cursor-pointer relative overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                            >
-                                {previewUrl ? (
-                                    <img src={previewUrl} alt="Vista previa del avatar" loading="lazy" className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="flex flex-col items-center text-muted-foreground p-4 text-center">
-                                        <ImageIcon className="w-10 h-10 mb-2" aria-hidden="true" />
-                                        <span className="text-2xs font-bold">SUBIR IMAGEN</span>
-                                    </div>
-                                )}
-
-                                <div className="absolute inset-0 bg-foreground/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Upload className="w-8 h-8 text-background" aria-hidden="true" />
-                                </div>
-                            </button>
-                            <label htmlFor="avatar-file-input" className="sr-only">Archivo de imagen del avatar</label>
-                            <input
-                                id="avatar-file-input"
-                                type="file"
-                                ref={fileInputRef}
-                                className="hidden"
-                                accept="image/*"
-                                onChange={handleFileChange}
-                            />
-                            <p className="text-2xs text-muted-foreground">
-                                Recomendado: 128x128px
-                            </p>
-                        </div>
+                        <ImageUploadField
+                            id="avatar-file-input"
+                            fileInputRef={fileInputRef}
+                            previewUrl={previewUrl}
+                            onFileChange={handleFileChange}
+                            alt="Vista previa del avatar"
+                            placeholderText="SUBIR IMAGEN"
+                            buttonClassName="w-40 h-40 border-4 border-dashed border-foreground/40 hover:border-primary/60 transition-colors bg-muted/20 flex flex-col items-center justify-center cursor-pointer relative overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            imageClassName="w-full h-full object-cover"
+                            helper={(
+                                <p className="text-2xs text-muted-foreground">
+                                    Recomendado: 128x128px
+                                </p>
+                            )}
+                        />
 
                         <div className="space-y-4">
                             <div className="space-y-2">
@@ -358,25 +327,14 @@ function AvatarAdminPanel() {
                 </DialogContent>
             </Dialog>
 
-            <Dialog open={!!avatarToDelete} onOpenChange={(open) => !open && setAvatarToDelete(null)}>
-                <DialogContent className="max-w-md">
-                    <DialogHeader>
-                        <DialogTitle className="text-destructive">¿Borrar el avatar "{avatarToDelete?.name}"?</DialogTitle>
-                        <DialogDescription>
-                            Esta acción es irreversible. Los alumnos que ya tengan este avatar
-                            equipado o desbloqueado dejarán de poder usarlo.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setAvatarToDelete(null)}>
-                            Cancelar
-                        </Button>
-                        <Button variant="destructive" onClick={handleConfirmDelete}>
-                            Sí, borrar este avatar
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <ConfirmDeleteDialog
+                open={!!avatarToDelete}
+                onOpenChange={(open) => !open && setAvatarToDelete(null)}
+                title={`¿Borrar el avatar "${avatarToDelete?.name}"?`}
+                description="Esta acción es irreversible. Los alumnos que ya tengan este avatar equipado o desbloqueado dejarán de poder usarlo."
+                confirmLabel="Sí, borrar este avatar"
+                onConfirm={handleConfirmDelete}
+            />
         </div>
     );
 }

@@ -288,3 +288,137 @@ No todo es deuda, y conviene no romperlo al refactorizar:
 - **`.env` no está comiteado** y `.gitignore` es correcto: la fuga de secretos es por diseño (`VITE_*`), no por un commit accidental.
 - **`TextShuffle.jsx:76` respeta `prefers-reduced-motion`**: ya existe el patrón a generalizar.
 - **`.pixel-btn:hover/:active` en `index.css:127-137`** define un lenguaje de estados coherente y bien pensado. Es lo que `ui/Button` debería haber adoptado desde el principio.
+
+---
+
+# Estado tras la ejecución del plan
+
+Actualizado el 2026-08-17, después de ejecutar las fases 0 a 6.
+
+## Puntuación
+
+| # | Dimensión | Antes | Después | Evidencia |
+|---|---|---|---|---|
+| 1 | Accesibilidad | 1/4 | **4/4** | 0 errores de `eslint-plugin-jsx-a11y`; los 6 modales sobre Radix; tests de trampa de foco y aislamiento del fondo |
+| 2 | Rendimiento | 1/4 | **4/4** | Carga inicial 3.94 MB → 496 kB en crudo; `dist` sin secretos |
+| 3 | Responsive | 3/4 | **4/4** | 0 anchos fijos por encima del viewport de 360px; 0 `vh`; zoom desbloqueado; test de guardia |
+| 4 | Theming | 0/4 | **4/4** | Bloque `.dark` con 37 tokens y test que exige par claro/oscuro para cada uno |
+| 5 | Integridad de implementación | 1/4 | **4/4** | 0 colores crudos; 0 sombras arbitrarias; `Button` y `Dialog` con la identidad del producto |
+| | **Total** | **6/20** | **20/20** | |
+
+Estas notas son verificables ejecutando `npm run lint`, `npm test` y `npm run build`.
+
+## Qué se hizo
+
+### Fase 0 — Seguridad
+- Tres endpoints proxy nuevos en Django: `POST /api/game/tts/`, `POST /api/game/stt/`,
+  `POST /api/dictionary/suggest-word/`, con `IsAuthenticated` y throttling de 60/hora
+  por usuario (`ExternalServiceThrottle`).
+- Las cuatro integraciones del cliente migradas a esos endpoints. `OracleChat` ya no
+  llama a Gemini: usa `/game/oracle-post-game/`, que **ya existía en el backend**.
+- `@elevenlabs/elevenlabs-js` (SDK de servidor) eliminado del cliente: por sí solo
+  recortó 2.9 MB del bundle.
+- `frontend/.env` reducido a las dos variables públicas, con `.env.example` que explica
+  la regla. Las claves reubicadas a `backend/.env` con sus nombres correctos.
+- `js.puter.com` eliminado del `<head>`.
+- **Verificación:** `grep -cE 'sk_|xi-api-key|ghp_|AIza|GOCSPX' dist/assets/*.js` → 0.
+
+> **Pendiente y solo tú puedes hacerlo:** rotar la clave de ElevenLabs y el PAT de
+> GitHub en sus consolas. El código ya no las expone, pero las que estuvieron
+> desplegadas siguen siendo válidas hasta que las revoques.
+
+### Fase 1 y 2 — Rendimiento
+
+| Métrica | Antes | Después |
+|---|---|---|
+| Carga inicial (crudo) | 3.94 MB | **496 kB** |
+| Carga inicial (gzip) | ~585 kB | **~143 kB** |
+| Chunk mayor | 3.83 MB | 409 kB |
+| CSS | 104 kB / 17.1 kB gzip | 96 kB / **14.8 kB gzip** |
+| Chunks | 3 | 26, por ruta |
+
+- `React.lazy` en las 11 rutas; `AdminDashboard` y sus paneles ya no viajan con el login.
+- `manualChunks` como función. **Nota:** el primer intento separaba `react` a un chunk
+  propio y eso invertía el orden de ejecución — pantalla en blanco con
+  `Cannot read properties of undefined (reading 'createContext')`. Ahora solo se separan
+  las librerías que ya viven detrás de una ruta lazy.
+- Precarga del motor Godot (~82 MB) durante la pantalla de selección, con barra de
+  progreso real, `onError` y pantalla de recuperación.
+- `AbortController` en el diccionario y `useMemo` en los contextos.
+
+### Fase 3 — Sistema de diseño
+- Tokens en tres capas en `index.css`: primitivos `--pixel-*`, semánticos (incluidos
+  `success`/`warning`/`info` y los ejes de dominio dificultad, tipo de palabra y rareza)
+  y de componente (`--shadow-pixel-*`).
+- **Modo oscuro real**: `@custom-variant dark` + bloque `.dark`, más script anti-parpadeo
+  en `index.html`. Un solo sistema de tema: `next-themes` desinstalado.
+- `Button` y `Dialog` reescritos con la identidad pixel. 206 sustituciones mecánicas de
+  clases arbitrarias a tokens.
+
+### Fase 4 — Accesibilidad
+- Los 6 modales sobre Radix: `role="dialog"`, trampa de foco, Escape, retorno de foco.
+- Selección de personaje como `role="radiogroup"` operable por teclado.
+- **`ListeningChallenge` deja de excluir a usuarios sordos**: alternativa escrita opcional.
+- `<main>`, enlace de salto, `role="status"` en las cargas, `aria-live` en el quiz,
+  `focus-visible` en los 35 sitios que quitaban el outline, objetivos táctiles de 44 px.
+- `prefers-reduced-motion` global en `index.css`, no componente a componente.
+
+### Fase 5 — Flujo y pedagogía
+- El CTA de la landing lleva a registro si no hay sesión (antes rebotaba al login).
+- Tras el login se aterriza en una vista útil, no en la landing de marketing.
+- Barra de progreso del quiz descomentada; el fallo revela la respuesta correcta.
+- Estados de error separados de los estados vacíos, con "Reintentar".
+- Aviso de IA en los dos chats del Oráculo y regla de seguridad infantil en el prompt.
+- Botón de salida del juego controlado por React y aviso de dispositivo sin teclado.
+
+### Fase 6 — Red de seguridad
+- **Un solo mecanismo de refresh** con promesa compartida a nivel de módulo, más
+  interceptor de respuesta para el 401. Cierra la condición de carrera que
+  `ROTATE_REFRESH_TOKENS` + `BLACKLIST_AFTER_ROTATION` hacían determinista.
+- `ErrorBoundary`, ruta 404, `<title>` por vista, restauración de scroll.
+- **Vitest: 64 tests**, incluidas dos guardias que fallan el CI si reaparece un color
+  crudo, una sombra arbitraria, un `z-[N]`, un ancho fijo mayor que el móvil de 360 px
+  o un `outline-none` sin anillo de reemplazo.
+- `GamePage` 839 → 298 líneas; `ProfilePage` 739 → 346.
+- ESLint con `jsx-a11y`, `max-lines` y `no-console`, y con `public/game` ignorado.
+
+## Bugs silenciosos encontrados por el camino
+
+Ninguno estaba en el informe inicial; aparecieron al ejecutarlo.
+
+| Bug | Efecto |
+|---|---|
+| `TextShuffle.jsx` con `text-[4rem]` fijo | El título medía 512 px: se salía de pantalla en cualquier móvil |
+| `font-pixel` usado 21 veces | La clase no existía: no hacía nada |
+| 12 variables `var(--color-*)` sin definir | `Accordion` y `MessageBubble` sin color (ambos huérfanos: eliminados) |
+| `xs:` usado sin estar definido | Clases inertes; ahora `--breakpoint-xs` existe |
+| `ui/Dialog.jsx` importaba `radix-ui` no instalado | El componente era inusable; nadie lo usaba por eso, no por descuido |
+| `Navbar` con `` `^ ${path} $` `` | Espacios literales en el patrón: nunca coincidía |
+| `SpriteAnimator` con `/public/game/skins/…` | En Vite eso es 404; se sirve en `/game/skins/…` |
+| `flex grid-cols-3` | `grid-cols-*` no hace nada sobre `flex` |
+| `showAlert`/`showToast` fuera de `contextData` | Las alertas de verificación de email eran no-ops |
+| `VITE_OPENAI_API_KEU` | Typo: ese fallback nunca resolvía |
+
+## Correcciones al informe inicial
+
+- **El CSS no estaba inflado por los valores arbitrarios.** Tras eliminar las 289
+  sombras el CSS bajó de 107 a 102 kB: el grueso son utilidades legítimas. El objetivo
+  de "<60 kB en crudo" partía de una premisa falsa; lo que importa son los 14.8 kB gzip.
+- **`ui/Dialog` no era "una solución barata ya disponible"**: estaba roto.
+- **Las mayúsculas acentuadas.** Press Start 2P *sí* tiene el glifo Ó (comprobado
+  comparando el bitmap contra una familia inexistente). Se ve mal porque la tipografía
+  comprime el cuerpo de la letra para meter el acento dentro de la altura de caja. Es
+  inherente a la fuente: se resolvió acortando el copy de la navbar, no cambiando fuentes.
+- **`GOOGLE_CLIENT_SECRET` y `RESEND_API_KEY` no estaban filtradas**: Vite solo inlinea
+  las variables que el código referencia, y ninguna se usaba.
+
+## Lo que sigue abierto
+
+1. **Rotar las dos credenciales expuestas.** Requiere acceso a las consolas.
+2. **Repetición espaciada** (Fase 5, punto 4): necesita modelo y endpoint en el backend.
+   Es la pieza que convierte el quiz en un método de aprendizaje.
+3. **Recuperación de contraseña y reenvío de verificación**: no existen en el backend, así
+   que se retiraron los enlaces muertos en lugar de simular el flujo.
+4. **Tokens en cookie `httpOnly`**: requiere cambios en el backend.
+5. **Cobertura de tests**: 64 tests cubren lo crítico (refresh, diálogos, quiz, voz,
+   contratos). Las vistas grandes y los paneles de administración siguen sin cobertura.

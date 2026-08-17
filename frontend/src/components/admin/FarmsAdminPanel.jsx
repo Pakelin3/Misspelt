@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import useAxios from '@/utils/useAxios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Loader2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/Dialog';
+import ConfirmDeleteDialog from './ConfirmDeleteDialog';
 
 export default function FarmsAdminPanel() {
     const [farms, setFarms] = useState([]);
@@ -15,8 +15,9 @@ export default function FarmsAdminPanel() {
     const [farmToDelete, setFarmToDelete] = useState(null);
     const api = useAxios();
     const navigate = useNavigate();
+    const newFarmNameInputRef = useRef(null);
 
-    const fetchFarms = async () => {
+    const fetchFarms = useCallback(async () => {
         setLoading(true);
         try {
             const res = await api.get('/farms/');
@@ -28,11 +29,26 @@ export default function FarmsAdminPanel() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [api]);
 
+    // `api` cambia de identidad al refrescarse el token (ver useAxios); sin
+    // este guardado, listar fetchFarms como dependencia dispararía un
+    // refetch cada vez que eso pase. Solo queremos cargar una vez al entrar
+    // a la vista, igual que hasFetchedStatsRef en GamePage.
+    const hasFetchedFarmsRef = useRef(false);
     useEffect(() => {
+        if (hasFetchedFarmsRef.current) return;
+        hasFetchedFarmsRef.current = true;
         fetchFarms();
-    }, []);
+    }, [fetchFarms]);
+
+    // El foco solo debe moverse al abrir el formulario de creación, no en
+    // cada carga de la página (por eso ya no usamos autoFocus).
+    useEffect(() => {
+        if (isCreating) {
+            newFarmNameInputRef.current?.focus();
+        }
+    }, [isCreating]);
 
     const handleCreateFarm = async (e) => {
         e.preventDefault();
@@ -89,7 +105,7 @@ export default function FarmsAdminPanel() {
                             <label htmlFor="new-farm-name" className="font-mono text-2xs uppercase text-muted-foreground block mb-2">Nombre de la Granja</label>
                             <Input
                                 id="new-farm-name"
-                                autoFocus
+                                ref={newFarmNameInputRef}
                                 type="text"
                                 className="w-full bg-background border-2 border-foreground rounded-none px-3 py-2 font-mono focus:border-primary"
                                 placeholder="Ej: Inglés Nivel 1"
@@ -146,25 +162,14 @@ export default function FarmsAdminPanel() {
                 </div>
             )}
 
-            <Dialog open={!!farmToDelete} onOpenChange={(open) => !open && setFarmToDelete(null)}>
-                <DialogContent className="max-w-md">
-                    <DialogHeader>
-                        <DialogTitle className="text-destructive">¿Borrar la granja "{farmToDelete?.name}"?</DialogTitle>
-                        <DialogDescription>
-                            Esta acción es irreversible. Todos los alumnos inscritos perderán su
-                            vínculo con esta granja y su código de invitación dejará de funcionar.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setFarmToDelete(null)}>
-                            Cancelar
-                        </Button>
-                        <Button variant="destructive" onClick={handleConfirmDeleteFarm}>
-                            Sí, borrar esta granja
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <ConfirmDeleteDialog
+                open={!!farmToDelete}
+                onOpenChange={(open) => !open && setFarmToDelete(null)}
+                title={`¿Borrar la granja "${farmToDelete?.name}"?`}
+                description="Esta acción es irreversible. Todos los alumnos inscritos perderán su vínculo con esta granja y su código de invitación dejará de funcionar."
+                confirmLabel="Sí, borrar esta granja"
+                onConfirm={handleConfirmDeleteFarm}
+            />
         </div>
     );
 }

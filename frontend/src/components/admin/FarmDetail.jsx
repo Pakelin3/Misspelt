@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import useAxios from '@/utils/useAxios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -6,7 +6,7 @@ import { PixelCopyPasteIcon, PixelCrownIcon } from '@/components/PixelIcons';
 import { Loader2, ArrowLeft, Trash2, Eye } from 'lucide-react';
 import { VillagerIcon } from '@/components/AdminPixelIcons';
 import { Button } from '@/components/ui/Button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/Dialog';
+import ConfirmDeleteDialog from './ConfirmDeleteDialog';
 import StudentProfileModal from './StudentProfileModal';
 
 export default function FarmDetail() {
@@ -19,7 +19,7 @@ export default function FarmDetail() {
     const [selectedStudentId, setSelectedStudentId] = useState(null);
     const [studentToRemove, setStudentToRemove] = useState(null);
 
-    const fetchFarmDetail = async () => {
+    const fetchFarmDetail = useCallback(async () => {
         setLoading(true);
         try {
             const res = await api.get(`/farms/${id}/leaderboard/`);
@@ -31,11 +31,20 @@ export default function FarmDetail() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [api, id, navigate]);
 
+    // `api` cambia de identidad cada vez que se refresca el token (ver
+    // useAxios), y `navigate` puede cambiar entre renders del router. Sin
+    // este guardado por `id`, incluir fetchFarmDetail como dependencia
+    // dispararía un refetch cada vez que cualquiera de esos cambie de
+    // identidad. El ref solo deja pasar el fetch cuando el id de la granja
+    // realmente cambió (mismo patrón que hasFetchedStatsRef en GamePage).
+    const fetchedFarmIdRef = useRef(null);
     useEffect(() => {
+        if (fetchedFarmIdRef.current === id) return;
+        fetchedFarmIdRef.current = id;
         fetchFarmDetail();
-    }, [id]);
+    }, [id, fetchFarmDetail]);
 
     const handleCopyCode = () => {
         if (!farm) return;
@@ -198,26 +207,14 @@ export default function FarmDetail() {
             )}
 
             {/* Confirmacion de remover estudiante */}
-            <Dialog open={!!studentToRemove} onOpenChange={(open) => !open && setStudentToRemove(null)}>
-                <DialogContent className="max-w-md">
-                    <DialogHeader>
-                        <DialogTitle className="text-destructive">¿Quitar a @{studentToRemove?.username} de la granja?</DialogTitle>
-                        <DialogDescription>
-                            El alumno perderá el acceso a esta granja y desaparecerá de esta tabla de
-                            desempeño. Su cuenta, su progreso y las palabras o insignias que ya haya
-                            desbloqueado no se ven afectados.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setStudentToRemove(null)}>
-                            Cancelar
-                        </Button>
-                        <Button variant="destructive" onClick={handleConfirmRemoveStudent}>
-                            Sí, quitar a este alumno
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <ConfirmDeleteDialog
+                open={!!studentToRemove}
+                onOpenChange={(open) => !open && setStudentToRemove(null)}
+                title={`¿Quitar a @${studentToRemove?.username} de la granja?`}
+                description="El alumno perderá el acceso a esta granja y desaparecerá de esta tabla de desempeño. Su cuenta, su progreso y las palabras o insignias que ya haya desbloqueado no se ven afectados."
+                confirmLabel="Sí, quitar a este alumno"
+                onConfirm={handleConfirmRemoveStudent}
+            />
         </div>
     );
 }
