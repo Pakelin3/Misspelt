@@ -270,7 +270,7 @@ STRICT RULE 7: The chat has a maximum of 5 turns. However, YOU CAN DECIDE TO END
                         <h2 className="font-mono text-sm md:text-base uppercase tracking-widest truncate">
                             {CHARACTER_NAMES[characterId] ?? "Campesino"}
                         </h2>
-                        <p className="font-sans text-base uppercase opacity-80">Oráculo post-partida</p>
+                            <p className="font-sans text-base opacity-80">Oráculo post-partida</p>
                     </div>
                 </div>
 

@@ -106,7 +106,7 @@ const QuizManager = ({ words = EMPTY_WORDS, allWords = EMPTY_ALL_WORDS, onComple
             <div className="flex flex-col items-center justify-center p-8 text-center bg-background rounded-none border-4 border-primary pixel-border animate-in zoom-in duration-300 shadow-pixel-xl-primary">
                 <AlertCircle size={80} className="text-destructive mb-6 drop-shadow-md" />
                 <h2 className="text-4xl font-black text-destructive mb-4 font-mono tracking-wider drop-shadow-sm">
-                    {mode === 'game' ? '¡OH NO...!' : '¡INTÉNTALO DE NUEVO!'}
+                    {mode === 'game' ? '¡Oh no...!' : '¡Inténtalo de nuevo!'}
                 </h2>
                 <p className="mb-8 text-foreground text-xl font-sans font-bold">
                     {mode === 'game' ? (

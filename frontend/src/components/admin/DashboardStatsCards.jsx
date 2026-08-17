@@ -27,7 +27,7 @@ const StatCard = ({ title, value, icon: Icon, colorClass, children }) => (
         <div className="flex justify-between items-start z-10">
             <div>
                 <div className='flex justify-center items-center'>
-                    <h3 className="font-mono text-xs mr-2.5 text-muted-foreground uppercase mb-1 tracking-wider">
+                    <h3 className="font-mono text-xs mr-2.5 text-muted-foreground mb-1 tracking-wider">
                         {title}
                     </h3>
                     <div className={` min-h-10 min-w-10 flex items-center-safe justify-center bg-background rounded-sm border-2 border-foreground ${colorClass}`}>

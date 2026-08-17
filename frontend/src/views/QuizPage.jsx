@@ -5,8 +5,10 @@ import useAxios from '@/utils/useAxios';
 import QuizManager from '@/components/quiz/QuizManager';
 import { Button } from '@/components/ui/Button';
 import { Home, RotateCw } from 'lucide-react';
+import usePageTitle from '@/hooks/usePageTitle';
 
 const QuizPage = () => {
+    usePageTitle('Desafío');
     const [{ sessionWords, allWords, loading, loadError, finishing }, setState] = useState({
         sessionWords: [],
         allWords: [],
@@ -72,7 +74,7 @@ const QuizPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-background flex flex-col pt-20 pb-10">
+        <main id="main-content" className="min-h-screen bg-background flex flex-col pt-20 pb-10">
 
             <div className="flex-1 flex flex-col items-center justify-center px-4 gap-4">
                 {sessionWords.length > 0 ? (
@@ -107,7 +109,7 @@ const QuizPage = () => {
                     </div>
                 )}
             </div>
-        </div>
+        </main>
     );
 };
 

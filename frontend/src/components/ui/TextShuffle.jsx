@@ -428,7 +428,19 @@ const TextShuffle = ({
     const Tag = tag || 'p';
     const commonStyle = useMemo(() => ({ textAlign, ...style }), [textAlign, style]);
 
-    return React.createElement(Tag, { ref: ref, className: classes, style: commonStyle }, text);
+    // El efecto clona cada caracter varias veces dentro del DOM, asi que el
+    // nombre accesible del elemento acababa siendo "MMMIIISSSPPP...". Se declara
+    // el texto real con aria-label y se oculta el andamiaje al arbol de a11y.
+    return React.createElement(
+        Tag,
+        {
+            ref: ref,
+            className: classes,
+            style: commonStyle,
+            'aria-label': text,
+            children: React.createElement('span', { 'aria-hidden': 'true' }, text),
+        },
+    );
 };
 
 export default TextShuffle;

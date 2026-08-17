@@ -74,7 +74,7 @@ const HistoryTab = ({
                                     {game.total_questions_in_game > 0 && (
                                         <div className="text-right">
                                             <p className={`font-mono text-lg font-bold ${accColor}`}>{accuracy.toFixed(0)}%</p>
-                                            <p className="text-3xs font-mono text-muted-foreground uppercase">Precisión</p>
+                                                <p className="text-3xs font-mono text-muted-foreground ">Precisión</p>
                                         </div>
                                     )}
                                     <div className="text-right">
@@ -92,7 +92,7 @@ const HistoryTab = ({
                                     <div className="mt-2 pt-3 border-t-2 border-dashed border-foreground/20">
                                         <div className="flex items-center gap-2 mb-2">
                                             <span className="text-sm" aria-hidden="true">🔮</span>
-                                            <span className="text-2xs font-mono font-bold uppercase text-primary tracking-wider">Evaluación del Oráculo</span>
+                                                <span className="text-2xs font-mono font-bold text-primary tracking-wider">Evaluación del Oráculo</span>
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">

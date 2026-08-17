@@ -92,7 +92,7 @@ export default function BadgeFormDialog({
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label htmlFor="badge-category" className="text-xs font-bold uppercase">Categoría</label>
+                                    <label htmlFor="badge-category" className="text-xs font-bold ">Categoría</label>
                                     <select
                                         id="badge-category"
                                         className="w-full h-10 px-3 bg-background border-2 border-foreground rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus:border-primary text-sm font-mono"
@@ -108,7 +108,7 @@ export default function BadgeFormDialog({
                             </div>
 
                             <div className="space-y-2">
-                                <label htmlFor="badge-description" className="text-xs font-bold uppercase">Descripción General</label>
+                                <label htmlFor="badge-description" className="text-xs font-bold ">Descripción General</label>
                                 <textarea
                                     id="badge-description"
                                     required
@@ -121,9 +121,9 @@ export default function BadgeFormDialog({
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-4 border-2 border-foreground p-3 bg-muted/10 relative mt-2 pt-4">
-                                    <div className="absolute -top-3 left-2 bg-card px-1 text-2xs font-bold border border-foreground">CONDICIÓN DE DESBLOQUEO</div>
+                                    <div className="absolute -top-3 left-2 bg-card px-1 text-2xs font-bold border border-foreground">Condición de desbloqueo</div>
                                     <div className="space-y-2">
-                                        <label htmlFor="badge-condition-type" className="text-2xs uppercase">Tipo de Métrica</label>
+                                        <label htmlFor="badge-condition-type" className="text-2xs ">Tipo de Métrica</label>
                                         <select
                                             id="badge-condition-type"
                                             className="w-full h-8 px-2 bg-background border border-foreground rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus:border-primary text-xs font-mono"
@@ -147,7 +147,7 @@ export default function BadgeFormDialog({
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label htmlFor="badge-condition-description" className="text-2xs uppercase block underline decoration-dashed">Texto Público Misión</label>
+                                        <label htmlFor="badge-condition-description" className="text-2xs block underline decoration-dashed">Texto Público Misión</label>
                                         <Input
                                             id="badge-condition-description"
                                             required
@@ -187,7 +187,7 @@ export default function BadgeFormDialog({
                                         </select>
                                     </div>
                                     <div className="space-y-2 mt-2">
-                                        <label htmlFor="badge-title-reward" className="text-2xs uppercase text-primary">Título (Opcional)</label>
+                                        <label htmlFor="badge-title-reward" className="text-2xs text-primary">Título (Opcional)</label>
                                         <Input
                                             id="badge-title-reward"
                                             type="text"
@@ -198,7 +198,7 @@ export default function BadgeFormDialog({
                                         />
                                     </div>
                                     <div className="space-y-2 mt-auto">
-                                        <label htmlFor="badge-reward-description" className="text-2xs uppercase block underline decoration-dashed mt-4">Texto Público Premio</label>
+                                        <label htmlFor="badge-reward-description" className="text-2xs block underline decoration-dashed mt-4">Texto Público Premio</label>
                                         <Input
                                             id="badge-reward-description"
                                             value={formData.reward_description}

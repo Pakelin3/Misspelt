@@ -18,7 +18,7 @@ export default function ImageUploadField({
     label,
     labelClassName = 'text-xs font-bold uppercase self-start',
     placeholderIcon: PlaceholderIcon = ImageIcon,
-    placeholderText = 'Click para subir',
+    placeholderText = 'Pulsa para subir',
     buttonClassName,
     imageClassName,
     helper,

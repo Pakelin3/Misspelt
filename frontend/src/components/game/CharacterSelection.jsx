@@ -51,7 +51,7 @@ const CharacterSelection = ({
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Panel Izquierdo: Selección de Personaje */}
                     <div className="flex-1">
-                        <h2 className="text-2xl font-bold uppercase text-center mb-6 text-foreground">Elige tu Héroe</h2>
+                        <h2 className="text-2xl font-bold text-center mb-6 text-foreground">Elige tu Héroe</h2>
 
                         <div
                             id="tutorial-game-heroes"
@@ -190,13 +190,13 @@ const CharacterSelection = ({
                                             key={lvl}
                                             onClick={() => setDifficulty(lvl)}
                                             className={`
-                                                flex-1 py-2 text-xs font-bold uppercase pixel-btn border-2 transition-all
+                                                flex-1 py-3 min-h-11 text-xs font-bold pixel-btn border-2 transition-all
                                                 ${difficulty === lvl
                                                     ? 'border-foreground bg-primary text-primary-foreground shadow-pixel-sm translate-y-[-2px]'
                                                     : 'border-muted-foreground bg-background text-muted-foreground hover:bg-muted/50'}
                                             `}
                                         >
-                                            {lvl === 'EASY' ? 'FÁCIL' : lvl === 'NORMAL' ? 'NORMAL' : 'DIFÍCIL'}
+                                            {lvl === 'EASY' ? 'Fácil' : lvl === 'NORMAL' ? 'Normal' : 'Difícil'}
                                         </button>
                                     ))}
                                 </div>

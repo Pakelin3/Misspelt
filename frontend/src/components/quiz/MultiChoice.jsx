@@ -58,7 +58,7 @@ const MultiChoice = ({ word, distractors = [], onSuccess, onError }) => {
         <div className="flex flex-col items-center space-y-8 w-full">
             <div className="text-center space-y-4 bg-muted p-6 border-4 border-primary pixel-border w-full shadow-pixel-md-primary">
                 <HelpCircle size={48} className="mx-auto text-primary mb-2" strokeWidth={2.5} aria-hidden="true" />
-                <h3 className="text-lg font-mono text-primary uppercase tracking-widest">¿Cuál es la palabra?</h3>
+                    <h3 className="text-lg font-mono text-primary tracking-widest">¿Cuál es la palabra?</h3>
 
                 <p className="text-xl md:text-2xl font-bold text-foreground font-sans leading-relaxed">
                     "{word.definition || word.translation}"

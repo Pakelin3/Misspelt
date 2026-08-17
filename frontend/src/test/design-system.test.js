@@ -241,3 +241,28 @@ describe('contraste y color heredado', () => {
         expect(hits, `Usa hover:brightness-* en lugar de un token del tema:\n${report(hits)}`).toEqual([]);
     });
 });
+
+describe('tipografia display', () => {
+    it('no hay mayusculas acentuadas en texto todo-mayusculas', () => {
+        // Press Start 2P dibuja Á/É/Í/Ó/Ú/Ñ con el cuerpo comprimido para meter el
+        // acento dentro de la altura de caja. A 12-24px se leen como minusculas y
+        // parecen una errata ("INICIAR SESIóN"). Sus minusculas si estan bien
+        // dibujadas, asi que la caja baja conserva la ortografia y se ve correcta.
+        const acentuada = /[ÁÉÍÓÚÑÜ]/;
+        const hits = [];
+        for (const file of jsxFiles) {
+            readFileSync(file, 'utf8').split('\n').forEach((linea, i) => {
+                const t = linea.trim();
+                if (t.startsWith('//') || t.startsWith('*') || t.startsWith('/*')) return;
+                const trozos = linea.matchAll(/>([^<>{}]*[ÁÉÍÓÚÑÜ][^<>{}]*)<|"([^"]*[ÁÉÍÓÚÑÜ][^"]*)"|'([^']*[ÁÉÍÓÚÑÜ][^']*)'/g);
+                for (const m of trozos) {
+                    const txt = (m[1] ?? m[2] ?? m[3] ?? '').trim();
+                    if (txt.length > 2 && acentuada.test(txt) && txt === txt.toUpperCase()) {
+                        hits.push(`${relative(process.cwd(), file)}:${i + 1}  ${txt.slice(0, 50)}`);
+                    }
+                }
+            });
+        }
+        expect(hits, `Usa caja baja en su lugar:\n${report(hits)}`).toEqual([]);
+    });
+});

@@ -5,8 +5,10 @@ import { useGoogleLogin } from '@react-oauth/google';
 import googleIcon from '@/assets/google.svg';
 import { LeafIcon } from '@/components/PixelIcons';
 import { Button } from '@/components/ui/Button';
+import usePageTitle from '@/hooks/usePageTitle';
 
 function LoginPage({ onScreenChange }) {
+    usePageTitle('Iniciar sesión');
     const { loginUser, googleAuth } = useContext(AuthContext);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -57,7 +59,7 @@ function LoginPage({ onScreenChange }) {
     });
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-background p-4 font-sans">
+        <main id="main-content" className="flex justify-center items-center min-h-screen bg-background p-4 font-sans">
             {/* Contenedor Pixel Art */}
             <div className="bg-card pixel-border p-6 sm:p-8 w-full max-w-md relative shadow-none">
 
@@ -80,7 +82,7 @@ function LoginPage({ onScreenChange }) {
                             <LeafIcon className="w-10 h-10 text-primary" aria-hidden="true" />
                         </div>
                     </div>
-                    <h2 className="text-xl md:text-2xl font-mono text-foreground mb-2">INICIAR SESIÓN</h2>
+                    <h2 className="text-xl md:text-2xl font-mono text-foreground mb-2">Iniciar sesión</h2>
                     <p className="text-muted-foreground text-lg">Bienvenido de vuelta a la granja</p>
                 </div>
 
@@ -199,7 +201,7 @@ function LoginPage({ onScreenChange }) {
                     </div>
                 </form>
             </div>
-        </div>
+        </main>
     );
 }
 

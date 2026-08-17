@@ -15,7 +15,7 @@ const PrimaryStatCard = ({ icon, label, value, valueClass = 'text-foreground' })
         </div>
         <div>
             <p className={`text-2xl font-mono font-bold leading-none ${valueClass}`}>{value}</p>
-            <p className="text-2xs font-mono text-muted-foreground uppercase tracking-wider mt-1">{label}</p>
+            <p className="text-2xs font-mono text-muted-foreground tracking-wider mt-1">{label}</p>
         </div>
     </div>
 );
@@ -44,7 +44,7 @@ const StatsTab = ({ userStats, generalAccuracy, slangAccuracy, pvAccuracy, forma
 
         {/* ─── Métricas secundarias ─── */}
         <div className="bg-card pixel-border p-5">
-            <h3 className="font-mono text-sm uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
+            <h3 className="font-mono text-sm tracking-wider text-foreground mb-4 flex items-center gap-2">
                 <PixelTargetIcon className="w-5 h-5 text-muted-foreground" aria-hidden="true" /> Precisión por Categoría
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -54,7 +54,7 @@ const StatsTab = ({ userStats, generalAccuracy, slangAccuracy, pvAccuracy, forma
             </div>
         </div>
         <div className="bg-card pixel-border p-5">
-            <h3 className="font-mono text-sm uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
+            <h3 className="font-mono text-sm tracking-wider text-foreground mb-4 flex items-center gap-2">
                 <PixelBookOpenIcon className="w-5 h-5 text-muted-foreground" aria-hidden="true" /> Conocimiento
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -65,7 +65,7 @@ const StatsTab = ({ userStats, generalAccuracy, slangAccuracy, pvAccuracy, forma
             </div>
         </div>
         <div className="bg-card pixel-border p-5">
-            <h3 className="font-mono text-sm uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
+            <h3 className="font-mono text-sm tracking-wider text-foreground mb-4 flex items-center gap-2">
                 <PixelLightningIcon className="w-5 h-5 text-muted-foreground" aria-hidden="true" /> Actividad
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -75,7 +75,7 @@ const StatsTab = ({ userStats, generalAccuracy, slangAccuracy, pvAccuracy, forma
             </div>
         </div>
         <div className="bg-card pixel-border p-5">
-            <h3 className="font-mono text-sm uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
+            <h3 className="font-mono text-sm tracking-wider text-foreground mb-4 flex items-center gap-2">
                 <SwordIcon className="w-5 h-5 text-muted-foreground" aria-hidden="true" /> Combate (Acumulado)
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">

@@ -150,7 +150,7 @@ const WordSuggestionModal = ({ onClose }) => {
                             </div>
 
                             <div>
-                                <label htmlFor="suggest-definition" className="block font-mono text-2xs text-muted-foreground uppercase mb-2">
+                                <label htmlFor="suggest-definition" className="block font-mono text-2xs text-muted-foreground mb-2">
                                     Definición sugerida <span aria-hidden="true">*</span>
                                     <span className="sr-only">(obligatorio)</span>
                                 </label>

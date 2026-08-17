@@ -82,7 +82,7 @@ export function QuizPreview() {
                 className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-primary text-primary-foreground font-bold pixel-btn shadow-pixel-md hover:translate-y-[2px] transition-all"
               >
                 <Activity size={20} />
-                NUEVA PRÁCTICA
+                Nueva práctica
               </button>
             </div>
           </div>
@@ -106,7 +106,7 @@ export function QuizPreview() {
                 className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-primary text-primary-foreground font-bold pixel-btn shadow-pixel-md hover:translate-y-[2px] transition-all"
               >
                 <Activity size={20} />
-                NUEVA PRÁCTICA
+                Nueva práctica
               </button>
             </div>
           </div>
@@ -127,7 +127,7 @@ export function QuizPreview() {
             <h3 className="font-mono text-2xl md:text-3xl text-foreground mb-4">¿Te atreves a probar?</h3>
             <p className="font-sans text-lg text-muted-foreground mb-8">
               Juega una pequeña demostración de nuestros minijuegos integrados con 10 palabras aleatorias.
-              Pero ten cuidado: <strong className="text-destructive font-bold inline-block px-1 bg-destructive/10">SÓLO TIENES 1 VIDA</strong>.
+              Pero ten cuidado: <strong className="text-destructive font-bold inline-block px-1 bg-destructive/10">Solo tienes 1 vida</strong>.
               Si fallas, tendrás que esperar 1 hora para volver a intentarlo en la demo.
             </p>
             <button

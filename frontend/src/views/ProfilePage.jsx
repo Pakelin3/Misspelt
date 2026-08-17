@@ -12,8 +12,10 @@ import HistoryTab from '@/components/profile/HistoryTab';
 import BadgesTab from '@/components/profile/BadgesTab';
 import FarmsTab from '@/components/profile/FarmsTab';
 import ThemeSelector from '@/components/profile/ThemeSelector';
+import usePageTitle from '@/hooks/usePageTitle';
 
 function ProfilePage() {
+    usePageTitle('Mi perfil');
     const api = useAxios();
     const { user } = useContext(AuthContext);
 
@@ -109,6 +111,8 @@ function ProfilePage() {
         const driverObj = driver({
             popoverClass: 'misspelt-driver-popover pixel-rendering',
             showProgress: true,
+            // Sin esto driver.js rotula "1 of 3" en ingles.
+            progressText: '{{current}} de {{total}}',
             animate: true,
             doneBtnText: '¡A Jugar!',
             nextBtnText: 'Siguiente',

@@ -97,7 +97,7 @@ export default function FarmDetail() {
 
                 <div className="bg-accent text-accent-foreground pixel-border border-4 border-foreground p-3 flex items-center gap-4 shadow-pixel-md">
                     <div>
-                        <p className="text-2xs font-mono font-bold">CÓDIGO DE INVITACIÓN</p>
+                        <p className="text-2xs font-mono font-bold">Código de invitación</p>
                         <p className="text-xl font-mono font-black tracking-widest">{farm.invite_code}</p>
                     </div>
                     <Button
@@ -115,7 +115,7 @@ export default function FarmDetail() {
                 <div className="p-4 border-b-4 border-foreground bg-muted/40 flex justify-between items-center">
                     <h3 className="font-mono font-bold flex items-center gap-2">
                         <VillagerIcon className="w-5 h-5" aria-hidden="true" />
-                        TABLA DE DESEMPEÑO (LEADERBOARD)
+                        Tabla de desempeño
                     </h3>
                     <span className="font-mono text-xs bg-background px-2 py-1 border-2 border-foreground">
                         {farm.students_data?.length || 0} ALUMNOS

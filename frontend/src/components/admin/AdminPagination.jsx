@@ -17,7 +17,7 @@ export default function AdminPagination({ currentPage, totalPages, onPageChange 
                 ANTERIOR
             </Button>
             <span className="font-mono text-sm uppercase bg-foreground text-background px-3 py-1 font-bold">
-                PÁG {currentPage} DE {totalPages}
+                Página {currentPage} de {totalPages}
             </span>
             <Button
                 variant="accent"

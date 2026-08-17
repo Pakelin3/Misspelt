@@ -194,7 +194,7 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
                         <button
                             type="button"
                             onClick={() => setState((prev) => ({ ...prev, showTranscript: true }))}
-                            className="font-sans text-base text-muted-foreground underline decoration-2 underline-offset-4 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            className="inline-flex min-h-11 items-center px-2 font-sans text-base text-muted-foreground underline decoration-2 underline-offset-4 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         >
                             ¿No puedes escuchar? Ver la palabra escrita
                         </button>

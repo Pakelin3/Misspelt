@@ -7,10 +7,12 @@ import OracleChatDictionary from "@/components/dictionary/OracleChatDictionary";
 import WordSuggestionModal from "@/components/dictionary/WordSuggestionModal";
 import WordDetailModal from "@/components/dictionary/WordDetailModal";
 import { getTypeBadgeStyle, getTypeBadgeText } from "@/lib/wordTypes";
+import usePageTitle from '@/hooks/usePageTitle';
 
 
 
 function DictionaryPage() {
+    usePageTitle('El Grimorio');
     // Estados
     const [words, setWords] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -79,6 +81,7 @@ function DictionaryPage() {
         const driverObj = driver({
             popoverClass: 'misspelt-driver-popover pixel-rendering',
             showProgress: true,
+            progressText: '{{current}} de {{total}}',
             animate: true,
             doneBtnText: '¡A Leer!',
             nextBtnText: 'Siguiente',
@@ -164,7 +167,7 @@ function DictionaryPage() {
     const currentFilterObj = filterOptions.find(f => f.id === selectedFilter) || filterOptions[0];
 
     return (
-        <div className="min-h-screen bg-background font-sans flex flex-col">
+        <main id="main-content" className="min-h-screen bg-background font-sans flex flex-col">
 
             <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-8 md:py-12 mt-16">
 
@@ -242,7 +245,7 @@ function DictionaryPage() {
                         </div>
                     ) : error ? (
                         <div className="text-center p-8 bg-destructive/10 pixel-border border-destructive">
-                            <p className="text-destructive font-mono text-xs mb-2">ERROR DE CONEXIÓN</p>
+                            <p className="text-destructive font-mono text-xs mb-2">Error de conexión</p>
                             <p className="text-foreground font-sans text-xl">{error}</p>
                         </div>
                     ) : words.length === 0 ? (
@@ -296,7 +299,7 @@ function DictionaryPage() {
 
                                     <div className="flex items-center justify-between mt-auto pt-4 border-t-2 border-dashed border-muted">
                                         <span className="text-xs font-mono text-muted-foreground opacity-50">
-                                            {word.is_unlocked ? "CLICK PARA VER" : "BLOQUEADO"}
+                                            {word.is_unlocked ? "Pulsa para ver" : "Bloqueado"}
                                         </span>
 
 
@@ -323,7 +326,7 @@ function DictionaryPage() {
                         </button>
 
                         <div className="px-6 py-3 bg-card pixel-border font-mono text-xs">
-                            PÁGINA {currentPage} DE {totalPages}
+                            Página {currentPage} de {totalPages}
                         </div>
 
                         <button
@@ -351,7 +354,7 @@ function DictionaryPage() {
             >
                 <span className="font-mono text-3xl pb-1">?</span>
             </button>
-        </div>
+        </main>
     );
 }
 

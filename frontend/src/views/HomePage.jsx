@@ -4,10 +4,12 @@ import { FeaturesSection } from "@/components/landing/FeaturesSection";
 import { QuizPreview } from "@/components/landing/QuizPreview";
 import { WordTypesSection } from "@/components/landing/WordTypesSection";
 import { Footer } from "@/components/landing/Footer";
+import usePageTitle from '@/hooks/usePageTitle';
 
 function HomePage() {
+    usePageTitle('Inicio');
     return (
-        <div className="min-h-screen bg-background font-sans text-foreground selection:bg-accent selection:text-accent-foreground">
+        <main id="main-content" className="min-h-screen bg-background font-sans text-foreground selection:bg-accent selection:text-accent-foreground">
             <main className="flex-1">
                 <HeroSection />
                 <FeaturesSection />
@@ -15,7 +17,7 @@ function HomePage() {
                 <QuizPreview />
             </main>
             <Footer />
-        </div>
+        </main>
     );
 }
 

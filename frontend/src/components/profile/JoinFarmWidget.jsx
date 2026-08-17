@@ -18,14 +18,14 @@ const JoinFarmWidget = ({ inviteCode, setInviteCode, joinLoading, onSubmit }) =>
                 type="text"
                 value={inviteCode}
                 onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                placeholder="CÓDIGO"
+                placeholder="Código"
                 maxLength={8}
                 className="bg-background border-2 border-foreground/40 px-3 py-2 font-mono text-sm uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus:border-primary w-full md:w-40"
             />
             <button
                 type="submit"
                 disabled={joinLoading || !inviteCode}
-                className="bg-secondary text-secondary-foreground border-2 border-foreground/40 px-4 py-2 font-mono font-bold text-sm hover:brightness-110 disabled:opacity-50 whitespace-nowrap transition-all"
+                className="bg-secondary text-secondary-foreground border-2 border-foreground/40 px-4 py-3 min-h-11 font-mono font-bold text-sm hover:brightness-110 disabled:opacity-50 whitespace-nowrap transition-all"
             >
                 {joinLoading ? '...' : '+ UNIRSE'}
             </button>

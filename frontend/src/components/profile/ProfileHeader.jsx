@@ -26,7 +26,7 @@ const ProfileHeader = ({
                 <button
                     onClick={onStartEditing}
                     aria-label="Editar perfil"
-                    className="absolute bottom-4 right-4 p-2 text-muted-foreground hover:text-primary hover:bg-primary hover:text-primary-foreground/10 transition-colors border-2 border-transparent hover:border-primary"
+                    className="absolute bottom-4 right-4 p-2 size-11 text-muted-foreground hover:text-primary hover:bg-primary hover:text-primary-foreground/10 transition-colors border-2 border-transparent hover:border-primary"
                 >
                     <PixelEditIcon className="w-4 h-4" aria-hidden="true" />
                 </button>
@@ -97,7 +97,7 @@ const ProfileHeader = ({
                                 onSelect={id => setEditForm({ ...editForm, current_avatar: id })}
                             />
                             <div>
-                                <label htmlFor="profile-title" className="text-2xs font-mono uppercase text-muted-foreground block mb-1">Título</label>
+                                <label htmlFor="profile-title" className="text-2xs font-mono text-muted-foreground block mb-1">Título</label>
                                 <select
                                     id="profile-title"
                                     value={editForm.current_title}
@@ -140,7 +140,7 @@ const ProfileHeader = ({
                             <div className="shrink-0 flex justify-center w-8">{s.icon}</div>
                             <div>
                                 <p className="text-base font-mono font-bold text-foreground leading-none">{s.value}</p>
-                                <p className="text-3xs font-mono text-muted-foreground uppercase">{s.label}</p>
+                                <p className="text-3xs font-mono text-muted-foreground">{s.label}</p>
                             </div>
                         </div>
                     ))}

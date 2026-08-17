@@ -62,7 +62,7 @@ const GameResults = ({ results, seenWordsRef, correctWordsRef, onPlayAgain, onGo
                         </div>
                         <div className="bg-muted/50 p-4 border-2 border-foreground/30 text-center">
                             <PixelTargetIcon aria-hidden="true" className="w-5 h-5 text-destructive mx-auto mb-1" />
-                            <p className="text-2xs uppercase font-bold text-muted-foreground">Precisión</p>
+                                <p className="text-2xs font-bold text-muted-foreground">Precisión</p>
                             <p className={`text-2xl font-black ${accColor}`}>{accuracy}%</p>
                         </div>
                     </div>

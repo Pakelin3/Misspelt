@@ -90,7 +90,7 @@ export default function StudentProfileModal({ farmId, studentId, onClose }) {
                         <div className="bg-card border-4 border-foreground p-4 flex flex-col items-center justify-center gap-2 shadow-pixel-md hover:-translate-y-1 hover:shadow-pixel-lg transition-all group">
                             <PixelTargetIcon className="w-8 h-8 text-primary group-hover:scale-110 transition-transform" />
                             <span className="font-mono text-2xl md:text-3xl font-black">{accuracy}%</span>
-                            <span className="text-2xs md:text-xs uppercase font-bold text-muted-foreground text-center">Precisión Total</span>
+                                <span className="text-2xs md:text-xs font-bold text-muted-foreground text-center">Precisión Total</span>
                         </div>
                         <div className="bg-card border-4 border-foreground p-4 flex flex-col items-center justify-center gap-2 shadow-pixel-md hover:-translate-y-1 hover:shadow-pixel-lg transition-all group">
                             <SwordIcon className="w-8 h-8 text-destructive group-hover:scale-110 transition-transform" />
@@ -163,7 +163,7 @@ export default function StudentProfileModal({ farmId, studentId, onClose }) {
                                                         {game.total_questions_in_game > 0 && (
                                                             <div className="text-right">
                                                                 <p className={`font-mono text-lg font-bold ${accColor}`}>{accuracy}%</p>
-                                                                <p className="text-3xs font-mono text-muted-foreground uppercase">Precisión</p>
+                                                                    <p className="text-3xs font-mono text-muted-foreground ">Precisión</p>
                                                             </div>
                                                         )}
                                                         <div className="text-right">

@@ -43,7 +43,7 @@ export default function DictionaryWordFormDialog({
                             />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="word-translation" className="text-xs font-bold uppercase">Traducción</label>
+                            <label htmlFor="word-translation" className="text-xs font-bold ">Traducción</label>
                             <Input
                                 id="word-translation"
                                 value={formData.translation}
@@ -82,7 +82,7 @@ export default function DictionaryWordFormDialog({
                     </div>
 
                     <div className="space-y-2">
-                        <label htmlFor="word-definition" className="text-xs font-bold uppercase">Definición (En inglés)</label>
+                        <label htmlFor="word-definition" className="text-xs font-bold ">Definición (En inglés)</label>
                         <textarea
                             id="word-definition"
                             required

@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
+import usePageTitle from '@/hooks/usePageTitle';
 
 const CheckEmailPage = () => {
+    usePageTitle('Revisa tu correo');
     return (
-        <div className="flex justify-center items-center min-h-screen p-4 bg-background">
+        <main id="main-content" className="flex justify-center items-center min-h-screen p-4 bg-background">
             <div className="p-6 sm:p-8 rounded-none w-full max-w-md text-center border-4 border-foreground box-border shadow-pixel-xl bg-card relative">
                 <div className="absolute -top-4 -left-4 w-8 h-8 bg-primary border-4 border-foreground aspect-square" aria-hidden="true"></div>
                 <div className="absolute -bottom-4 -right-4 w-8 h-8 bg-accent border-4 border-foreground aspect-square" aria-hidden="true"></div>
@@ -47,7 +49,7 @@ const CheckEmailPage = () => {
                     </Button>
                 </div>
             </div>
-        </div>
+        </main>
     );
 };
 

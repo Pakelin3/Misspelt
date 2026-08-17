@@ -3,8 +3,10 @@ import { useParams, useLocation, Link } from 'react-router-dom';
 import AuthContext from '@/context/AuthContext';
 import LoadingVerification from '@/components/LoadingVerification';
 import { Button } from '@/components/ui/Button';
+import usePageTitle from '@/hooks/usePageTitle';
 
 const EmailVerificationLandingPage = () => {
+    usePageTitle('Verificando tu correo');
     const { token } = useParams();
     const location = useLocation();
     const { showAlert } = useContext(AuthContext) || {};
@@ -37,7 +39,7 @@ const EmailVerificationLandingPage = () => {
                     <div className="absolute -top-4 -left-4 w-8 h-8 bg-destructive border-4 border-foreground aspect-square" aria-hidden="true"></div>
 
                     <h2 className="text-2xl font-mono text-destructive mb-4">
-                        ERROR CRÍTICO
+                        Error crítico
                     </h2>
 
                     <p className="text-muted-foreground mb-6">
@@ -49,7 +51,7 @@ const EmailVerificationLandingPage = () => {
                             <Link to="/register">REGISTRARME DE NUEVO</Link>
                         </Button>
                         <Button asChild variant="outline" size="sm" className="w-full">
-                            <Link to="/login">IR AL INICIO DE SESIÓN</Link>
+                            <Link to="/login">Iniciar sesión</Link>
                         </Button>
                         <Button asChild variant="ghost" size="sm" className="w-full">
                             <Link to="/">VOLVER AL INICIO</Link>

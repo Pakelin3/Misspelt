@@ -14,8 +14,10 @@ import useGamePreload from '@/hooks/useGamePreload';
 import usePointerCapabilities from '@/hooks/usePointerCapabilities';
 import useGodotBridge from '@/hooks/useGodotBridge';
 import useGameTutorial from '@/hooks/useGameTutorial';
+import usePageTitle from '@/hooks/usePageTitle';
 
 const GamePage = () => {
+    usePageTitle('Jugar');
     const navigate = useNavigate();
     const api = useAxios();
     const { user, fetchUserData } = useContext(AuthContext);
@@ -174,7 +176,7 @@ const GamePage = () => {
     };
 
     return (
-        <div className="w-full h-screen bg-background text-foreground overflow-hidden font-mono">
+        <main id="main-content" className="w-full h-screen bg-background text-foreground overflow-hidden font-mono">
             {/* VISTA A: MENÚ DE SELECCIÓN */}
             {gameState === 'SELECTION' && (
                 <CharacterSelection
@@ -291,7 +293,7 @@ const GamePage = () => {
                     onGoHome={() => navigate('/')}
                 />
             )}
-        </div>
+        </main>
     );
 };
 

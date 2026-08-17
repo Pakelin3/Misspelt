@@ -11,6 +11,7 @@ import FarmsAdminPanel from '@/components/admin/FarmsAdminPanel';
 import FarmDetail from '@/components/admin/FarmDetail';
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent } from '@/components/ui/Dialog';
+import usePageTitle from '@/hooks/usePageTitle';
 
 
 const ADMIN_MENU = [
@@ -52,7 +53,7 @@ const AdminSidebarLink = ({ item, isActive, isCollapsed, onClick }) => {
             to={item.path}
             onClick={onClick}
             className={`
-                flex items-center gap-3 px-3 py-2 mx-2 my-2 pixel-border-primary-foreground pixel-btn text-decoration-none transition-all overflow-hidden
+                flex items-center gap-3 px-3 py-3 min-h-11 mx-2 my-2 pixel-border-primary-foreground pixel-btn text-decoration-none transition-all overflow-hidden
                 ${isActive
                     ? 'bg-primary text-primary-foreground'
                     : 'text-foreground hover:bg-primary hover:text-primary-foreground'
@@ -71,6 +72,7 @@ const AdminSidebarLink = ({ item, isActive, isCollapsed, onClick }) => {
 };
 
 function AdminDashboard() {
+    usePageTitle('Panel de profesor');
     const location = useLocation();
     const navigate = useNavigate();
     const [isSidebarOpen, setSidebarOpen] = useState(true);

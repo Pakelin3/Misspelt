@@ -32,7 +32,7 @@ const WordDetailModal = ({ word, onClose, onOpenOracle }) => {
 
                 <div className="space-y-6 font-sans text-xl">
                     <section className="bg-background p-4 border-2 border-dashed border-border">
-                        <h3 className="font-mono text-2xs text-accent-strong mb-2 uppercase">Definición</h3>
+                        <h3 className="font-mono text-2xs text-accent-strong mb-2 ">Definición</h3>
                         <p className="text-foreground leading-relaxed max-w-prose">{word.definition}</p>
                     </section>
 

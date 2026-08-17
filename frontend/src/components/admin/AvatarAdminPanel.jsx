@@ -302,7 +302,7 @@ function AvatarAdminPanel() {
 
                             {!formData.is_default && (
                                 <div className="space-y-2 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-top-2">
-                                    <label htmlFor="avatar-unlock-condition" className="text-xs font-bold uppercase text-primary">Condición de Desbloqueo</label>
+                                    <label htmlFor="avatar-unlock-condition" className="text-xs font-bold text-primary">Condición de Desbloqueo</label>
                                     <textarea
                                         id="avatar-unlock-condition"
                                         className="w-full p-3 bg-background border-2 border-foreground rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus:border-primary text-sm min-h-[80px]"

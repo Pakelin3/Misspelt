@@ -27,8 +27,8 @@ const FarmsTab = ({ farmsLoading, userFarms }) => {
                 <div key={farm.id} className="bg-card pixel-border p-5 border-4 border-foreground hover:-translate-y-1 transition-transform shadow-pixel-md">
                     <div className="flex justify-between items-start">
                         <div>
-                            <h3 className="font-mono font-bold text-xl uppercase tracking-wider leading-tight mb-2 truncate" title={farm.name}>{farm.name}</h3>
-                            <p className="font-mono text-xs text-muted-foreground mb-1 uppercase">Dueño: <span className="text-foreground font-bold">{farm.owner_username}</span></p>
+                            <h3 className="font-mono font-bold text-xl tracking-wider leading-tight mb-2 truncate" title={farm.name}>{farm.name}</h3>
+                                <p className="font-mono text-xs text-muted-foreground mb-1 ">Dueño: <span className="text-foreground font-bold">{farm.owner_username}</span></p>
                         </div>
                         <span className="text-3xl" aria-hidden="true" title="Granja de Estudiante"></span>
                     </div>

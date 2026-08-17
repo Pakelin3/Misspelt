@@ -4,6 +4,7 @@ import AuthContext from '@/context/AuthContext';
 import BadgeCard from "@/components/ui/BadgeCard";
 import { TrophyIcon, PixelCrownIcon, PixelHeartFillIcon, PixelDiamondIcon, PixelStarIcon } from '@/components/PixelIcons';
 import { BADGE_CATEGORIES } from '@/lib/badges';
+import usePageTitle from '@/hooks/usePageTitle';
 
 // Los iconos por categoría son propios de esta vista (el catálogo visual);
 // el resto de la config (etiqueta, colores) viene de la fuente única en
@@ -25,6 +26,7 @@ const ChevronIcon = ({ open }) => (
 );
 
 function BadgesPage() {
+    usePageTitle('Sala de trofeos');
     const api = useAxios();
     const { user } = useContext(AuthContext);
 
@@ -181,12 +183,12 @@ function BadgesPage() {
 
                     {/* Resumen global */}
                     {!loading && totalBadges > 0 && (
-                        <div className="inline-flex items-center gap-3 px-4 py-2 bg-card pixel-border font-mono text-sm">
+                        <div className="inline-flex max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2 bg-card pixel-border font-mono text-2xs sm:text-sm">
                             <span className="text-muted-foreground">Colección:</span>
                             <span className="text-accent-strong font-bold">{totalUnlocked}</span>
                             <span className="text-muted-foreground">/</span>
                             <span className="text-foreground">{totalBadges}</span>
-                            <div className="w-24 h-3 bg-muted border-2 border-foreground relative ml-2">
+                            <div className="w-20 sm:w-24 h-3 bg-muted border-2 border-foreground relative shrink-0">
                                 <div
                                     className="h-full bg-accent transition-all duration-700"
                                     style={{ width: `${totalBadges > 0 ? (totalUnlocked / totalBadges) * 100 : 0}%` }}

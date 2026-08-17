@@ -5,8 +5,10 @@ import { useGoogleLogin } from '@react-oauth/google';
 import googleIcon from '@/assets/google.svg';
 import { LeafIcon } from '@/components/PixelIcons';
 import { Button } from '@/components/ui/Button';
+import usePageTitle from '@/hooks/usePageTitle';
 
 function RegisterPage({ onScreenChange }) {
+    usePageTitle('Crear cuenta');
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -61,7 +63,7 @@ function RegisterPage({ onScreenChange }) {
     });
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-background p-4 font-sans">
+        <main id="main-content" className="flex justify-center items-center min-h-screen bg-background p-4 font-sans">
             <div className="bg-card pixel-border p-6 sm:p-8 w-full max-w-md relative shadow-none">
 
                 {/* Botón Cerrar */}
@@ -231,7 +233,7 @@ function RegisterPage({ onScreenChange }) {
                     </div>
                 </form>
             </div>
-        </div>
+        </main>
     );
 }
 

@@ -3,7 +3,7 @@ import React from 'react';
 /**
  * Componente para animar un spritesheet.
  * Asume que el spritesheet es una tira horizontal de frames.
- * 
+ *
  * @param {string} src - Ruta de la imagen del spritesheet.
  * @param {number} frameWidth - Ancho de un solo frame en px (original).
  * @param {number} frameHeight - Alto de un solo frame en px (original).

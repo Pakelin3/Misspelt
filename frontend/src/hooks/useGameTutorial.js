@@ -14,6 +14,8 @@ const useGameTutorial = (gameState) => {
         const driverObj = driver({
             popoverClass: 'misspelt-driver-popover pixel-rendering',
             showProgress: true,
+            // Sin esto driver.js rotula "1 of 3" en ingles.
+            progressText: '{{current}} de {{total}}',
             animate: !prefersReducedMotion,
             doneBtnText: '¡A Jugar!',
             nextBtnText: 'Siguiente',
