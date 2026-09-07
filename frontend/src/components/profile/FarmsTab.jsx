@@ -1,12 +1,27 @@
 import React from 'react';
 import { PixelUsersIcon } from '@/components/PixelIcons';
 
-const FarmsTab = ({ farmsLoading, userFarms }) => {
+const FarmsTab = ({ farmsLoading, farmsError, userFarms, onRetry }) => {
     if (farmsLoading) {
         return (
             <div role="status" aria-live="polite" className="flex flex-col items-center justify-center py-12 gap-3 animate-in fade-in duration-300">
                 <div aria-hidden="true" className="w-10 h-10 border-4 border-accent-strong border-t-transparent motion-safe:animate-spin rounded-full" />
                 <p className="font-mono text-xs text-muted-foreground animate-pulse">CARGANDO GRANJAS...</p>
+            </div>
+        );
+    }
+
+    if (farmsError) {
+        return (
+            <div role="alert" className="text-center p-12 bg-card pixel-border text-destructive border-4 border-destructive/50 animate-in fade-in duration-300">
+                <p className="font-mono text-sm font-bold">{farmsError}</p>
+                <button
+                    type="button"
+                    onClick={onRetry}
+                    className="mt-4 px-4 py-2 font-mono text-xs uppercase tracking-wider border-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors pixel-border"
+                >
+                    Reintentar
+                </button>
             </div>
         );
     }

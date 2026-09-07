@@ -41,6 +41,24 @@ function BadgesAdminPanel() {
 
     const [formData, setFormData] = useState(EMPTY_FORM);
     const [previewUrl, setPreviewUrl] = useState(null);
+    const previewUrlRef = useRef(null);
+
+    // La vista previa de un archivo recien elegido es un blob: URL creado con
+    // createObjectURL. Sin revocarlo queda retenido en memoria durante toda la
+    // vida de la pestaña. `previewUrl` también puede apuntar a la imagen ya
+    // subida (una URL normal del backend), así que solo revocamos lo que
+    // guardamos en el ref, nunca por adivinar el contenido del estado.
+    const releasePreviewUrl = useCallback(() => {
+        if (previewUrlRef.current) {
+            URL.revokeObjectURL(previewUrlRef.current);
+            previewUrlRef.current = null;
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!isFormOpen) releasePreviewUrl();
+        return () => releasePreviewUrl();
+    }, [isFormOpen, releasePreviewUrl]);
 
     useEffect(() => {
         const timerId = setTimeout(() => {
@@ -89,6 +107,7 @@ function BadgesAdminPanel() {
     }, [fetchBadges, fetchAvatars, currentPage, debouncedSearchTerm]);
 
     const handleOpenForm = (badge = null) => {
+        releasePreviewUrl();
         if (badge) {
             setEditingBadge(badge);
             let condType = 'correct_slangs';
@@ -139,17 +158,40 @@ function BadgesAdminPanel() {
             }
 
             const img = new Image();
+            // Este blob solo sirve para leer las dimensiones: se revoca en
+            // cuanto la medición termina, tanto si carga como si falla, en
+            // vez de dejarlo retenido en memoria indefinidamente.
+            const measureUrl = URL.createObjectURL(file);
             img.onload = () => {
-                if (img.width !== 80 || img.height !== 80) {
-                    toast.error('Tamaño de imagen incorrecto', { description: `Debe medir 80x80 píxeles exactos (subiste ${img.width}x${img.height}). Puedes ajustar el tamaño en squoosh.app.` });
-                    fileInputRef.current.value = '';
-                } else {
-                    setFormData({ ...formData, image: file });
-                    const objectUrl = URL.createObjectURL(file);
-                    setPreviewUrl(objectUrl);
+                URL.revokeObjectURL(measureUrl);
+
+                // El servidor recorta al cuadrado y reescala a 80x80 al
+                // guardar (ver `api.image_processing`), así que ya no hace
+                // falta bloquear otras medidas: se avisa y se deja subir.
+                // El único caso que sí degrada el resultado es una imagen
+                // no cuadrada, porque el recorte se come parte del icono.
+                if (img.width !== img.height) {
+                    toast.warning('La imagen no es cuadrada', {
+                        description: `Mide ${img.width}x${img.height}. El servidor recortará el centro para dejarla cuadrada, así que puede perder los bordes. Si quieres controlar el recorte, súbela ya cuadrada.`,
+                    });
+                } else if (img.width !== 80 || img.height !== 80) {
+                    toast.info('Se ajustará el tamaño automáticamente', {
+                        description: `Mide ${img.width}x${img.height}; el servidor la redimensionará a 80x80 píxeles al guardarla.`,
+                    });
                 }
+
+                setFormData({ ...formData, image: file });
+                releasePreviewUrl();
+                const objectUrl = URL.createObjectURL(file);
+                previewUrlRef.current = objectUrl;
+                setPreviewUrl(objectUrl);
             };
-            img.src = URL.createObjectURL(file);
+            img.onerror = () => {
+                URL.revokeObjectURL(measureUrl);
+                toast.error('No se pudo leer la imagen', { description: 'El archivo podría estar dañado. Prueba con otro.' });
+                fileInputRef.current.value = '';
+            };
+            img.src = measureUrl;
         }
     };
 

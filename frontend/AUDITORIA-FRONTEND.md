@@ -420,5 +420,174 @@ Ninguno estaba en el informe inicial; aparecieron al ejecutarlo.
 3. **Recuperación de contraseña y reenvío de verificación**: no existen en el backend, así
    que se retiraron los enlaces muertos en lugar de simular el flujo.
 4. **Tokens en cookie `httpOnly`**: requiere cambios en el backend.
-5. **Cobertura de tests**: 64 tests cubren lo crítico (refresh, diálogos, quiz, voz,
-   contratos). Las vistas grandes y los paneles de administración siguen sin cobertura.
+5. **Cobertura de tests**: esa cifra era de la primera ronda. Ver el recuento vigente al
+   final del documento.
+
+---
+
+# Segunda ronda · auditoría independiente y verificación contra los servidores en marcha
+
+La primera ronda la audité yo mismo y luego ejecuté mi propio plan, lo que es
+exactamente la situación en la que un revisor no encuentra sus propios errores.
+Esta segunda ronda se lanzó al revés: una auditoría independiente del código ya
+arreglado, y una verificación contra el backend y el frontend **en ejecución**,
+no contra los tests.
+
+Las dos cosas encontraron defectos reales. Tres de ellos los había introducido
+yo en la primera ronda, y dos de mis propios tests de guardia los dejaban pasar.
+
+## Defectos introducidos por la primera ronda
+
+### El emparejado automático de colores puso la opacidad en el sitio equivocado
+
+Para arreglar los 265 colores crudos usé un script que emparejaba cada
+`hover:bg-X` con su `hover:text-X-foreground`. En 10 sitios el sufijo de
+opacidad que pertenecía al **fondo** acabó pegado al **color de texto**:
+
+```
+hover:bg-destructive hover:text-destructive-foreground/10
+```
+
+Al pasar el ratón el fondo se vuelve rojo sólido y el icono, que hereda el color
+por `currentColor`, queda al 10 % de opacidad. Es decir: invisible justo en el
+instante en que la persona comprueba que está apuntando al botón correcto, y en
+siete de los diez casos se trataba de acciones de borrado.
+
+Los diez: `AvatarAdminPanel:228`, `BadgeGrid:79`, `DictionaryWordFormDialog:153`,
+`DictionaryWordTable:72,81`, `FarmDetail:176,185`, `FarmsAdminPanel:154`,
+`QuizManager:173`, `ProfileHeader:29`. En dos de ellos quedaba además un
+`hover:text-{color}` viejo contradiciendo al nuevo.
+
+**Mi test de guardia los daba por buenos.** La comprobación era
+`hover:text-${fg}\b`, y `\b` hace frontera justo antes de la barra: una opacidad
+que anula el color contaba como «color puesto». La guardia ahora captura la
+opacidad y la juzga, con un umbral del 70 % justificado (los pares
+`*-foreground` se eligieron con 7:1 o más, y al 70 % sobre fondo saturado el
+contraste sigue por encima del 4.5:1 de la WCAG 1.4.3). Se acompaña de tests con
+cadenas literales que fijan el caso exacto que se colaba, para que la guardia no
+vuelva a aprobarlo sin que nadie se dé cuenta.
+
+`OracleChatDictionary:169` se revisó y se dejó como estaba: es un
+`group-hover:text-primary-foreground/80` sobre una línea de descripción
+secundaria. Al 80 % se lee sin esfuerzo y la atenuación es deliberada.
+
+### Doce controles reimplementaban a mano el aspecto de `ui/Button`
+
+Once `<button>` y un `<a>` fuera de `ui/` repetían a mano al menos dos de las
+tres señas del botón del sistema (`pixel-btn`, `border-4`, `shadow-pixel-*`). No
+era un problema estético: durante esta misma ronda de trabajo el sistema cambió
+dos veces —se quitó el `uppercase` global y se rehízo la escala de sombras— y
+esos doce no recibieron ninguno de los dos cambios. Migrados a `<Button>`
+(usando `asChild` para el enlace) y con guardia que impide que vuelvan.
+
+### Otros
+
+- `AdminPixelIcons.jsx` no propagaba props, así que el `aria-hidden="true"` que
+  `FarmDetail:117` le pasaba a un icono decorativo se descartaba y el icono se
+  exponía al árbol de accesibilidad. Es el mismo defecto que ya se había
+  corregido en `PixelIcons.jsx`; se replicó el patrón. `ScrollIcon` y
+  `MedalRibbonIcon` eran código muerto y se borraron.
+- `BadgesAdminPanel` y `AvatarAdminPanel` creaban object URLs sin revocarlas
+  nunca —dos por cada archivo seleccionado en el primero, porque una servía solo
+  para medir la imagen—. Cada imagen que el profesor abría dejaba un blob
+  retenido durante toda la vida de la pestaña.
+- `StudentProfileModal:68,86` pedía `/grid-pattern.svg` y `/pattern.png`, que no
+  existen en `public/`: dos 404 silenciosos y dos avisos del build.
+- `ProfilePage` guardaba el error de la carga principal pero no el de
+  `fetchHistory` ni el de `fetchUserFarms`, que solo hacían `console.error`. Una
+  caída de red dejaba las pestañas de Historial y Granjas vacías, indistinguible
+  de «todavía no tienes nada». Ahora cada una distingue el fallo del vacío, con
+  `role="alert"` y un botón de reintentar.
+
+## El título «Misspelt» seguía sin ser responsive · la causa real
+
+El diagnóstico de la primera ronda fue incompleto. El tamaño de fuente sí era
+fluido (`clamp(1.75rem,10vw,4rem)`) y sí había un `ResizeObserver` para
+reconstruir. El problema era **qué vigilaba y con qué señal**:
+
+`build()` mide cada carácter y le fija un ancho en píxeles duros. Esas anchuras
+son el contenido del `<span>`, que es `inline-block`. Por tanto **`build()`
+congela el ancho del elemento que el observador estaba vigilando**: al mover la
+ventana, el `clamp` cambiaba el tamaño de fuente pero el ancho de `el` no se
+movía, y la comparación `< 1px` salía por la puerta de atrás. No se reconstruía
+nunca. Al estrechar, los glifos encogían dentro de cajas anchas congeladas
+—letras separadas por huecos—; al ensanchar o rotar el móvil, crecían dentro de
+cajas estrechas y se solapaban.
+
+El observador vigila ahora el padre en bloque y se guía por el **tamaño de
+fuente computado**, que es la señal que de verdad manda, amortiguado a una
+reconstrucción por frame. Al revisar el arreglo apareció un resto: el tamaño
+nuevo se apuntaba como atendido *antes* de la guardia de «está animando», así
+que un redimensionado que cayera dentro del segundo que dura la animación se
+registraba como visto sin haber reconstruido nada, y el título se quedaba
+descuadrado hasta el siguiente cambio. Corregido, con un test que se comprobó
+rojo con el orden viejo y verde con el nuevo.
+
+## La segunda guardia con agujero
+
+El test que prohíbe mayúsculas acentuadas en la fuente de display escaneaba
+**línea a línea**, así que solo veía el texto cuando `>`, el texto y `<` cabían
+en el mismo renglón. Un `ESPERANDO VERIFICACIÓN...` escrito en su propia línea
+—que es como el formateador deja cualquier texto medianamente largo— le pasaba
+por delante. Ahora recorre el archivo completo. Se encontró así el caso real que
+se había colado, y se pasaron a caja de frase los dos enlaces gemelos
+`CREAR CUENTA` / `INICIA SESIÓN`, alineándolos con el `<h2>` de su propia
+pantalla y con la dirección que el repo ya había tomado al quitar las mayúsculas
+globales por legibilidad.
+
+## Lo que solo se vio ejecutando la aplicación de verdad
+
+Los tests pasaban en verde mientras la aplicación tenía este defecto, porque
+ningún test podía verlo.
+
+### Ninguna imagen cargaba · esquema `http://` en las URLs de media
+
+Autenticándome contra el backend real y pidiendo `/api/badges/`, las diez
+insignias volvían con imagen y las URLs salían así:
+
+```
+http://127.0.0.1:8000/media/badges/david_vs_goliat.webp
+```
+
+En `http://`. Pero nada escucha en `http://127.0.0.1:8000` —el puerto solo habla
+TLS— y la página que consume esas URLs se sirve por `https://`. Cada avatar y
+cada insignia apuntaba a un esquema inexistente, y de existir el navegador lo
+habría bloqueado como contenido mixto.
+
+Django corre en plano detrás de un terminador TLS, así que `request.is_secure()`
+es falso y `build_absolute_uri()` construye `http://`. `settings.py` no tenía
+`SECURE_PROXY_SSL_HEADER`, de modo que Django no tenía forma de saberlo. Esto no
+era una peculiaridad del entorno local: detrás de **cualquier** proxy inverso
+—nginx, Caddy, el balanceador de un PaaS— esta API reparte URLs de imagen en
+`http://` desde una página `https://`, y no carga ni una.
+
+Arreglado con `SECURE_PROXY_SSL_HEADER` y `USE_X_FORWARDED_HOST`, documentando
+en el propio fichero la condición de seguridad que eso exige (que el proxy
+sobrescriba siempre la cabecera; si la aplicación quedara expuesta sin proxy,
+un cliente podría mandarla a mano). Con dos tests: con la cabecera la URL sale
+en `https://`, y sin ella sigue en `http://`, que es lo correcto en desarrollo
+plano.
+
+Nota sobre el entorno: el terminador TLS que había delante del puerto 8000 era
+un reenviador de bytes TCP, que no entiende HTTP y por tanto no puede añadir
+ninguna cabecera. Se añadió `backend/tools/tls_dev_proxy.py`, que sí parsea la
+petición y añade `X-Forwarded-Proto` a cada una —también a las siguientes de una
+conexión `keep-alive`, no solo a la primera—. Verificado de extremo a extremo:
+las diez URLs salen en `https://` y la imagen responde 200.
+
+### 1,5 MB para pintar un icono de 64 px
+
+La primera imagen que se descargó en esa prueba pesaba 1 553 962 bytes. Medido
+`media/` con Pillow: `aimbot_activado.png` es de 1024×1024 y 1,48 MB, y se pinta
+en cajas de 64×64 y 96×96. El 99,7 % de esa transferencia se descarta al
+escalar.
+
+Lo relevante no es el archivo, sino lo que revela: `BadgesAdminPanel:167` exige
+«80×80 exactos» y rechaza cualquier otra medida, pero **3 de las 10 insignias
+guardadas no lo cumplen** (una de 1024×1024 y dos de 256×256). La comprobación
+es puenteable —por el admin de Django, o llamando a la API— porque el backend no
+validaba nada: los tres `ImageField` no tenían un solo validador. Los avatares
+no tenían comprobación de medidas en ningún lado, y hay dos de 640×640 y
+736×736 pintándose a 48-64 px.
+
+Una validación que solo vive en el cliente no es una validación.

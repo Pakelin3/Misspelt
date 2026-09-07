@@ -49,8 +49,8 @@ const StatsTab = ({ userStats, generalAccuracy, slangAccuracy, pvAccuracy, forma
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <StatGauge label="General" value={generalAccuracy} maxValue={100} isPercentage />
-                <StatGauge label="Slangs" value={slangAccuracy} maxValue={100} isPercentage />
-                <StatGauge label="Phrasal Verbs" value={pvAccuracy} maxValue={100} isPercentage />
+                <StatGauge label="Jergas" value={slangAccuracy} maxValue={100} isPercentage />
+                <StatGauge label="Verbos frasales" value={pvAccuracy} maxValue={100} isPercentage />
             </div>
         </div>
         <div className="bg-card pixel-border p-5">
@@ -58,9 +58,9 @@ const StatsTab = ({ userStats, generalAccuracy, slangAccuracy, pvAccuracy, forma
                 <PixelBookOpenIcon className="w-5 h-5 text-muted-foreground" aria-hidden="true" /> Conocimiento
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <StatGauge label="Slangs Dominados" value={userStats.slangs_learned || 0} maxValue={100} />
-                <StatGauge label="Idioms Dominados" value={userStats.idioms_learned || 0} maxValue={50} />
-                <StatGauge label="PV Dominados" value={userStats.phrasal_verbs_learned || 0} maxValue={50} />
+                <StatGauge label="Jergas Dominadas" value={userStats.slangs_learned || 0} maxValue={100} />
+                <StatGauge label="Modismos Dominados" value={userStats.idioms_learned || 0} maxValue={50} />
+                <StatGauge label="Verbos Frasales Dominados" value={userStats.phrasal_verbs_learned || 0} maxValue={50} />
                 <StatGauge label="Vocabulario" value={userStats.vocabulary_learned || 0} maxValue={200} />
             </div>
         </div>

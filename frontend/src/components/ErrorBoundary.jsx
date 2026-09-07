@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { Button } from '@/components/ui/Button';
 
 /**
  * Red de seguridad de render.
@@ -45,19 +46,12 @@ class ErrorBoundary extends Component {
                         {description ?? 'No pudimos mostrar esta parte de la aplicación. Tu progreso está a salvo.'}
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                        <button
-                            type="button"
-                            onClick={this.handleRetry}
-                            className="min-h-11 px-5 py-3 bg-primary text-primary-foreground border-4 border-foreground font-mono text-2xs uppercase shadow-pixel-md pixel-btn focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring focus-visible:ring-offset-2"
-                        >
+                        <Button onClick={this.handleRetry} className="uppercase">
                             Intentar de nuevo
-                        </button>
-                        <a
-                            href="/"
-                            className="min-h-11 px-5 py-3 inline-flex items-center justify-center bg-background text-foreground border-4 border-foreground font-mono text-2xs uppercase shadow-pixel-md pixel-btn no-underline focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring focus-visible:ring-offset-2"
-                        >
-                            Volver al inicio
-                        </a>
+                        </Button>
+                        <Button asChild variant="outline" className="uppercase no-underline">
+                            <a href="/">Volver al inicio</a>
+                        </Button>
                     </div>
                 </div>
             </main>

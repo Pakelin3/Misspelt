@@ -5,6 +5,7 @@ import AuthContext from '@/context/AuthContext';
 import { PixelBookOpenIcon, BrainIcon, TrophyIcon, LeafIcon, SwordIcon, GearIcon } from "@/components/PixelIcons";
 import LoadingScreen from "@/components/ui/LoadingScreen";
 import ThemeButton from "@/components/ThemeButton";
+import normalizarUrlDeMedia from '@/utils/mediaUrl';
 
 function Navbar() {
     const { user, logoutUser } = useContext(AuthContext);
@@ -111,6 +112,10 @@ function Navbar() {
         else finalProfileImageSrc = `https://ui-avatars.com/api/?name=${user.username}&background=random`;
     }
 
+    // Las URLs de avatar que vienen del backend pueden traer el esquema
+    // equivocado; las de ui-avatars.com (otro host) se dejan intactas.
+    finalProfileImageSrc = normalizarUrlDeMedia(finalProfileImageSrc);
+
     if (!shouldShowNavbar) return null;
 
     const navLinkClass = (path) => `
@@ -127,7 +132,7 @@ function Navbar() {
 
                 {/* --- LOGO --- */}
                 <div className="flex items-center shrink-0">
-                    <Link to="/" aria-label="Misspelt, ir al inicio" className="flex min-h-11 items-center gap-2 group text-decoration-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                    <Link to="/" aria-label="Misspelt, ir al inicio" className="flex min-h-11 min-w-11 items-center gap-2 group text-decoration-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                         <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-none bg-primary pixel-border-primary group-hover:scale-105 transition-transform">
                             <LeafIcon className="w-4 h-4 md:w-6 md:h-6 text-primary-foreground" />
                         </div>
@@ -185,7 +190,7 @@ function Navbar() {
                             >
                                 <img
                                     src={finalProfileImageSrc}
-                                    alt="Profile"
+                                    alt="Foto de perfil"
                                     className="w-11 h-11 pixel-border rounded-none bg-background object-cover shrink-0"
                                 />
                                 <span className="hidden xl:block font-mono text-xs truncate max-w-[100px]">
@@ -292,7 +297,7 @@ function Navbar() {
                                         onClick={() => { logoutUser(); toggleMobileMenu(); }}
                                         className="w-full text-left px-3 py-2 font-sans text-lg text-destructive"
                                     >
-                                        Cerrar Sesión
+                                        Cerrar sesión
                                     </button>
                                 </>
                             ) : (

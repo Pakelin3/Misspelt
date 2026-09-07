@@ -1,16 +1,9 @@
 import React from 'react';
 import { Edit, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-
-function getTypeBadgeStyle(type) {
-    switch (type) {
-        case 'SLANG': return 'bg-word-slang/15 text-word-slang border-word-slang';
-        case 'PHRASAL_VERB': return 'bg-word-noun/15 text-word-noun border-word-noun';
-        case 'IDIOM': return 'bg-word-idiom/15 text-word-idiom border-word-idiom';
-        case 'VOCABULARY': return 'bg-word-verb/15 text-word-verb border-word-verb';
-        default: return 'bg-muted text-muted-foreground border-foreground';
-    }
-}
+// Fuente unica: esta tabla tenia su propia copia de getTypeBadgeStyle y ya
+// divergia en el caso por defecto (border-foreground vs border-border).
+import { getTypeBadgeStyle, getTypeBadgeText } from '@/lib/wordTypes';
 
 /**
  * Tabla del diccionario, extraída de DictionaryAdminPanel para que el panel
@@ -57,7 +50,7 @@ export default function DictionaryWordTable({ words, loading, onEdit, onDeleteRe
                                     </td>
                                     <td className="p-4 border-r-2 border-foreground/10">
                                         <span className={`px-2 py-1 text-2xs font-bold border-2 rounded-none ${getTypeBadgeStyle(word.word_type)}`}>
-                                            {word.word_type === 'PHRASAL_VERB' ? 'P. VERB' : word.word_type}
+                                            {getTypeBadgeText(word.word_type)}
                                         </span>
                                     </td>
                                     <td className="p-4 border-r-2 border-foreground/10 text-center">
@@ -76,7 +69,7 @@ export default function DictionaryWordTable({ words, loading, onEdit, onDeleteRe
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={() => onEdit(word)}
-                                                className="text-info hover:bg-info hover:text-info-foreground/10"
+                                                className="text-info hover:bg-info hover:text-info-foreground"
                                                 aria-label={`Editar la palabra ${word.text}`}
                                             >
                                                 <Edit className="w-5 h-5" aria-hidden="true" />
@@ -85,7 +78,7 @@ export default function DictionaryWordTable({ words, loading, onEdit, onDeleteRe
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={() => onDeleteRequest(word)}
-                                                className="text-destructive hover:bg-destructive hover:text-destructive-foreground/10"
+                                                className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
                                                 aria-label={`Eliminar la palabra ${word.text}`}
                                             >
                                                 <Trash2 className="w-5 h-5" aria-hidden="true" />

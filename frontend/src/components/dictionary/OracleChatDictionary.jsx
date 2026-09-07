@@ -159,15 +159,15 @@ export default function OracleChatDictionary({ word, onClose }) {
                     {chatPhase === 'INITIAL' && (
                         <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 w-full">
                             {INITIAL_OPTIONS.map((opt) => (
-                                <button
-                                    type="button"
+                                <Button
                                     key={opt.type}
+                                    variant="outline"
                                     onClick={() => handleOptionSelect(opt.type, opt.label)}
-                                    className="flex min-h-16 flex-col items-center justify-center p-3 bg-card pixel-border border-4 border-foreground hover:bg-primary hover:text-primary-foreground transition-all group font-mono shadow-pixel-md pixel-btn focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                    className="flex-col gap-0 min-h-16 p-3 bg-card hover:bg-primary hover:text-primary-foreground transition-all group"
                                 >
                                     <span className="text-2xs md:text-xs">{opt.label}</span>
                                     <span className="font-sans text-base text-muted-foreground group-hover:text-primary-foreground/80 mt-1">{opt.desc}</span>
-                                </button>
+                                </Button>
                             ))}
                         </div>
                     )}

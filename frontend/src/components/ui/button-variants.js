@@ -6,11 +6,11 @@ import { cva } from "class-variance-authority"
  */
 const buttonVariants = cva(
   [
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap",
+    "inline-flex items-center justify-center gap-2 text-center text-balance",
     // Sin `uppercase`: Press Start 2P dibuja las mayusculas acentuadas con el
-  // cuerpo comprimido, asi que el CSS convertia "Pronunciación" en
-  // "PRONUNCIACIóN". Las etiquetas ya vienen escritas en la caja correcta.
-  "font-mono tracking-wide rounded-none border-4",
+    // cuerpo comprimido, asi que el CSS convertia "Pronunciación" en
+    // "PRONUNCIACIóN". Las etiquetas ya vienen escritas en la caja correcta.
+    "font-mono tracking-wide rounded-none border-4",
     "transition-transform duration-100 pixel-btn",
     "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring focus-visible:ring-offset-2",
     "disabled:pointer-events-none disabled:opacity-50 disabled:grayscale disabled:shadow-none disabled:translate-y-0",

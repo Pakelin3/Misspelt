@@ -2,6 +2,7 @@ import React from 'react';
 import { Edit, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import AdminPagination from './AdminPagination';
+import normalizarUrlDeMedia from '@/utils/mediaUrl';
 
 /**
  * Grid de tarjetas de insignias, extraído de BadgesAdminPanel para que el
@@ -38,7 +39,7 @@ export default function BadgeGrid({ badges, loading, onEdit, onDeleteRequest, cu
                             <div key={badge.id} className="group relative bg-muted/20 border-2 border-foreground p-4 flex flex-col items-center text-center hover:bg-muted/40 transition-colors">
                                 <div className="w-24 h-24 mb-4 bg-background border-2 border-foreground p-2 relative overflow-hidden flex items-center justify-center">
                                     {badge.image ? (
-                                        <img src={badge.image} alt={badge.title} width={96} height={96} loading="lazy" className="w-full h-full object-contain pixelated" />
+                                        <img src={normalizarUrlDeMedia(badge.image)} alt={badge.title} width={96} height={96} loading="lazy" className="w-full h-full object-contain pixelated" />
                                     ) : (
                                         <div className="text-muted-foreground text-2xs">NO IMAGE</div>
                                     )}
@@ -76,7 +77,7 @@ export default function BadgeGrid({ badges, loading, onEdit, onDeleteRequest, cu
                                         variant="outline"
                                         size="icon"
                                         onClick={() => onDeleteRequest(badge)}
-                                        className="text-destructive hover:bg-destructive hover:text-destructive-foreground/10"
+                                        className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
                                         aria-label={`Eliminar insignia ${badge.title}`}
                                     >
                                         <Trash2 className="w-3 h-3" aria-hidden="true" />

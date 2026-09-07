@@ -15,6 +15,7 @@ import usePointerCapabilities from '@/hooks/usePointerCapabilities';
 import useGodotBridge from '@/hooks/useGodotBridge';
 import useGameTutorial from '@/hooks/useGameTutorial';
 import usePageTitle from '@/hooks/usePageTitle';
+import normalizarUrlDeMedia from '@/utils/mediaUrl';
 
 const GamePage = () => {
     usePageTitle('Jugar');
@@ -84,6 +85,11 @@ const GamePage = () => {
 
     const [isPreparing, setIsPreparing] = useState(false);
     const [iframeFailed, setIframeFailed] = useState(false);
+    // Antes, si `/game/quiz-words/` fallaba, se mandaba ["ERROR","FALLBACK"]
+    // al juego como si fueran palabras reales: el alumno las deletreaba y el
+    // quiz mostraba "Definición no disponible." como si fuera contenido del
+    // curso. Un fallo de red no es un estado vacío: se muestra como error.
+    const [wordsLoadError, setWordsLoadError] = useState(false);
 
     const { isTouchOnly } = usePointerCapabilities();
     // Se precarga mientras el jugador elige personaje, no al pulsar jugar.
@@ -136,7 +142,7 @@ const GamePage = () => {
                 response.data.badges_unlocked.forEach(badge => {
                     toast('¡Insignia Desbloqueada!', {
                         description: badge.title,
-                        icon: badge.image ? <img src={badge.image} alt="" aria-hidden="true" width="32" height="32" loading="lazy" className="w-8 h-8 rounded-full pixel-rendering" /> : <TrophyIcon aria-hidden="true" className="w-6 h-6 text-accent-strong" />,
+                        icon: badge.image ? <img src={normalizarUrlDeMedia(badge.image)} alt="" aria-hidden="true" width="32" height="32" loading="lazy" className="w-8 h-8 rounded-full pixel-rendering" /> : <TrophyIcon aria-hidden="true" className="w-6 h-6 text-accent-strong" />,
                         duration: 5000,
                     });
                 });
@@ -149,22 +155,40 @@ const GamePage = () => {
     const startGame = async () => {
         if (isPreparing) return;
         setIsPreparing(true);
+        setWordsLoadError(false);
 
         try {
             const response = await api.get(`/game/quiz-words/?difficulty=${difficulty}`);
             const data = Array.isArray(response.data) ? response.data : response.data.results || [];
 
-            setSessionWords(data);
-            sessionWordsRef.current = data;
+            // Sin palabras no hay partida que evaluar: mejor cortar aquí con
+            // un error claro que dejar que Godot deletree contenido inventado.
+            if (data.length === 0) {
+                throw new Error('El backend no devolvió palabras para esta dificultad.');
+            }
 
-            const wordsArray = data.map(w => w.text || "ERROR");
-            setGameWordsTexts(wordsArray);
+            // Una palabra sin `text` se descarta, no se rellena con "ERROR": el
+            // relleno acababa en el juego como una palabra a deletrear, y el
+            // alumno practicaba literalmente la palabra ERROR creyendo que era
+            // contenido del curso. Si no queda ninguna utilizable, es un fallo,
+            // no una partida vacia.
+            const utilizables = data.filter((w) => Boolean(w.text));
+            if (utilizables.length === 0) {
+                throw new Error('Las palabras que devolvió el backend no son utilizables.');
+            }
+
+            // La misma lista para las dos cosas: `sessionWordsRef` es donde
+            // useGodotBridge busca la definicion de la palabra que Godot acaba
+            // de completar, asi que si contuviera entradas que no viajaron al
+            // juego, la busqueda podria emparejar algo que el jugador no vio.
+            setSessionWords(utilizables);
+            sessionWordsRef.current = utilizables;
+            setGameWordsTexts(utilizables.map((w) => w.text));
 
             setGameState('PLAYING');
         } catch (error) {
             console.error("Error cargando palabras antes de iniciar:", error);
-            setGameWordsTexts(["ERROR", "FALLBACK"]);
-            setGameState('PLAYING');
+            setWordsLoadError(true);
         } finally {
             setIsPreparing(false);
         }
@@ -179,21 +203,45 @@ const GamePage = () => {
         <main id="main-content" className="w-full h-screen bg-background text-foreground overflow-hidden font-mono">
             {/* VISTA A: MENÚ DE SELECCIÓN */}
             {gameState === 'SELECTION' && (
-                <CharacterSelection
-                    navigate={navigate}
-                    selectedSkin={selectedSkin}
-                    setSelectedSkin={setSelectedSkin}
-                    unlockedCharacters={unlockedCharacters}
-                    difficulty={difficulty}
-                    setDifficulty={setDifficulty}
-                    isPreparing={isPreparing}
-                    startGame={startGame}
-                    startTutorialGame={startTutorialGame}
-                    startTutorial={startTutorial}
-                    isTouchOnly={isTouchOnly}
-                    preloadProgress={preloadProgress}
-                    preloadStatus={preloadStatus}
-                />
+                <div className="relative w-full h-full">
+                    <CharacterSelection
+                        navigate={navigate}
+                        selectedSkin={selectedSkin}
+                        setSelectedSkin={setSelectedSkin}
+                        unlockedCharacters={unlockedCharacters}
+                        difficulty={difficulty}
+                        setDifficulty={setDifficulty}
+                        isPreparing={isPreparing}
+                        startGame={startGame}
+                        startTutorialGame={startTutorialGame}
+                        startTutorial={startTutorial}
+                        isTouchOnly={isTouchOnly}
+                        preloadProgress={preloadProgress}
+                        preloadStatus={preloadStatus}
+                    />
+
+                    {/* Antes esto se disfrazaba de partida jugable con
+                        ["ERROR","FALLBACK"] como palabras. Un fallo de red se
+                        muestra como error real, no como estado vacío. */}
+                    {wordsLoadError && (
+                        <div className="absolute inset-0 z-modal flex items-center justify-center bg-background/95 p-6">
+                            <div role="alert" className="bg-card text-card-foreground pixel-border p-8 max-w-md text-center space-y-4">
+                                <h2 className="font-mono text-lg uppercase text-destructive">No se pudieron cargar las palabras</h2>
+                                <p className="font-sans text-lg text-muted-foreground">
+                                    Puede ser tu conexión con el servidor. Vuelve a intentarlo antes de empezar la partida.
+                                </p>
+                                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                    <Button onClick={startGame} disabled={isPreparing}>
+                                        Reintentar
+                                    </Button>
+                                    <Button variant="outline" onClick={() => setWordsLoadError(false)}>
+                                        Cerrar
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
             )}
 
             {/* VISTA B: GAME RUNNING */}
@@ -215,7 +263,13 @@ const GamePage = () => {
                         ref={iframeRef}
                         src={isTutorial
                             ? `/game/index.html?skin=mage&mode=tutorial`
-                            : `/game/index.html?skin=${selectedSkin}&difficulty=${difficulty === 'EASY' ? 1 : difficulty === 'NORMAL' ? 2 : 3}&words=${gameWordsTexts.join(',')}`
+                            // `words` va como un array JSON codificado con encodeURIComponent, no
+                            // como texto separado por comas: una palabra del diccionario con '&',
+                            // '=' o ',' (p. ej. "rock & roll", "M&M") cortaba la query string ahí
+                            // y perdía el resto de la lista. GameManager.gd decodifica con
+                            // URLSearchParams (que hace bien el %-decoding) y parsea el JSON con
+                            // JSON.parse_string; los dos lados cambian juntos.
+                            : `/game/index.html?skin=${encodeURIComponent(selectedSkin)}&difficulty=${difficulty === 'EASY' ? 1 : difficulty === 'NORMAL' ? 2 : 3}&words=${encodeURIComponent(JSON.stringify(gameWordsTexts))}`
                         }
                         onLoad={handleIframeLoad}
                         onError={() => setIframeFailed(true)}
@@ -267,7 +321,7 @@ const GamePage = () => {
                 <div className="fixed inset-0 z-modal flex items-center justify-center bg-black overflow-hidden">
                     <img
                         src={heroBg}
-                        alt="Pixel Art Landscape"
+                        alt="Paisaje en pixel art"
                         className="absolute inset-0 w-full h-full object-cover pixel-rendering opacity-30 pointer-events-none"
                     />
                     <div className="relative z-10 w-full max-w-4xl h-[90dvh] p-4 flex items-center justify-center">

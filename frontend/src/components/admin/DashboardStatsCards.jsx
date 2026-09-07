@@ -24,10 +24,10 @@ const StatCard = ({ title, value, icon: Icon, colorClass, children }) => (
         relative bg-card pixel-border p-6 flex flex-col justify-between 
         min-h-[140px] overflow-hidden group hover:-translate-y-1 transition-transform
     `}>
-        <div className="flex justify-between items-start z-10">
+        <div className="flex flex-wrap justify-between items-start gap-2 min-w-0 z-10">
             <div>
-                <div className='flex justify-center items-center'>
-                    <h3 className="font-mono text-xs mr-2.5 text-muted-foreground mb-1 tracking-wider">
+                <div className='flex flex-wrap justify-start items-center gap-x-2.5 min-w-0'>
+                    <h3 className="font-mono text-xs text-muted-foreground mb-1 tracking-wider min-w-0 break-words">
                         {title}
                     </h3>
                     <div className={` min-h-10 min-w-10 flex items-center-safe justify-center bg-background rounded-sm border-2 border-foreground ${colorClass}`}>
@@ -167,7 +167,7 @@ function DashboardStatsCards() {
         <div className="space-y-6">
             <h2 className="font-mono text-xl text-foreground mb-4 flex items-center gap-2">
                 <span className="w-2 h-8 bg-primary block"></span>
-                ESTADÍSTICAS DEL REINO
+                Estadísticas generales
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -25,10 +25,28 @@ let refreshPromise = null;
  * hay un único punto de refresh en toda la app. Devuelve los datos de la
  * respuesta (access/refresh) o lanza el error si el refresh falla.
  */
+function leerRefreshVigente(respaldo) {
+    // El token debe leerse del almacen en el MOMENTO de refrescar, no del closure
+    // del componente que llama. Con ROTATE_REFRESH_TOKENS el refresh anterior
+    // queda en lista negra en cuanto se usa una vez, y cada instancia de useAxios
+    // conserva en su closure el `authTokens` del render en que se creo. Una
+    // instancia que aun no se habia re-renderizado refrescaba con el token viejo,
+    // el backend lo rechazaba y se cerraba la sesion de un usuario valido.
+    try {
+        const guardado = window.localStorage?.getItem('authTokens');
+        if (guardado) {
+            const { refresh } = JSON.parse(guardado);
+            if (refresh) return refresh;
+        }
+    } catch { /* almacen bloqueado: se usa el del closure */ }
+    return respaldo;
+}
+
 export function refreshAccessToken(refreshToken) {
     if (!refreshPromise) {
+        const vigente = leerRefreshVigente(refreshToken);
         refreshPromise = axios
-            .post(`${baseURL}/token/refresh/`, { refresh: refreshToken })
+            .post(`${baseURL}/token/refresh/`, { refresh: vigente })
             .then((response) => response.data)
             .finally(() => {
                 refreshPromise = null;

@@ -196,7 +196,7 @@ function LoginPage({ onScreenChange }) {
                             }}
                             className="ml-2 text-accent-strong hover:text-accent-foreground hover:underline decoration-2 underline-offset-4 font-bold"
                         >
-                            CREAR CUENTA
+                            Crear cuenta
                         </Link>
                     </div>
                 </form>

@@ -104,18 +104,18 @@ function BadgesPage() {
             conditionText = badge.reward_description || "¡Logro completado!";
         } else if (badge.unlock_condition_data && Array.isArray(badge.unlock_condition_data) && badge.unlock_condition_data.length > 0 && userStats) {
             const conditionTypeToSpanish = {
-                'correct_slangs': 'Slangs acertados',
+                'correct_slangs': 'Jergas acertadas',
                 'total_exp_achieved': 'XP Total',
                 'answered_total_questions': 'Preguntas totales',
                 'words_seen_total': 'Palabras descubiertas',
-                'phrasal_verbs_seen': 'Phrasal verbs vistos',
+                'phrasal_verbs_seen': 'Verbos frasales vistos',
                 'correct_answers_total': 'Aciertos totales',
-                'correct_phrasal_verbs': 'Phrasal Verbs correctos',
+                'correct_phrasal_verbs': 'Verbos frasales correctos',
                 'current_streak': 'Racha actual',
                 'longest_streak': 'Mejor racha',
-                'slangs_learned': 'Slangs dominados',
-                'idioms_learned': 'Idioms dominados',
-                'phrasal_verbs_learned': 'PV dominados',
+                'slangs_learned': 'Jergas dominadas',
+                'idioms_learned': 'Modismos dominados',
+                'phrasal_verbs_learned': 'Verbos frasales dominados',
                 'vocabulary_learned': 'Vocabulario dominado',
                 'total_letters_killed': 'Letras eliminadas',
                 'total_bosses_killed': 'Jefes derrotados',
@@ -226,7 +226,7 @@ function BadgesPage() {
                                     onClick={() => toggleSection(group.key)}
                                     aria-expanded={openSections[group.key]}
                                     className={`
-                                        w-full flex items-center justify-between px-5 py-3
+                                        w-full flex flex-wrap items-center justify-between gap-2 px-3 sm:px-5 py-3
                                         border-4 ${group.borderClass} ${group.bgClass}
                                         hover:brightness-110 transition-all duration-200 cursor-pointer
                                         select-none

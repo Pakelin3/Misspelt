@@ -60,8 +60,8 @@ export function WordTypesSection() {
                     </p>
                 </div>
 
-                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
-                    <div className="w-full lg:w-5/12 flex flex-col gap-4">
+                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start min-w-0">
+                    <div className="w-full min-w-0 lg:w-5/12 flex flex-col gap-4">
                         {wordTypes.map((type) => {
                             const isActive = activeType.id === type.id;
                             return (
@@ -69,7 +69,7 @@ export function WordTypesSection() {
                                     key={type.id}
                                     onClick={() => setActiveType(type)}
                                     className={`
-                    w-full text-left p-4 flex items-center gap-4 transition-all duration-300
+                    w-full min-w-0 text-left p-3 sm:p-4 flex items-center gap-3 sm:gap-4 transition-all duration-300
                     font-mono text-lg md:text-xl border-4
                     pixel-btn group relative overflow-hidden
                     ${isActive
@@ -103,9 +103,9 @@ export function WordTypesSection() {
                                 key={activeType.id}
                                 className="animate-in fade-in slide-in-from-right-8 duration-500 ease-out"
                             >
-                                <div className="flex items-center gap-4 mb-6 border-b-4 border-dashed border-muted pb-4">
-                                    <span className="text-5xl">{activeType.icon}</span>
-                                    <h3 className="font-mono text-3xl md:text-4xl text-foreground">
+                                <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 border-b-4 border-dashed border-muted pb-4">
+                                    <span aria-hidden="true" className="text-4xl sm:text-5xl shrink-0">{activeType.icon}</span>
+                                    <h3 lang="en" className="font-mono text-xl sm:text-2xl md:text-4xl text-foreground break-words min-w-0">
                                         {activeType.title}
                                     </h3>
                                 </div>

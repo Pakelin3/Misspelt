@@ -47,7 +47,7 @@ export function HeroSection() {
           <StarIcon aria-hidden="true" className="w-8 h-8 animate-sparkle stagger-2 text-accent-strong" />
         </div>
 
-        <h1 className="font-mono  text-foreground leading-tight mb-6 animate-slide-up">
+        <h1 className="font-mono text-foreground leading-tight mb-6 animate-slide-up">
           <TextShuffle
             text="MISSPELT"
             shuffleDirection="up"
@@ -63,7 +63,7 @@ export function HeroSection() {
           />
         </h1>
 
-        <p className="font-sans text-3xl md:text-3xl lg:text-4xl text-foreground max-w-2xl mx-auto leading-relaxed mb-4 animate-slide-up stagger-1">
+        <p className="font-sans text-3xl lg:text-4xl text-foreground max-w-2xl mx-auto leading-relaxed mb-4 animate-slide-up stagger-1">
           Cultiva tu inglés mientras juegas
         </p>
 
@@ -100,11 +100,11 @@ export function HeroSection() {
 
         {/* Estadísticas */}
         <div className="mt-16 flex flex-wrap items-center justify-center gap-8 md:gap-12 opacity-80">
-          <StatItem label="Phrasal Verbs" targetValue={stats?.phrasal_verbs} />
+          <StatItem label="Verbos frasales" targetValue={stats?.phrasal_verbs} />
           <div className="h-8 w-1 bg-border hidden sm:block" />
-          <StatItem label="Slangs" targetValue={stats?.slangs} />
+          <StatItem label="Jergas" targetValue={stats?.slangs} />
           <div className="h-8 w-1 bg-border hidden sm:block" />
-          <StatItem label="Idioms" targetValue={stats?.idioms} />
+          <StatItem label="Modismos" targetValue={stats?.idioms} />
           <div className="h-8 w-1 bg-border hidden sm:block" />
           <StatItem label="Insignias" targetValue={stats?.badges} />
         </div>

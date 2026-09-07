@@ -82,3 +82,44 @@ describe('refreshAccessToken', () => {
         expect(resultados.every((r) => r === boom)).toBe(true);
     });
 });
+
+describe('refreshAccessToken con rotacion de tokens', () => {
+    beforeEach(() => {
+        window.localStorage.clear();
+        vi.clearAllMocks();
+    });
+
+    it('usa el refresh guardado, no el que le pasa un closure rancio', async () => {
+        // Escenario real observado en el navegador: una instancia de useAxios
+        // creada hace varios renders conserva en su closure el `authTokens` de
+        // entonces. Con ROTATE_REFRESH_TOKENS ese token ya esta en lista negra,
+        // asi que refrescar con el cerraba la sesion de un usuario valido.
+        window.localStorage.setItem('authTokens', JSON.stringify({
+            access: 'access-nuevo', refresh: 'refresh-vigente',
+        }));
+        axios.post.mockResolvedValue({ data: { access: 'a', refresh: 'r' } });
+
+        await refreshAccessToken('refresh-rancio-del-closure');
+
+        expect(axios.post).toHaveBeenCalledWith(
+            expect.stringContaining('/token/refresh/'),
+            { refresh: 'refresh-vigente' },
+        );
+    });
+
+    it('cae al token del closure si no hay nada guardado', async () => {
+        axios.post.mockResolvedValue({ data: { access: 'a', refresh: 'r' } });
+        await refreshAccessToken('el-unico-que-tengo');
+        expect(axios.post).toHaveBeenCalledWith(
+            expect.anything(),
+            { refresh: 'el-unico-que-tengo' },
+        );
+    });
+
+    it('no se rompe si el almacen tiene basura', async () => {
+        window.localStorage.setItem('authTokens', 'esto-no-es-json');
+        axios.post.mockResolvedValue({ data: { access: 'a', refresh: 'r' } });
+        await expect(refreshAccessToken('respaldo')).resolves.toBeTruthy();
+        expect(axios.post).toHaveBeenCalledWith(expect.anything(), { refresh: 'respaldo' });
+    });
+});

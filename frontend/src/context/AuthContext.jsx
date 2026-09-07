@@ -120,18 +120,18 @@ export const AuthProvider = ({ children }) => {
                     }
                 }
                 if (translatedErrors.detail && translatedErrors.detail.length > 0) {
-                    showAlert('Error al iniciar sesión', '', 'error');
+                    showAlert('Error al iniciar sesión', 'Revisa tus datos e inténtalo de nuevo.', 'error');
                 } else if (translatedErrors.non_field_errors && translatedErrors.non_field_errors.length > 0) {
-                    showAlert('Error al iniciar sesión', '', 'error');
+                    showAlert('Error al iniciar sesión', 'Revisa tus datos e inténtalo de nuevo.', 'error');
                 } else {
                     showAlert('Error al iniciar sesión', 'Correo electrónico o contraseña incorrectos.', 'error');
                 }
                 return translatedErrors;
             } else {
-                showAlert('Error de Red', 'No se pudo conectar con el servidor.', 'error');
+                showAlert('Error de Red', 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.', 'error');
             }
         }
-        return { general_error: 'Hubo un error inesperado.' };
+        return { general_error: 'No pudimos iniciar sesión. Revisa tu conexión e inténtalo de nuevo.' };
     }, [navigate, showAlert, showToast, translateError]);
 
     const registerUser = useCallback(async (email, username, password, confirmPassword) => {
@@ -170,15 +170,15 @@ export const AuthProvider = ({ children }) => {
                     // Errores de campo: el propio formulario los muestra junto a
                     // cada input, no hace falta un toast general además.
                 } else {
-                    showAlert('Error en el Registro', 'Hubo un problema con tu registro.', 'error');
+                    showAlert('Error en el Registro', 'Hubo un problema con tu registro. Revisa los datos e inténtalo de nuevo.', 'error');
                 }
 
                 return translatedErrors;
             } else {
-                showAlert('Error de Red', 'No se pudo conectar con el servidor.', 'error');
+                showAlert('Error de Red', 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.', 'error');
             }
         }
-        return { general_error: 'Hubo un error inesperado.' };
+        return { general_error: 'No pudimos completar el registro. Revisa tu conexión e inténtalo de nuevo.' };
     }, [navigate, showAlert, translateError]);
 
     const googleAuth = useCallback(async (token) => {
@@ -202,7 +202,7 @@ export const AuthProvider = ({ children }) => {
             showAlert('Error con Google', 'No se pudo iniciar sesión con Google.', 'error');
             return { general_error: 'No se pudo iniciar sesión con Google.' };
         }
-        return { general_error: 'Hubo un error inesperado con Google.' };
+        return { general_error: 'No pudimos conectar con Google. Revisa tu conexión e inténtalo de nuevo.' };
     }, [navigate, showAlert, showToast]);
 
     const logoutUser = useCallback(async () => {
@@ -290,7 +290,7 @@ export const AuthProvider = ({ children }) => {
             console.warn("carga de verificación de sesión excedió el tiempo límite.");
             showAlert(
                 "Problema de Carga",
-                "No pudimos verificar su sesión a tiempo. Por favor, intente iniciar sesión de nuevo.",
+                "No pudimos verificar tu sesión a tiempo. Inicia sesión de nuevo para continuar.",
                 "warning"
             ).then(() => {
                 logoutUser();

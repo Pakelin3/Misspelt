@@ -3,6 +3,7 @@ import {
     PixelEditIcon, PixelSaveIcon, PixelStarIcon, TrophyIcon, PixelFireIcon, SwordIcon,
 } from '@/components/PixelIcons';
 import AvatarPicker from './AvatarPicker';
+import normalizarUrlDeMedia from '@/utils/mediaUrl';
 
 // ─── Identity card: avatar, name/title, edit form, XP bar, quick stats ───
 const ProfileHeader = ({
@@ -17,7 +18,8 @@ const ProfileHeader = ({
     onSaveProfile,
     onCancelEdit,
 }) => {
-    const editingAvatarSrc = userStats.unlocked_avatars?.find(a => a.id === editForm.current_avatar)?.image || avatarSrc;
+    const avatarElegido = userStats.unlocked_avatars?.find(a => a.id === editForm.current_avatar)?.image;
+    const editingAvatarSrc = normalizarUrlDeMedia(avatarElegido) || avatarSrc;
 
     return (
         <div className="relative bg-card pixel-border p-6 md:p-8 mb-8">
@@ -26,7 +28,7 @@ const ProfileHeader = ({
                 <button
                     onClick={onStartEditing}
                     aria-label="Editar perfil"
-                    className="absolute bottom-4 right-4 p-2 size-11 text-muted-foreground hover:text-primary hover:bg-primary hover:text-primary-foreground/10 transition-colors border-2 border-transparent hover:border-primary"
+                    className="absolute bottom-4 right-4 p-2 size-11 text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors border-2 border-transparent hover:border-primary"
                 >
                     <PixelEditIcon className="w-4 h-4" aria-hidden="true" />
                 </button>

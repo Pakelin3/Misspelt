@@ -13,6 +13,7 @@ import BadgesTab from '@/components/profile/BadgesTab';
 import FarmsTab from '@/components/profile/FarmsTab';
 import ThemeSelector from '@/components/profile/ThemeSelector';
 import usePageTitle from '@/hooks/usePageTitle';
+import normalizarUrlDeMedia from '@/utils/mediaUrl';
 
 function ProfilePage() {
     usePageTitle('Mi perfil');
@@ -27,6 +28,7 @@ function ProfilePage() {
     const [historyNext, setHistoryNext] = useState(null);
     const [historyPrev, setHistoryPrev] = useState(null);
     const [historyLoading, setHistoryLoading] = useState(false);
+    const [historyError, setHistoryError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('stats');
@@ -39,6 +41,7 @@ function ProfilePage() {
     const [joinLoading, setJoinLoading] = useState(false);
     const [userFarms, setUserFarms] = useState([]);
     const [farmsLoading, setFarmsLoading] = useState(false);
+    const [farmsError, setFarmsError] = useState(null);
 
     // ─── FETCH ────────────────────────────────────
     const userId = user?.user_id;
@@ -68,6 +71,7 @@ function ProfilePage() {
 
     const fetchHistory = useCallback(async (page = 1) => {
         setHistoryLoading(true);
+        setHistoryError(null);
         try {
             const res = await api.get(`/game-history/?page=${page}`);
             const data = res.data;
@@ -78,6 +82,7 @@ function ProfilePage() {
             setHistoryPage(page);
         } catch (err) {
             console.error('Error fetching history:', err);
+            setHistoryError('No se pudo cargar el historial. Comprueba tu conexión e inténtalo de nuevo.');
         } finally {
             setHistoryLoading(false);
         }
@@ -89,11 +94,13 @@ function ProfilePage() {
 
     const fetchUserFarms = useCallback(async () => {
         setFarmsLoading(true);
+        setFarmsError(null);
         try {
             const res = await api.get('/farms/');
             setUserFarms(res.data.results || res.data || []);
         } catch (err) {
             console.error('Error fetching farms:', err);
+            setFarmsError('No se pudieron cargar las granjas. Comprueba tu conexión e inténtalo de nuevo.');
         } finally {
             setFarmsLoading(false);
         }
@@ -191,7 +198,7 @@ function ProfilePage() {
             toast.success('¡Perfil actualizado!');
         } catch (err) {
             console.error(err);
-            toast.error('Error', { description: 'No se pudo guardar el perfil.' });
+            toast.error('No se pudo guardar el perfil', { description: 'Revisa los datos e inténtalo de nuevo.' });
         } finally {
             setSaving(false);
         }
@@ -207,7 +214,7 @@ function ProfilePage() {
             setInviteCode('');
             if (activeTab === 'farms') fetchUserFarms();
         } catch (err) {
-            toast.error('Error', { description: err.response?.data?.error || 'Código inválido.' });
+            toast.error('No se pudo unir a la granja', { description: err.response?.data?.error || 'Revisa el código e inténtalo de nuevo.' });
         } finally {
             setJoinLoading(false);
         }
@@ -258,7 +265,7 @@ function ProfilePage() {
     const slangAccuracy = getAccuracy(userStats.correct_slangs, userStats.slangs_seen);
     const pvAccuracy = getAccuracy(userStats.correct_phrasal_verbs, userStats.phrasal_verbs_seen);
     const currentAvatarObj = userStats.unlocked_avatars?.find(a => a.id === profileData?.current_avatar);
-    const avatarSrc = currentAvatarObj?.image || `https://ui-avatars.com/api/?name=${userStats.user_username}&background=random`;
+    const avatarSrc = normalizarUrlDeMedia(currentAvatarObj?.image) || `https://ui-avatars.com/api/?name=${userStats.user_username}&background=random`;
 
     return (
         <main id="main-content" className="min-h-screen bg-background font-sans flex flex-col">
@@ -324,6 +331,7 @@ function ProfilePage() {
                 {activeTab === 'history' && (
                     <HistoryTab
                         historyLoading={historyLoading}
+                        historyError={historyError}
                         gameHistory={gameHistory}
                         historyCount={historyCount}
                         historyPage={historyPage}
@@ -341,7 +349,12 @@ function ProfilePage() {
                 )}
 
                 {activeTab === 'farms' && (
-                    <FarmsTab farmsLoading={farmsLoading} userFarms={userFarms} />
+                    <FarmsTab
+                        farmsLoading={farmsLoading}
+                        farmsError={farmsError}
+                        userFarms={userFarms}
+                        onRetry={fetchUserFarms}
+                    />
                 )}
 
             </div>

@@ -26,7 +26,7 @@ export default function FarmDetail() {
             setFarm(res.data);
             // eslint-disable-next-line no-unused-vars
         } catch (error) {
-            toast.error("Error cargando detalles de la granja");
+            toast.error("No se pudo cargar la granja", { description: "Volvemos a la lista de granjas. Vuelve a intentarlo desde ahí." });
             navigate('/admin-dashboard/farms');
         } finally {
             setLoading(false);
@@ -62,7 +62,7 @@ export default function FarmDetail() {
             fetchFarmDetail();
             // eslint-disable-next-line no-unused-vars
         } catch (error) {
-            toast.error("Error", { description: "No se pudo remover al estudiante. Inténtalo de nuevo." });
+            toast.error("No se pudo quitar al estudiante", { description: "Inténtalo de nuevo en unos segundos." });
         }
     };
 
@@ -173,7 +173,7 @@ export default function FarmDetail() {
                                                     variant="ghost"
                                                     size="icon"
                                                     onClick={() => setSelectedStudentId(student.id)}
-                                                    className="text-primary hover:bg-primary hover:text-primary-foreground/20"
+                                                    className="text-primary hover:bg-primary hover:text-primary-foreground"
                                                     aria-label={`Ver detalles de ${student.username}`}
                                                 >
                                                     <Eye className="w-5 h-5" aria-hidden="true" />
@@ -182,7 +182,7 @@ export default function FarmDetail() {
                                                     variant="ghost"
                                                     size="icon"
                                                     onClick={() => setStudentToRemove({ id: student.id, username: student.username })}
-                                                    className="text-destructive hover:bg-destructive hover:text-destructive-foreground/20"
+                                                    className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
                                                     aria-label={`Remover a ${student.username} de la granja`}
                                                 >
                                                     <Trash2 className="w-5 h-5" aria-hidden="true" />
@@ -211,8 +211,8 @@ export default function FarmDetail() {
                 open={!!studentToRemove}
                 onOpenChange={(open) => !open && setStudentToRemove(null)}
                 title={`¿Quitar a @${studentToRemove?.username} de la granja?`}
-                description="El alumno perderá el acceso a esta granja y desaparecerá de esta tabla de desempeño. Su cuenta, su progreso y las palabras o insignias que ya haya desbloqueado no se ven afectados."
-                confirmLabel="Sí, quitar a este alumno"
+                description="El estudiante perderá el acceso a esta granja y desaparecerá de esta tabla de desempeño. Su cuenta, su progreso y las palabras o insignias que ya haya desbloqueado no se ven afectados."
+                confirmLabel="Sí, quitar a este estudiante"
                 onConfirm={handleConfirmRemoveStudent}
             />
         </div>

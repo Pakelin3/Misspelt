@@ -310,6 +310,15 @@
   --text-2xs: 0.625rem;
   --text-2xs--line-height: 1rem;
 
+  /* Altura del navbar fijo (py-3 + un objetivo tactil de 44px + el borde de
+     4px). Es un token porque el panel de administracion la necesitaba en tres
+     sitios a la vez -el relleno superior, el desplazamiento del sticky y el
+     calculo de la altura de la barra lateral- y estaba escrita a mano como 72px
+     en los tres. Si alguien cambia el relleno del navbar, con el numero suelto
+     la barra lateral se desalinea y se sale de la pantalla sin que nada avise.
+     Va en --spacing-* para que Tailwind genere pt-navbar / top-navbar / h-navbar. */
+  --spacing-navbar: 4.5rem;
+
   /* ==========================================================================
      CAPA 3 — DE COMPONENTE
      Elevacion dura del pixel-art. Sustituye a las 289 variantes arbitrarias

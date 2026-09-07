@@ -1,5 +1,6 @@
 import React from 'react';
 import { TrophyIcon, PixelCheckIcon, PixelLockIcon } from '@/components/PixelIcons';
+import normalizarUrlDeMedia from '@/utils/mediaUrl';
 
 
 const BadgeCard = ({ badge, status }) => {
@@ -43,7 +44,7 @@ const BadgeCard = ({ badge, status }) => {
                 <div className={`absolute inset-0 border-4 border-dashed rounded-full ${unlocked ? 'border-primary animate-spin-slow' : 'border-muted'}`} />
                 {badge.image ? (
                     <img
-                        src={badge.image}
+                        src={normalizarUrlDeMedia(badge.image)}
                         alt={badge.title}
                         loading="lazy"
                         width={80}

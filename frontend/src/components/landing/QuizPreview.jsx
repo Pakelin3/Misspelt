@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import QuizManager from "@/components/quiz/QuizManager";
 import { Swords, Activity } from "lucide-react";
 import axios from "axios";
+import { Button } from "@/components/ui/Button";
 
 export function QuizPreview() {
   const [cooldown, setCooldown] = useState(false);
@@ -65,49 +66,51 @@ export function QuizPreview() {
         {cooldown ? (
           <div className="bg-card pixel-border p-8 md:p-12 text-center shadow-pixel-xl max-w-2xl mx-auto">
             <div className="text-6xl mb-6">🛑</div>
-            <h3 className="font-mono text-2xl md:text-3xl text-destructive mb-4">¡Oops! Se te acabó la demo</h3>
+            <h3 className="font-mono text-2xl md:text-3xl text-destructive mb-4 break-words min-w-0">¡Oops! Se te acabó la demo</h3>
             <p className="font-sans text-lg text-muted-foreground mb-8">
               Has perdido tu única vida en la versión de prueba. Si quieres seguir practicando y mejorando tu vocabulario, ¡tienes opciones completas esperándote!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
+              <Button
+                variant="destructive"
                 onClick={() => navigate('/play')}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-destructive text-destructive-foreground font-bold pixel-btn shadow-pixel-md hover:translate-y-[2px] transition-all"
+                className="flex-1"
               >
-                <Swords size={20} />
+                <Swords size={20} aria-hidden="true" />
                 SUPERVIVENCIA
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => navigate('/quiz')}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-primary text-primary-foreground font-bold pixel-btn shadow-pixel-md hover:translate-y-[2px] transition-all"
+                className="flex-1"
               >
-                <Activity size={20} />
+                <Activity size={20} aria-hidden="true" />
                 Nueva práctica
-              </button>
+              </Button>
             </div>
           </div>
         ) : hasWon ? (
           <div className="bg-card pixel-border p-8 md:p-12 text-center shadow-pixel-xl max-w-2xl mx-auto">
             <div className="text-6xl mb-6">🏆</div>
-            <h3 className="font-mono text-2xl md:text-3xl text-primary mb-4">¡Felicidades! Has completado la demo</h3>
+            <h3 className="font-mono text-2xl md:text-3xl text-primary mb-4 break-words">¡Felicidades! Has completado la demo</h3>
             <p className="font-sans text-lg text-muted-foreground mb-8">
               ¡Excelente trabajo superando este desafío de 10 palabras sin perder tu única vida! Si quieres seguir poniendo a prueba tu vocabulario, ¡descubre el resto del juego!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
+              <Button
+                variant="destructive"
                 onClick={() => navigate('/play')}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-destructive text-destructive-foreground font-bold pixel-btn shadow-pixel-md hover:translate-y-[2px] transition-all"
+                className="flex-1"
               >
-                <Swords size={20} />
+                <Swords size={20} aria-hidden="true" />
                 SUPERVIVENCIA
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => navigate('/quiz')}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-primary text-primary-foreground font-bold pixel-btn shadow-pixel-md hover:translate-y-[2px] transition-all"
+                className="flex-1"
               >
-                <Activity size={20} />
+                <Activity size={20} aria-hidden="true" />
                 Nueva práctica
-              </button>
+              </Button>
             </div>
           </div>
         ) : isPlaying ? (
@@ -124,19 +127,19 @@ export function QuizPreview() {
           </div>
         ) : (
           <div className="bg-card pixel-border p-8 md:p-12 text-center shadow-pixel-xl max-w-2xl mx-auto">
-            <h3 className="font-mono text-2xl md:text-3xl text-foreground mb-4">¿Te atreves a probar?</h3>
+            <h3 className="font-mono text-2xl md:text-3xl text-foreground mb-4 break-words">¿Te atreves a probar?</h3>
             <p className="font-sans text-lg text-muted-foreground mb-8">
               Juega una pequeña demostración de nuestros minijuegos integrados con 10 palabras aleatorias.
               Pero ten cuidado: <strong className="text-destructive font-bold inline-block px-1 bg-destructive/10">Solo tienes 1 vida</strong>.
               Si fallas, tendrás que esperar 1 hora para volver a intentarlo en la demo.
             </p>
-            <button
+            <Button
               onClick={startGame}
               disabled={isLoading}
-              className="w-full sm:w-auto px-10 py-4 uppercase font-bold text-xl bg-primary text-primary-foreground pixel-btn pixel-border-primary shadow-pixel-md hover:translate-y-[2px] hover:shadow-pixel-sm transition-all animate-pulse disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto px-10 py-4 text-xl md:text-xl font-bold animate-pulse"
             >
               {isLoading ? "CARGANDO..." : "INICIAR DEMO"}
-            </button>
+            </Button>
           </div>
         )}
       </div>

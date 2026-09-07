@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { PixelVolume3Icon, PixelMicIcon } from '@/components/PixelIcons';
 import useAxios from '@/utils/useAxios';
 import useTextToSpeech from '@/hooks/useTextToSpeech';
+import { Button } from '@/components/ui/Button';
 
 const LISTENING_VOICE_ID = "IKne3meq5aSn9XLyUdCD";
 
@@ -256,16 +257,14 @@ const ListeningChallenge = ({ word, onSuccess, onError }) => {
                 )}
             </div>
 
-            <button
-                type="button"
+            <Button
+                variant="accent"
                 onClick={checkAnswer}
                 disabled={!inputValue || Boolean(feedback)}
-                className="w-full md:w-auto bg-accent text-accent-foreground px-10 py-4 font-black text-xl uppercase pixel-btn shadow-pixel-md
-                focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring focus-visible:ring-offset-2
-                disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
+                className="w-full md:w-auto px-10 py-4 text-xl md:text-xl font-black"
             >
                 COMPROBAR
-            </button>
+            </Button>
         </div>
     );
 };

@@ -73,12 +73,21 @@ describe('responsividad', () => {
     });
 
     it('no se bloquea el zoom en ningun documento HTML', () => {
+        // `public/game/index.html` lo genera Godot al exportar. Una vez se
+        // arreglo editandolo a mano y la siguiente exportacion lo revirtio sin
+        // avisar; ahora el arreglo vive en la plantilla del proyecto de Godot
+        // (`web/shell.html` + `html/custom_html_shell`), y esta guardia es la
+        // que detecta si una exportacion futura vuelve a romperlo.
         const htmls = ['index.html', 'public/game/index.html'];
         const malos = [];
         for (const h of htmls) {
             let text;
             try { text = readFileSync(join(process.cwd(), h), 'utf8'); } catch { continue; }
-            if (/user-scalable\s*=\s*no|maximum-scale\s*=\s*1/.test(text)) malos.push(h);
+            // Se quitan los comentarios antes de buscar: solo cuenta lo que el
+            // navegador obedece. La plantilla explica en un comentario por que
+            // no lleva `user-scalable=no`, y mencionarlo no es incumplirlo.
+            const efectivo = text.replace(/<!--[\s\S]*?-->/g, '');
+            if (/user-scalable\s*=\s*no|maximum-scale\s*=\s*1/.test(efectivo)) malos.push(h);
         }
         expect(malos, `Bloquear el zoom incumple WCAG 1.4.4: ${malos.join(', ')}`).toEqual([]);
     });

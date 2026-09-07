@@ -81,11 +81,11 @@ function AdminDashboard() {
     const currentRoute = ADMIN_MENU.find(item => item.path === location.pathname) || ADMIN_MENU[0];
 
     return (
-        <div className="min-h-screen bg-background flex font-sans pt-[72px]">
+        <div className="min-h-screen bg-background flex font-sans pt-navbar">
 
             <aside
                 className={`
-                    hidden md:flex flex-col border-r-4 border-foreground bg-card h-[calc(100vh-72px)] sticky top-[72px] transition-all duration-300 z-dropdown
+                    hidden md:flex flex-col border-r-4 border-foreground bg-card h-[calc(100dvh-var(--spacing-navbar))] sticky top-navbar transition-all duration-300 z-dropdown
                     ${isSidebarOpen ? 'w-64' : 'w-20'}
                 `}
             >

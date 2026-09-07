@@ -24,7 +24,7 @@ export default function FarmsAdminPanel() {
 
             setFarms(res.data.results || res.data || []);
         } catch (error) {
-            toast.error("Error cargando granjas");
+            toast.error("No se pudieron cargar las granjas", { description: "Revisa tu conexión y vuelve a intentarlo." });
             console.error(error);
         } finally {
             setLoading(false);
@@ -61,7 +61,7 @@ export default function FarmsAdminPanel() {
             fetchFarms();
             // eslint-disable-next-line no-unused-vars
         } catch (error) {
-            toast.error("Error", { description: "No se pudo crear la granja." });
+            toast.error("No se pudo crear la granja", { description: "Revisa el nombre e inténtalo de nuevo." });
         }
     };
 
@@ -73,7 +73,7 @@ export default function FarmsAdminPanel() {
             fetchFarms();
             toast.success('Granja borrada');
         } catch {
-            toast.error('Error', { description: 'No se pudo eliminar la granja.' });
+            toast.error('No se pudo eliminar la granja', { description: 'Inténtalo de nuevo en unos segundos.' });
         }
     };
 
@@ -113,7 +113,7 @@ export default function FarmsAdminPanel() {
                                 onChange={e => setNewFarmName(e.target.value)}
                             />
                         </div>
-                        <Button type="submit" variant="accent" className="font-mono">Crear</Button>
+                        <Button type="submit" variant="accent" className="font-mono">Crear granja</Button>
                         <Button type="button" variant="outline" onClick={() => setIsCreating(false)} className="font-mono">Cancelar</Button>
                     </form>
                 </div>
@@ -151,7 +151,7 @@ export default function FarmsAdminPanel() {
                                         e.stopPropagation();
                                         setFarmToDelete(farm);
                                     }}
-                                    className="text-muted-foreground hover:text-destructive hover:bg-destructive hover:text-destructive-foreground/10"
+                                    className="text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
                                     aria-label={`Eliminar la granja ${farm.name}`}
                                 >
                                     <Trash2 className="w-4 h-4" aria-hidden="true" />

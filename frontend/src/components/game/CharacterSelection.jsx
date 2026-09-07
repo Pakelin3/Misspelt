@@ -42,15 +42,15 @@ const CharacterSelection = ({
     }, [selectedSkin]);
 
     return (
-        <div className="flex flex-col items-center justify-center h-full gap-8 p-4 relative z-10">
+        <div className="flex flex-col items-center justify-center min-h-full gap-8 p-4 overflow-y-auto relative z-10">
             <h1 className="text-4xl md:text-6xl text-center font-black text-primary drop-shadow-pixel animate-in slide-in-from-top-4 duration-500">
                 MISSPELT SURVIVOR
             </h1>
 
             <Card className=" border-primary bg-background p-6 pixel-border w-full max-w-5xl rounded-none animate-in zoom-in-95 duration-500 delay-150">
-                <div className="flex flex-col lg:flex-row gap-8">
+                <div className="flex flex-col lg:flex-row gap-8 min-w-0 w-full">
                     {/* Panel Izquierdo: Selección de Personaje */}
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                         <h2 className="text-2xl font-bold text-center mb-6 text-foreground">Elige tu Héroe</h2>
 
                         <div
@@ -83,7 +83,7 @@ const CharacterSelection = ({
                                             focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring focus-visible:ring-offset-2
                                             ${isUnlocked ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}
                                             ${isSelected
-                                                ? 'border-primary bg-primary/10 scale-105 shadow-pixel-md z-raised'
+                                                ? 'border-primary bg-primary/10 sm:scale-105 shadow-pixel-md z-raised'
                                                 : isUnlocked
                                                     ? 'border-muted bg-muted/50 hover:border-primary/50 hover:scale-105'
                                                     : 'border-muted bg-muted/20 grayscale'
@@ -120,7 +120,7 @@ const CharacterSelection = ({
                     </div>
 
                     {/* Panel Derecho: Lore, Stats y Opciones */}
-                    <div className="flex-1 flex flex-col justify-between bg-muted/20 border-4 border-foreground p-6 relative overflow-hidden">
+                    <div className="flex-1 min-w-0 flex flex-col justify-between bg-muted/20 border-4 border-foreground p-6 relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-2 h-2 bg-foreground"></div>
                         <div className="absolute top-0 right-0 w-2 h-2 bg-foreground"></div>
                         <div className="absolute bottom-0 left-0 w-2 h-2 bg-foreground"></div>
@@ -154,7 +154,7 @@ const CharacterSelection = ({
                                 ].map(stat => {
                                     const filled = Math.round((stat.value / stat.max) * 10);
                                     return (
-                                        <div key={stat.label} className="flex items-center gap-3">
+                                        <div key={stat.label} className="flex items-center gap-3 flex-wrap">
                                             <span className="font-bold text-xs uppercase w-10 text-muted-foreground">{stat.label}</span>
                                             <div className="flex gap-1 flex-1">
                                                 {[...Array(10)].map((_, i) => (
@@ -176,7 +176,7 @@ const CharacterSelection = ({
                                 id="tutorial-game-upgrades"
                                 variant="outline"
                                 onClick={() => setShowUpgrades(true)}
-                                className="w-full mb-6 relative h-12 text-xs rounded-none font-bold uppercase pixel-btn border-2 border-accent-strong hover:bg-accent hover:text-accent-foreground text-accent-strong group overflow-hidden shadow-pixel-sm hover:shadow-pixel-sm hover:-translate-y-0.5 transition-all"
+                                className="w-full mb-6 relative h-12 text-xs rounded-none font-bold uppercase pixel-btn border-2 border-accent-strong hover:bg-accent hover:text-accent-foreground text-accent-strong group overflow-hidden shadow-pixel-sm hover:shadow-pixel-md hover:-translate-y-0.5 transition-all"
                             >
                                 <PixelSparklesIcon className="w-4 h-4 mr-2 group-hover:animate-spin" />
                                 Ver Árbol de Mejoras
@@ -215,7 +215,7 @@ const CharacterSelection = ({
                                 variant="outline"
                                 onClick={startTutorialGame}
                                 id="tutorial-game-howtoplay"
-                                className="w-full lg:w-1/4 rounded-none h-14 text-sm pixel-btn border-2 border-accent-strong text-accent-strong hover:bg-accent hover:text-accent-foreground shadow-pixel-sm hover:shadow-pixel-sm hover:-translate-y-0.5 transition-all"
+                                className="w-full lg:w-1/4 rounded-none h-14 text-sm pixel-btn border-2 border-accent-strong text-accent-strong hover:bg-accent hover:text-accent-foreground shadow-pixel-sm hover:shadow-pixel-md hover:-translate-y-0.5 transition-all"
                             >
                                 <BookIcon className="mr-2 w-5 h-5" /> COMO JUGAR
                             </Button>
@@ -223,7 +223,7 @@ const CharacterSelection = ({
                                 onClick={startGame}
                                 id="tutorial-game-start"
                                 disabled={isPreparing}
-                                className={`w-full lg:w-2/4 hover:bg-accent  rounded-none h-14 text-xl pixel-btn shadow-pixel-md hover:translate-y-[2px] hover:shadow-pixel-sm transition-all bg-accent text-accent-foreground ${isPreparing ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                className={`w-full lg:w-2/4 hover:bg-accent rounded-none h-14 text-xl pixel-btn shadow-pixel-md hover:translate-y-[2px] hover:shadow-pixel-sm transition-all bg-accent text-accent-foreground ${isPreparing ? 'opacity-70 cursor-not-allowed' : ''}`}
                             >
                                 {isPreparing ? (
                                     <>

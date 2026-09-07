@@ -16,7 +16,14 @@ export default function AdminPagination({ currentPage, totalPages, onPageChange 
             >
                 ANTERIOR
             </Button>
-            <span className="font-mono text-sm uppercase bg-foreground text-background px-3 py-1 font-bold">
+            {/* `role="status"` con aria-live: al pulsar anterior/siguiente el numero
+                cambiaba visualmente pero un lector de pantalla no anunciaba nada. */}
+            <span
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+                className="font-mono text-sm bg-foreground text-background px-3 py-1 font-bold"
+            >
                 Página {currentPage} de {totalPages}
             </span>
             <Button

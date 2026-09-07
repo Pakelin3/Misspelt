@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "verify": "npm run lint && npm test && npm run build"
+    "verify": "npm run lint && npm test && npm run build",
+    "comprimir-juego": "node scripts/comprimir-juego.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

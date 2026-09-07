@@ -1,4 +1,5 @@
 import React from 'react';
+import normalizarUrlDeMedia from '@/utils/mediaUrl';
 
 // Selector de avatar dentro del formulario de edición. Solo permite elegir
 // entre los avatares ya desbloqueados; el texto explica cómo conseguir más
@@ -19,7 +20,7 @@ const AvatarPicker = ({ avatars, selectedId, onSelect }) => (
                         : 'border-foreground/30 hover:border-foreground'
                         }`}
                 >
-                    <img src={av.image} alt="" aria-hidden="true" loading="lazy" width={48} height={48} className="w-full h-full object-contain" />
+                    <img src={normalizarUrlDeMedia(av.image)} alt="" aria-hidden="true" loading="lazy" width={48} height={48} className="w-full h-full object-contain" />
                 </button>
             ))}
         </div>

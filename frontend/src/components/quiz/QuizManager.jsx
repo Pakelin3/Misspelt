@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { X, Trophy, AlertCircle } from 'lucide-react';
 import { PixelHeartIcon } from '@/components/PixelIcons';
+import { Button } from '@/components/ui/Button';
 import SentenceBuilder from './SentenceBuilder';
 import MultiChoice from './MultiChoice';
 import ListeningChallenge from './ListeningChallenge';
@@ -117,13 +118,20 @@ const QuizManager = ({ words = EMPTY_WORDS, allWords = EMPTY_ALL_WORDS, onComple
                 </p>
 
                 <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
-                    <button onClick={onClose} className="w-full md:w-auto px-8 md:px-10 py-4 uppercase bg-accent font-bold text-lg md:text-xl pixel-btn shadow-pixel-md hover:translate-y-[2px] hover:shadow-pixel-sm transition-all">
+                    <Button
+                        variant="accent"
+                        onClick={onClose}
+                        className="w-full md:w-auto px-8 md:px-10 py-4 uppercase font-bold text-lg md:text-xl"
+                    >
                         {mode === 'game' ? 'Aceptar Destino' : 'Volver'}
-                    </button>
+                    </Button>
                     {mode === 'practice' && !onLose && (
-                        <button onClick={() => { setLives(initialLives); setScore(0); setCurrentIndex(0); setGameStatus('playing'); }} className="w-full md:w-auto px-8 md:px-10 py-4 uppercase font-bold text-lg md:text-xl bg-primary text-primary-foreground pixel-btn pixel-border-primary shadow-pixel-md hover:translate-y-[2px] hover:shadow-pixel-sm transition-all">
+                        <Button
+                            onClick={() => { setLives(initialLives); setScore(0); setCurrentIndex(0); setGameStatus('playing'); }}
+                            className="w-full md:w-auto px-8 md:px-10 py-4 uppercase font-bold text-lg md:text-xl"
+                        >
                             Reintentar
-                        </button>
+                        </Button>
                     )}
                 </div>
             </div>
@@ -142,9 +150,12 @@ const QuizManager = ({ words = EMPTY_WORDS, allWords = EMPTY_ALL_WORDS, onComple
                 <div className="bg-muted px-8 py-4 border-4 border-primary mb-8 pixel-border shadow-pixel-md-primary">
                     <p className="text-3xl font-black text-primary font-mono">+{score} XP</p>
                 </div>
-                <button onClick={() => onComplete(score)} className="w-full md:w-auto px-10 bg-primary text-primary-foreground py-4 uppercase font-bold text-xl pixel-btn shadow-pixel-md hover:translate-y-[2px] hover:shadow-pixel-sm transition-all">
+                <Button
+                    onClick={() => onComplete(score)}
+                    className="w-full md:w-auto px-10 py-4 uppercase font-bold text-xl md:text-xl"
+                >
                     Continuar
-                </button>
+                </Button>
             </div>
         );
     }
@@ -152,7 +163,7 @@ const QuizManager = ({ words = EMPTY_WORDS, allWords = EMPTY_ALL_WORDS, onComple
     return (
         <div className="w-full max-w-3xl mx-auto bg-background p-4 md:p-6 rounded-none border-4 border-primary pixel-border relative shadow-pixel-xl">
             {/* Header */}
-            <div className="flex justify-between items-center mb-8 border-b-4 border-primary pb-4">
+            <div className="flex flex-wrap justify-between items-center gap-3 mb-8 border-b-4 border-primary pb-4">
                 <div className="flex items-center gap-3">
                     <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest font-mono">Puntos</span>
                     <div className="bg-primary text-primary-foreground px-3 py-2 text-sm font-black font-mono shadow-pixel-sm">
@@ -170,7 +181,7 @@ const QuizManager = ({ words = EMPTY_WORDS, allWords = EMPTY_ALL_WORDS, onComple
                 </div>
 
                 {mode !== 'game' && (
-                    <button onClick={onClose} aria-label="Cerrar el desafío" className="text-muted-foreground hover:text-destructive font-mono text-xl transition-colors p-3 hover:bg-destructive hover:text-destructive-foreground/10 active:scale-95 border-2 border-transparent hover:border-destructive pixel-border">
+                    <button onClick={onClose} aria-label="Cerrar el desafío" className="text-muted-foreground font-mono text-xl transition-colors p-3 hover:bg-destructive hover:text-destructive-foreground active:scale-95 border-2 border-transparent hover:border-destructive pixel-border">
                         <X aria-hidden="true" className="w-5 h-5" />
                     </button>
                 )}

@@ -25,14 +25,14 @@ const UpgradeTree = ({ character, upgrades, onClose }) => (
                 {upgrades.map((upg, idx) => (
                     <div
                         key={upg.name}
-                        className={`relative pl-14 pr-3 py-1  flex flex-col justify-center min-h-[4rem] animate-in slide-in-from-right-4 fade-in duration-300`}
+                        className={`relative pl-14 pr-3 py-1 flex flex-col justify-center min-h-[4rem] animate-in slide-in-from-right-4 fade-in duration-300`}
                         style={{ animationDelay: `${idx * 80}ms`, animationFillMode: 'both' }}
                     >
                         {/* Timeline Node */}
-                        <div className={`absolute  left-[29px] top-1/2 -translate-y-1/2 w-3 h-3 rounded-none border-2 border-background rotate-45 z-10 ${upg.ultimate ? 'bg-accent scale-150 shadow-glow-accent' : 'bg-accent'}`} />
+                        <div className={`absolute left-[29px] top-1/2 -translate-y-1/2 w-3 h-3 rounded-none border-2 border-background rotate-45 z-10 ${upg.ultimate ? 'bg-accent scale-150 shadow-glow-accent' : 'bg-accent'}`} />
 
                         {/* Content Card */}
-                        <div className={`flex text-base items-start  gap-4 p-3 border-2 ${upg.border} ${upg.bg} w-full shadow-pixel-sm hover:shadow-pixel-md transition-all hover:-translate-y-0.5 relative group bg-background/50 backdrop-blur-sm`}>
+                        <div className={`flex text-base items-start gap-4 p-3 border-2 ${upg.border} ${upg.bg} w-full shadow-pixel-sm hover:shadow-pixel-md transition-all hover:-translate-y-0.5 relative group bg-background/50 backdrop-blur-sm`}>
                             <div className="flex flex-col items-center justify-center gap-1 w-8 shrink-0">
                                 <div className="w-8 h-8 group-hover:scale-110 transition-transform flex items-center justify-center">
                                     {upg.icon ? <upg.icon className="w-full h-full drop-shadow-sm" /> : <span className="text-2xl drop-shadow-sm">{upg.emoji}</span>}

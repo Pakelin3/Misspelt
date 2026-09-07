@@ -5,6 +5,7 @@ import { PixelTargetIcon, SwordIcon, TrophyIcon, BrainIcon, PixelClockIcon, Pixe
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/Button';
+import normalizarUrlDeMedia from '@/utils/mediaUrl';
 
 export default function StudentProfileModal({ farmId, studentId, onClose }) {
     const api = useAxios();
@@ -19,7 +20,7 @@ export default function StudentProfileModal({ farmId, studentId, onClose }) {
                 setStudentData(res.data);
             } catch (error) {
                 console.error("Error cargando perfil del estudiante:", error);
-                toast.error("No se pudo cargar la información del estudiante");
+                toast.error("No se pudo cargar el perfil del estudiante", { description: "Revisa tu conexión y vuelve a intentarlo." });
                 onClose();
             } finally {
                 setLoading(false);
@@ -65,10 +66,9 @@ export default function StudentProfileModal({ farmId, studentId, onClose }) {
             <DialogContent className="max-w-4xl h-[85dvh] max-h-none flex flex-col p-0 gap-0">
                 {/* Header */}
                 <DialogHeader className="bg-primary/90 border-b-4 border-foreground p-4 md:p-6 flex-row justify-between items-center shrink-0 relative overflow-hidden mb-0 pb-4 md:pb-6 gap-4">
-                    <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-20 pointer-events-none"></div>
                     <div className="flex items-center gap-4 relative z-10">
                         <div className="w-16 h-16 border-4 border-background bg-muted overflow-hidden shadow-pixel-md-left pixel-rendering shrink-0">
-                            <img src={avatar_url} alt="Avatar del estudiante" width={64} height={64} loading="lazy" className="w-full h-full object-cover" />
+                            <img src={normalizarUrlDeMedia(avatar_url)} alt="Avatar del estudiante" width={64} height={64} loading="lazy" className="w-full h-full object-cover" />
                         </div>
                         <div>
                             <DialogTitle className="font-mono text-2xl md:text-3xl font-black text-primary-foreground tracking-widest uppercase drop-shadow-md">
@@ -83,7 +83,7 @@ export default function StudentProfileModal({ farmId, studentId, onClose }) {
                 </DialogHeader>
 
                 {/* Body Content */}
-                <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-[url('/pattern.png')] custom-scrollbar flex flex-col gap-6">
+                <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-muted/30 custom-scrollbar flex flex-col gap-6">
 
                     {/* Stats Grid */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

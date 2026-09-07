@@ -16,6 +16,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
 const SortableWord = ({ id, text, position, total, isChecked, isCorrect }) => {
     const {
@@ -215,12 +216,13 @@ const SentenceBuilder = ({ word, direction = 'en', onSuccess, onError }) => {
 
             <div className="min-h-16 flex flex-col items-center justify-center w-full mt-4 gap-3">
                 {!isChecked ? (
-                    <button
+                    <Button
+                        variant="accent"
                         onClick={checkAnswer}
-                        className="px-10 py-4 font-black bg-accent text-xl uppercase pixel-btn w-full md:w-auto shadow-pixel-md hover:translate-y-[2px] hover:shadow-pixel-sm active:translate-y-[4px] active:shadow-none transition-all"
+                        className="w-full md:w-auto px-10 py-4 text-xl md:text-xl font-black"
                     >
                         COMPROBAR
-                    </button>
+                    </Button>
                 ) : (
                     <div role="status" aria-live="polite" className="flex flex-col items-center gap-2 text-center motion-safe:animate-in fade-in zoom-in-95 duration-300 ease-out">
                         <p className={`text-2xl font-mono ${isCorrect ? 'text-success' : 'text-destructive'}`}>

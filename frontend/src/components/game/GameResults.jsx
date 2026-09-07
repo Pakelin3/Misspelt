@@ -81,7 +81,7 @@ const GameResults = ({ results, seenWordsRef, correctWordsRef, onPlayAgain, onGo
                             </div>
                             <div>
                                 <p className="text-xl font-black text-foreground">{results.killCount}</p>
-                                <p className="text-2xs text-muted-foreground uppercase">Palabras Asesinadas</p>
+                                <p className="text-2xs text-muted-foreground uppercase">Palabras Derrotadas</p>
                             </div>
                         </div>
                     </div>
@@ -92,10 +92,10 @@ const GameResults = ({ results, seenWordsRef, correctWordsRef, onPlayAgain, onGo
                             <p className="flex items-center gap-1 text-2xs font-bold uppercase text-muted-foreground mb-3 tracking-wider"><BookIcon className="w-3 h-3" /> Desglose por tipo</p>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                                 {[
-                                    { label: 'Slangs', key: 'SLANG', color: 'text-word-slang' },
-                                    { label: 'Idioms', key: 'IDIOM', color: 'text-word-idiom' },
-                                    { label: 'P. Verbs', key: 'PHRASAL_VERB', color: 'text-word-noun' },
-                                    { label: 'Vocab', key: 'VOCABULARY', color: 'text-word-verb' },
+                                    { label: 'Jergas', key: 'SLANG', color: 'text-word-slang' },
+                                    { label: 'Modismos', key: 'IDIOM', color: 'text-word-idiom' },
+                                    { label: 'Verbos frasales', key: 'PHRASAL_VERB', color: 'text-word-noun' },
+                                    { label: 'Vocabulario', key: 'VOCABULARY', color: 'text-word-verb' },
                                 ].map(cat => (
                                     <div key={cat.key} className="text-center p-2 bg-background border border-foreground/10">
                                         <p className={`text-lg font-black ${cat.color}`}>

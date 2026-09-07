@@ -8,6 +8,20 @@ gsap.registerPlugin(ScrollTrigger, GSAPSplitText, useGSAP);
 
 const EMPTY_STYLE = {};
 
+// Extraidas como funciones puras (y exportadas) para poder fijar el
+// comportamiento del ResizeObserver sin doblar GSAP/SplitText/ScrollTrigger en
+// el test: aqui vivia el defecto real (vigilar el ancho del propio `<span>`,
+// que `build()` congela en px al construir) y es justo lo que un test debe
+// poder probar con valores literales. No van a un modulo aparte (que evitaria
+// el aviso de abajo) porque este archivo es el unico que este cambio puede
+// tocar.
+// eslint-disable-next-line react-refresh/only-export-components
+export const elegirObjetivoObservador = (el) => el?.parentElement || el || null;
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const debeReconstruir = (tamanoAnterior, tamanoActual, umbral = 0.5) =>
+    Math.abs(tamanoActual - tamanoAnterior) >= umbral;
+
 const TextShuffle = ({
     text,
     className = '',
@@ -367,23 +381,47 @@ const TextShuffle = ({
             const st = ScrollTrigger.create({ trigger: el, start, once: triggerOnce, onEnter: create });
 
             // Las ventanas de cada letra llevan un ancho fijo en px calculado al
-            // construir. Sin esto, al rotar el movil o redimensionar la ventana el
-            // texto conserva las medidas del tamano anterior y se recorta.
-            let anchoPrevio = el.getBoundingClientRect().width;
+            // construir, asi que hace falta reconstruir cuando cambie el tamano de
+            // fuente (viene de un clamp() fluido en className, pero un consumidor
+            // puede pasar cualquier otra cosa). OJO: no sirve vigilar el ancho de
+            // `el` con un ResizeObserver sobre el propio `<span>` -asi estaba antes-
+            // porque `el` es inline-block y su contenido son precisamente esas
+            // ventanas de ancho fijo que build() acaba de congelar: el ResizeObserver
+            // vigilaria una consecuencia de build(), no su causa, y tras el primer
+            // render el ancho de `el` deja de moverse aunque el viewport cambie. La
+            // señal que de verdad manda es el font-size computado, y hay que medirlo
+            // en un elemento cuyo tamano si siga al viewport: el padre en bloque
+            // (normalmente el <h1>), con fallback a `el` si no hay padre.
+            const objetivoRo = elegirObjetivoObservador(el);
+            let tamanoPrevio = parseFloat(getComputedStyle(el).fontSize) || 0;
+            let rafPendiente = null;
             const ro = new ResizeObserver(() => {
-                const ancho = el.getBoundingClientRect().width;
-                if (Math.abs(ancho - anchoPrevio) < 1) return;
-                anchoPrevio = ancho;
-                if (playingRef.current) return;
-                build();
-                if (scrambleCharset) randomizeScrambles();
-                play();
+                // El observador puede dispararse en rafaga mientras se arrastra el
+                // borde de la ventana; build() hace SplitText + crea nodos por cada
+                // caracter, asi que se amortigua a un rebuild por frame.
+                if (rafPendiente != null) cancelAnimationFrame(rafPendiente);
+                rafPendiente = requestAnimationFrame(() => {
+                    rafPendiente = null;
+                    const tamanoActual = parseFloat(getComputedStyle(el).fontSize) || 0;
+                    if (!debeReconstruir(tamanoPrevio, tamanoActual)) return;
+                    // El tamano solo se da por atendido si de verdad se reconstruye.
+                    // Si se apuntara antes de esta guardia, un redimensionado que
+                    // cayera dentro del segundo que dura la animacion se registraria
+                    // como visto sin haber reconstruido nada, y el titulo se quedaria
+                    // con las ventanas del tamano viejo hasta el siguiente cambio.
+                    if (playingRef.current) return;
+                    tamanoPrevio = tamanoActual;
+                    build();
+                    if (scrambleCharset) randomizeScrambles();
+                    play();
+                });
             });
-            ro.observe(el);
+            ro.observe(objetivoRo);
             roRef.current = ro;
 
             return () => {
                 st.kill();
+                if (rafPendiente != null) cancelAnimationFrame(rafPendiente);
                 disconnectRo();
                 removeHover();
                 teardown();

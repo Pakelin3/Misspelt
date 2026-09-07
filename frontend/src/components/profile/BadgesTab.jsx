@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { TrophyIcon } from '@/components/PixelIcons';
 import { getBadgeCategoryConfig } from '@/lib/badges';
+import normalizarUrlDeMedia from '@/utils/mediaUrl';
 
 // Vitrina de insignias desbloqueadas. Deliberadamente no duplica la lógica de
 // progreso/catálogo completo de BadgesPage: aquí solo se listan las
@@ -32,7 +33,7 @@ const BadgesTab = ({ badges }) => (
                         <div key={badge.id} className="bg-card pixel-border p-4 flex flex-col items-center text-center hover:-translate-y-1 transition-transform">
                             <div className="w-16 h-16 mb-3 flex items-center justify-center">
                                 {badge.image ? (
-                                    <img src={badge.image} alt={badge.title} loading="lazy" width={64} height={64} className="w-full h-full object-contain" />
+                                    <img src={normalizarUrlDeMedia(badge.image)} alt={badge.title} loading="lazy" width={64} height={64} className="w-full h-full object-contain" />
                                 ) : (
                                     <TrophyIcon className="w-10 h-10 text-accent-strong/80" aria-hidden="true" />
                                 )}

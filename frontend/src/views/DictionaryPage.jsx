@@ -285,7 +285,7 @@ function DictionaryPage() {
         `}
                                 >
                                     <div className="absolute top-0 right-0 p-2">
-                                        <span className={`text-3xs md:text-3xs font-mono px-1.5 py-0.5 md:px-2 md:py-1 border-2 font-bold shadow-pixel-sm ${getTypeBadgeStyle(word.word_type)}`}>
+                                        <span className={`text-3xs font-mono px-1.5 py-0.5 md:px-2 md:py-1 border-2 font-bold shadow-pixel-sm ${getTypeBadgeStyle(word.word_type)}`}>
                                             {getTypeBadgeText(word.word_type)}
                                         </span>
                                     </div>

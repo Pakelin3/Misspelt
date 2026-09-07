@@ -6,10 +6,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import ImageUploadField from './ImageUploadField';
 
 const CONDITION_TYPE_OPTIONS = [
-    { value: 'correct_slangs', label: 'Slangs Acertados' },
-    { value: 'slangs_learned', label: 'Slangs Dominados' },
-    { value: 'idioms_learned', label: 'Idioms Dominados' },
-    { value: 'phrasal_verbs_learned', label: 'Phrasal Verbs Dominados' },
+    { value: 'correct_slangs', label: 'Jergas Acertadas' },
+    { value: 'slangs_learned', label: 'Jergas Dominadas' },
+    { value: 'idioms_learned', label: 'Modismos Dominados' },
+    { value: 'phrasal_verbs_learned', label: 'Verbos Frasales Dominados' },
     { value: 'vocabulary_learned', label: 'Vocabulario Dominado' },
     { value: 'words_seen_total', label: 'Descubrimientos Totales' },
     { value: 'unique_words_unlocked', label: 'Palabras Únicas en Colección' },
@@ -23,13 +23,13 @@ const CONDITION_TYPE_OPTIONS = [
     { value: 'single_game_bosses_killed', label: 'Jefes Derrotados (Misma Partida)' },
     { value: 'single_game_time_survived', label: 'Sobrevivir Tiempo (Segundos, Misma Partida)' },
     { value: 'general_accuracy', label: 'Precisión General (%)' },
-    { value: 'slang_accuracy', label: 'Precisión Slang (%)' },
-    { value: 'phrasal_verb_accuracy', label: 'Precisión Phrasal Verbs (%)' },
+    { value: 'slang_accuracy', label: 'Precisión en Jergas (%)' },
+    { value: 'phrasal_verb_accuracy', label: 'Precisión en Verbos Frasales (%)' },
     { value: 'answered_total_questions', label: 'Preguntas Respondidas' },
     { value: 'correct_answers_total', label: 'Respuestas Correctas' },
-    { value: 'phrasal_verbs_seen', label: 'Phrasal Verbs Vistos' },
-    { value: 'slangs_seen', label: 'Slangs Vistos' },
-    { value: 'correct_phrasal_verbs', label: 'Phrasal Verbs Correctos' },
+    { value: 'phrasal_verbs_seen', label: 'Verbos Frasales Vistos' },
+    { value: 'slangs_seen', label: 'Jergas Vistas' },
+    { value: 'correct_phrasal_verbs', label: 'Verbos Frasales Correctos' },
     { value: 'current_streak', label: 'Racha Actual (Días)' },
     { value: 'longest_streak', label: 'Racha Más Larga (Días)' },
 ];
@@ -154,7 +154,7 @@ export default function BadgeFormDialog({
                                             value={formData.condition_description}
                                             onChange={e => setFormData({ ...formData, condition_description: e.target.value })}
                                             className="h-8 border border-foreground rounded-none focus:ring-0 focus:border-primary text-xs"
-                                            placeholder="Ej: Acertar 10 Slangs"
+                                            placeholder="Ej: Acertar 10 Jergas"
                                         />
                                     </div>
                                 </div>

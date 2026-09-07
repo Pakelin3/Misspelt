@@ -28,7 +28,7 @@ const CheckEmailPage = () => {
                 </p>
 
                 <p className="font-mono text-xs text-foreground opacity-70 mt-4">
-                    ESPERANDO VERIFICACIÓN...
+                    Esperando verificación…
                 </p>
 
                 <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mt-6 font-sans">
@@ -39,12 +39,12 @@ const CheckEmailPage = () => {
                 <div className="mt-8 flex flex-col gap-3">
                     <Button asChild variant="secondary" size="lg" className="w-full">
                         <Link to="/login">
-                            IR AL INICIO DE SESIÓN
+                            Ir al inicio de sesión
                         </Link>
                     </Button>
                     <Button asChild variant="outline" size="sm" className="w-full">
                         <Link to="/register">
-                            NO ME LLEGÓ, REGISTRARME DE NUEVO
+                            No me llegó, registrarme de nuevo
                         </Link>
                     </Button>
                 </div>

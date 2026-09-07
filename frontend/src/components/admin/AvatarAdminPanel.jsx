@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import ImageUploadField from './ImageUploadField';
 import ConfirmDeleteDialog from './ConfirmDeleteDialog';
 import AdminPagination from './AdminPagination';
+import normalizarUrlDeMedia from '@/utils/mediaUrl';
 
 const EMPTY_FORM = {
     name: '',
@@ -31,6 +32,24 @@ function AvatarAdminPanel() {
 
     const [formData, setFormData] = useState(EMPTY_FORM);
     const [previewUrl, setPreviewUrl] = useState(null);
+    const previewUrlRef = useRef(null);
+
+    // La vista previa de un archivo recien elegido es un blob: URL creado con
+    // createObjectURL. Sin revocarlo queda retenido en memoria durante toda la
+    // vida de la pestaña. `previewUrl` también puede apuntar a la imagen ya
+    // subida (una URL normal del backend), así que solo revocamos lo que
+    // guardamos en el ref, nunca por adivinar el contenido del estado.
+    const releasePreviewUrl = useCallback(() => {
+        if (previewUrlRef.current) {
+            URL.revokeObjectURL(previewUrlRef.current);
+            previewUrlRef.current = null;
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!isFormOpen) releasePreviewUrl();
+        return () => releasePreviewUrl();
+    }, [isFormOpen, releasePreviewUrl]);
 
     useEffect(() => {
         const timerId = setTimeout(() => {
@@ -67,6 +86,7 @@ function AvatarAdminPanel() {
     }, [fetchAvatars, currentPage, debouncedSearchTerm]);
 
     const handleOpenForm = (avatar = null) => {
+        releasePreviewUrl();
         if (avatar) {
             setEditingAvatar(avatar);
             setFormData({
@@ -84,16 +104,16 @@ function AvatarAdminPanel() {
         setIsFormOpen(true);
     };
 
+    // El tope de peso ya lo aplica `ImageUploadField` (mismo límite que el
+    // backend, ver `MAX_IMAGEN_BYTES`): este handler solo se llama cuando el
+    // archivo ya pasó esa comprobación, así que aquí no hace falta repetirla.
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            if (file.size > 2 * 1024 * 1024) {
-                toast.error('Archivo muy grande', { description: 'Máximo 2MB por avatar.' });
-                return;
-            }
-
             setFormData({ ...formData, image: file });
+            releasePreviewUrl();
             const objectUrl = URL.createObjectURL(file);
+            previewUrlRef.current = objectUrl;
             setPreviewUrl(objectUrl);
         }
     };
@@ -195,7 +215,7 @@ function AvatarAdminPanel() {
 
                                 <div className="w-24 h-24 sm:w-32 sm:h-32 mb-3 bg-background border-2 border-foreground relative overflow-hidden flex items-center justify-center shadow-sm group-hover:shadow-md transition-all">
                                     {avatar.image ? (
-                                        <img src={avatar.image} alt={avatar.name} width={128} height={128} loading="lazy" className="w-full h-full object-cover" />
+                                        <img src={normalizarUrlDeMedia(avatar.image)} alt={avatar.name} width={128} height={128} loading="lazy" className="w-full h-full object-cover" />
                                     ) : (
                                         <User className="w-12 h-12 text-muted-foreground" aria-hidden="true" />
                                     )}
@@ -225,7 +245,7 @@ function AvatarAdminPanel() {
                                         variant="outline"
                                         size="icon"
                                         onClick={() => setAvatarToDelete(avatar)}
-                                        className="text-destructive hover:bg-destructive hover:text-destructive-foreground/10"
+                                        className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
                                         aria-label={`Eliminar avatar ${avatar.name}`}
                                     >
                                         <Trash2 className="w-4 h-4" aria-hidden="true" />
