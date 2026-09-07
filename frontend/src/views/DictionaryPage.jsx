@@ -1,35 +1,18 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import useAxios from "@/utils/useAxios";
-import { PixelVolume3Icon, PixelChevronIcon, PixelBookOpenIcon, PixelLockIcon, PixelSearchIcon } from '@/components/PixelIcons';
-import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
-import VzlaFlag from '@/assets/ve.svg';
-import UsaFlag from '@/assets/us.svg';
+import { PixelBookOpenIcon, PixelLockIcon, PixelSearchIcon, PixelChevronIcon } from '@/components/PixelIcons';
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
 import OracleChatDictionary from "@/components/dictionary/OracleChatDictionary";
 import WordSuggestionModal from "@/components/dictionary/WordSuggestionModal";
+import WordDetailModal from "@/components/dictionary/WordDetailModal";
+import { getTypeBadgeStyle, getTypeBadgeText } from "@/lib/wordTypes";
+import usePageTitle from '@/hooks/usePageTitle';
 
-const getTypeBadgeStyle = (type) => {
-    switch (type) {
-        case 'SLANG': return 'bg-yellow-100 text-yellow-800 border-yellow-800';
-        case 'PHRASAL_VERB': return 'bg-blue-100 text-blue-800 border-blue-800';
-        case 'IDIOM': return 'bg-purple-100 text-purple-800 border-purple-800';
-        case 'VOCABULARY': return 'bg-emerald-100 text-emerald-800 border-emerald-800';
-        default: return 'bg-gray-100 text-gray-800 border-gray-800';
-    }
-};
 
-const getTypeBadgeText = (type) => {
-    switch (type) {
-        case 'SLANG': return 'JERGA';
-        case 'PHRASAL_VERB': return 'VERBO FRASAL';
-        case 'IDIOM': return 'MODISMO';
-        case 'VOCABULARY': return 'VOCABULARIO';
-        default: return 'PALABRA';
-    }
-};
 
 function DictionaryPage() {
+    usePageTitle('El Grimorio');
     // Estados
     const [words, setWords] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -67,13 +50,13 @@ function DictionaryPage() {
     }, [searchTerm]);
 
     // --- LÓGICA DE FETCH ---
-    const fetchWords = useCallback(async (page, currentSearchTerm, currentSelectedFilter, shouldResetSelectedWord = false) => {
+    const fetchWords = useCallback(async (page, currentSearchTerm, currentSelectedFilter, shouldResetSelectedWord = false, signal) => {
         setLoading(true);
         setError(null);
         try {
             const typeParam = currentSelectedFilter !== "all" ? `&word_type=${currentSelectedFilter.toUpperCase().replace(' ', '_')}` : '';
             const searchParam = currentSearchTerm ? `&search=${currentSearchTerm}` : '';
-            const response = await api.get(`/words/?page=${page}&limit=${wordsPerPage}${typeParam}${searchParam}`);
+            const response = await api.get(`/words/?page=${page}&limit=${wordsPerPage}${typeParam}${searchParam}`, { signal });
             const fetchedWords = response.data.results || [];
             setWords(fetchedWords);
             setTotalWordsCount(response.data.count || 0);
@@ -83,8 +66,10 @@ function DictionaryPage() {
             }
 
         } catch (err) {
+            // Una peticion cancelada no es un error que deba ver el usuario.
+            if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return;
             console.error("Error fetching words:", err);
-            setError("No se pudo conectar con la biblioteca.");
+            setError("No pudimos cargar el diccionario. Revisa tu conexión e inténtalo de nuevo.");
             setWords([]);
             setTotalWordsCount(0);
         } finally {
@@ -96,6 +81,7 @@ function DictionaryPage() {
         const driverObj = driver({
             popoverClass: 'misspelt-driver-popover pixel-rendering',
             showProgress: true,
+            progressText: '{{current}} de {{total}}',
             animate: true,
             doneBtnText: '¡A Leer!',
             nextBtnText: 'Siguiente',
@@ -146,14 +132,17 @@ function DictionaryPage() {
 
     // --- EFECTO DE BÚSQUEDA ---
     useEffect(() => {
+        const controller = new AbortController();
         setCurrentPage(1);
-        fetchWords(1, debouncedSearchTerm, selectedFilter, true);
+        fetchWords(1, debouncedSearchTerm, selectedFilter, true, controller.signal);
+        return () => controller.abort();
     }, [debouncedSearchTerm, selectedFilter, fetchWords]);
 
     useEffect(() => {
-        if (currentPage > 0) {
-            fetchWords(currentPage, debouncedSearchTerm, selectedFilter, false);
-        }
+        if (currentPage <= 0) return;
+        const controller = new AbortController();
+        fetchWords(currentPage, debouncedSearchTerm, selectedFilter, false, controller.signal);
+        return () => controller.abort();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentPage, fetchWords]);
 
@@ -169,16 +158,16 @@ function DictionaryPage() {
 
     const filterOptions = [
         { id: "all", label: "TODO", activeClass: "bg-primary text-primary-foreground border-foreground", badgeClass: "text-foreground" },
-        { id: "VOCABULARY", label: "VOCABULARIO", activeClass: "bg-emerald-500 text-white border-emerald-900", badgeClass: "text-emerald-500" },
-        { id: "SLANG", label: "JERGAS", activeClass: "bg-yellow-400 text-yellow-950 border-yellow-900", badgeClass: "text-yellow-400" },
-        { id: "PHRASAL_VERB", label: "VERBOS FRASALES", activeClass: "bg-blue-500 text-white border-blue-900", badgeClass: "text-blue-500" },
-        { id: "IDIOM", label: "MODISMOS", activeClass: "bg-purple-500 text-white border-purple-900", badgeClass: "text-purple-500" }
+        { id: "VOCABULARY", label: "VOCABULARIO", activeClass: "bg-word-verb text-primary-foreground border-foreground", badgeClass: "text-word-verb" },
+        { id: "SLANG", label: "JERGAS", activeClass: "bg-word-slang text-accent-foreground border-foreground", badgeClass: "text-word-slang" },
+        { id: "PHRASAL_VERB", label: "VERBOS FRASALES", activeClass: "bg-word-noun text-info-foreground border-foreground", badgeClass: "text-word-noun" },
+        { id: "IDIOM", label: "MODISMOS", activeClass: "bg-word-adjective text-primary-foreground border-foreground", badgeClass: "text-word-adjective" }
     ];
 
     const currentFilterObj = filterOptions.find(f => f.id === selectedFilter) || filterOptions[0];
 
     return (
-        <div className="min-h-screen bg-background font-sans flex flex-col">
+        <main id="main-content" className="min-h-screen bg-background font-sans flex flex-col">
 
             <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-8 md:py-12 mt-16">
 
@@ -199,7 +188,7 @@ function DictionaryPage() {
                         <input
                             type="text"
                             placeholder="Buscar palabra..."
-                            className="w-full pl-10 pr-4 py-3 bg-background border-2 border-muted focus:border-primary focus:outline-none font-sans text-xl placeholder:text-muted-foreground transition-colors"
+                            className="w-full pl-10 pr-4 py-3 bg-background border-2 border-muted focus:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 font-sans text-xl placeholder:text-muted-foreground transition-colors"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -212,7 +201,7 @@ function DictionaryPage() {
 
                     <button
                         onClick={() => setIsSuggestionModalOpen(true)}
-                        className="px-6 py-3 bg-accent text-accent-foreground font-mono text-sm md:text-base font-bold whitespace-nowrap shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-y-[2px] transition-all border-2 border-transparent hover:border-foreground"
+                        className="px-6 py-3 bg-accent text-accent-foreground font-mono text-sm md:text-base font-bold whitespace-nowrap shadow-pixel-md hover:translate-y-[2px] transition-all border-2 border-transparent hover:border-foreground"
                     >
                         + SUGERIR PALABRA
                     </button>
@@ -220,14 +209,14 @@ function DictionaryPage() {
                     <div className="relative min-w-[180px]">
                         <button
                             onClick={() => setIsFilterOpen(!isFilterOpen)}
-                            className={`w-full flex items-center justify-between px-4 py-3 font-mono text-xs md:text-sm border-2 uppercase transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${currentFilterObj.activeClass}`}
+                            className={`w-full flex items-center justify-between px-4 py-3 font-mono text-xs md:text-sm border-2 uppercase transition-all shadow-pixel-md ${currentFilterObj.activeClass}`}
                         >
                             <span className="font-bold">{currentFilterObj.label}</span>
                             <PixelChevronIcon className={`w-4 h-4 transition-transform duration-200 ${isFilterOpen ? '' : '-rotate-90'}`} />
                         </button>
 
                         {isFilterOpen && (
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-card border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-20 flex flex-col animate-in slide-in-from-top-2 duration-200">
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-card border-2 border-foreground shadow-pixel-md z-20 flex flex-col animate-in slide-in-from-top-2 duration-200">
                                 {filterOptions.map((filter) => (
                                     <button
                                         key={filter.id}
@@ -256,22 +245,39 @@ function DictionaryPage() {
                         </div>
                     ) : error ? (
                         <div className="text-center p-8 bg-destructive/10 pixel-border border-destructive">
-                            <p className="text-destructive font-mono text-xs mb-2">ERROR DE CONEXIÓN</p>
+                            <p className="text-destructive font-mono text-xs mb-2">Error de conexión</p>
                             <p className="text-foreground font-sans text-xl">{error}</p>
                         </div>
                     ) : words.length === 0 ? (
-                        <div className="text-center p-12 bg-card pixel-border border-dashed">
-                            <p className="text-muted-foreground font-sans text-2xl">No se encontraron resultados.</p>
+                        <div className="text-center p-12 bg-card pixel-border border-dashed space-y-3">
+                            {debouncedSearchTerm || selectedFilter !== 'all' ? (
+                                <>
+                                    <p className="text-foreground font-sans text-2xl">Nada coincide con tu búsqueda.</p>
+                                    <p className="text-muted-foreground font-sans text-lg">Prueba con otra palabra o quita los filtros.</p>
+                                </>
+                            ) : (
+                                <>
+                                    <p className="text-foreground font-sans text-2xl">Tu diccionario está vacío por ahora.</p>
+                                    <p className="text-muted-foreground font-sans text-lg">
+                                        Juega una partida para descubrir tus primeras palabras.
+                                    </p>
+                                </>
+                            )}
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {words.map((word) => (
-                                <div
+                                <button
+                                    type="button"
                                     key={word.id}
                                     onClick={() => word.is_unlocked && openModal(word)}
-
+                                    disabled={!word.is_unlocked}
+                                    aria-label={word.is_unlocked
+                                        ? `Ver la palabra ${word.text}`
+                                        : `${word.text} — bloqueada. Descúbrela jugando para poder leerla.`}
                                     className={`
-            group bg-card pixel-border p-5 transition-transform relative overflow-hidden
+            group bg-card pixel-border p-5 text-left transition-transform relative overflow-hidden
+            focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring focus-visible:ring-offset-2
             ${word.is_unlocked
                                             ? 'cursor-pointer hover:-translate-y-1'
                                             : 'grayscale opacity-60 cursor-not-allowed'
@@ -279,7 +285,7 @@ function DictionaryPage() {
         `}
                                 >
                                     <div className="absolute top-0 right-0 p-2">
-                                        <span className={`text-[8px] md:text-[9px] font-mono px-1.5 py-0.5 md:px-2 md:py-1 border-2 font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${getTypeBadgeStyle(word.word_type)}`}>
+                                        <span className={`text-3xs font-mono px-1.5 py-0.5 md:px-2 md:py-1 border-2 font-bold shadow-pixel-sm ${getTypeBadgeStyle(word.word_type)}`}>
                                             {getTypeBadgeText(word.word_type)}
                                         </span>
                                     </div>
@@ -293,17 +299,17 @@ function DictionaryPage() {
 
                                     <div className="flex items-center justify-between mt-auto pt-4 border-t-2 border-dashed border-muted">
                                         <span className="text-xs font-mono text-muted-foreground opacity-50">
-                                            {word.is_unlocked ? "CLICK PARA VER" : "BLOQUEADO"}
+                                            {word.is_unlocked ? "Pulsa para ver" : "Bloqueado"}
                                         </span>
 
 
                                         {word.is_unlocked ? (
-                                            <PixelBookOpenIcon className="w-4 h-4 text-muted-foreground group-hover:text-primary" />
+                                            <PixelBookOpenIcon aria-hidden="true" className="w-4 h-4 text-muted-foreground group-hover:text-primary" />
                                         ) : (
-                                            <PixelLockIcon className="w-4 h-4 text-muted-foreground" />
+                                            <PixelLockIcon aria-hidden="true" className="w-4 h-4 text-muted-foreground" />
                                         )}
                                     </div>
-                                </div>
+                                </button>
                             ))}
                         </div>
                     )}
@@ -320,7 +326,7 @@ function DictionaryPage() {
                         </button>
 
                         <div className="px-6 py-3 bg-card pixel-border font-mono text-xs">
-                            PÁGINA {currentPage} DE {totalPages}
+                            Página {currentPage} de {totalPages}
                         </div>
 
                         <button
@@ -343,197 +349,13 @@ function DictionaryPage() {
             {/* Floating Tutorial Button */}
             <button
                 onClick={startTutorial}
-                className="fixed bottom-6 right-6 w-14 h-14 bg-accent text-accent-foreground pixel-border flex items-center justify-center text-2xl hover:scale-110 transition-transform z-50 shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:shadow-[6px_6px_0_0_rgba(0,0,0,1)]"
+                className="fixed bottom-6 right-6 w-14 h-14 bg-accent text-accent-foreground pixel-border flex items-center justify-center text-2xl hover:scale-110 transition-transform z-dropdown shadow-pixel-md hover:shadow-pixel-lg"
                 title="Ver Tutorial de Nuevo"
             >
                 <span className="font-mono text-3xl pb-1">?</span>
             </button>
-        </div>
+        </main>
     );
 }
 
 export default DictionaryPage;
-
-
-const WordDetailModal = ({ word, onClose, onOpenOracle }) => {
-
-    const [voices, setVoices] = useState([]);
-    const [currentExampleIndex, setCurrentExampleIndex] = useState(0);
-
-    useEffect(() => {
-        const updateVoices = () => {
-            const availableVoices = window.speechSynthesis.getVoices();
-            setVoices(availableVoices);
-        };
-
-        updateVoices();
-
-        window.speechSynthesis.onvoiceschanged = updateVoices;
-
-        return () => {
-            window.speechSynthesis.onvoiceschanged = null;
-        };
-    }, []);
-
-    if (!word) return null;
-
-    const playPronunciation = async (text) => {
-        console.log("🔊 Solicitando audio a IA (ElevenLabs SDK):", text);
-
-        try {
-            const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
-            if (!apiKey) {
-                throw new Error("API Key no encontrada");
-            }
-
-            const elevenlabs = new ElevenLabsClient({
-                apiKey: apiKey
-            });
-
-
-            const voiceId = "IKne3meq5aSn9XLyUdCD";
-
-            const audioStream = await elevenlabs.textToSpeech.convert(voiceId, {
-                text: text,
-                model_id: "eleven_multilingual_v2",
-                output_format: "mp3_44100_128",
-            });
-
-            const chunks = [];
-            for await (const chunk of audioStream) {
-                chunks.push(chunk);
-            }
-            const audioBlob = new Blob(chunks, { type: 'audio/mpeg' });
-            const audioUrl = URL.createObjectURL(audioBlob);
-            const audio = new Audio(audioUrl);
-            audio.playbackRate = 0.85;
-            audio.onplay = () => console.log("▶️ Reproduciendo IA de ElevenLabs SDK...");
-            audio.onended = () => {
-                console.log("⏹️ Audio finalizado.");
-                URL.revokeObjectURL(audioUrl);
-            };
-
-            await audio.play();
-
-        } catch (error) {
-            console.error("❌ Error en ElevenLabs TTS, activando Plan B (Nativo):", error);
-
-            // ==========================================
-            // FALLBACK: API Nativa si ElevenLabs falla
-            // ==========================================
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'en-US';
-                utterance.rate = 0.85;
-
-                const availableVoices = voices.length > 0 ? voices : window.speechSynthesis.getVoices();
-                const englishVoice = availableVoices.find(v => v.lang === 'en-US') || availableVoices.find(v => v.lang.includes('en'));
-                if (englishVoice) utterance.voice = englishVoice;
-
-                window.currentUtterance = utterance;
-                utterance.onend = () => delete window.currentUtterance;
-
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-    };
-    return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4" onClick={onClose}>
-            <div
-                className="relative bg-card pixel-border p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200"
-                onClick={e => e.stopPropagation()}
-            >
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 text-muted-foreground hover:text-destructive font-mono text-xl transition-colors"
-                >
-                    X
-                </button>
-
-                <div className="flex items-center justify-between gap-2 mb-6 border-b-4 border-muted pb-4">
-                    <h2 className="text-3xl md:text-4xl font-mono text-foreground">{word.text}</h2>
-                    <div className="flex items-center gap-3">
-                        <span className={`px-3 py-1 text-[10px] mr-8 rounded-none font-mono border-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] uppercase font-bold ${getTypeBadgeStyle(word.word_type)}`}>
-                            {getTypeBadgeText(word.word_type)}
-                        </span>
-                    </div>
-                </div>
-
-                <div className="space-y-6 font-sans text-xl">
-                    <div className="bg-background p-4 border-2 border-dashed border-muted rounded-sm">
-                        <h3 className="font-mono text-xs text-accent mb-2 uppercase">Definición</h3>
-                        <p className="text-foreground leading-relaxed">
-                            {word.definition}
-                        </p>
-                    </div>
-
-                    <div>
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-mono text-xs text-accent uppercase">Ejemplos de Uso</h3>
-                            {word.examples && word.examples.length > 1 && (
-                                <div className="flex items-center gap-3">
-                                    <button
-                                        onClick={() => setCurrentExampleIndex(prev => prev > 0 ? prev - 1 : word.examples.length - 1)}
-                                        className="flex items-center gap-3 bg-card text-foreground p-1 hover:bg-primary hover:text-primary-foreground font-mono text-sm pixel-border pixel-btn no-underline"
-                                    >
-                                        <PixelChevronIcon className="w-4 h-4 rotate-90" />
-                                    </button>
-                                    <span className="font-mono text-xs text-muted-foreground w-8 text-center">
-                                        {currentExampleIndex + 1}/{word.examples.length}
-                                    </span>
-                                    <button
-                                        onClick={() => setCurrentExampleIndex(prev => prev < word.examples.length - 1 ? prev + 1 : 0)}
-                                        className="flex items-center gap-3 bg-card text-foreground p-1 hover:bg-primary hover:text-primary-foreground font-mono text-sm pixel-border pixel-btn no-underline"
-                                    >
-                                        <PixelChevronIcon className="w-4 h-4 -rotate-90" />
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                        <div className="space-y-2 min-h-[80px] flex items-center justify-center bg-muted/20 p-4 border-2 border-dashed border-muted rounded-sm">
-                            {word.examples && word.examples.length > 0 ? (
-                                <div className="text-sm w-full animate-in fade-in zoom-in-95 duration-300" key={currentExampleIndex}>
-                                    {typeof word.examples[currentExampleIndex] === 'object' ? (
-                                        <>
-                                            <div className="flex items-center gap-2">
-                                                <img src={UsaFlag} alt="US Flag" className="w-6 h-6" />
-                                                <p className="text-gray-800 text-base leading-relaxed"> {word.examples[currentExampleIndex].en}</p>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <img src={VzlaFlag} alt="VE Flag" className="w-6 h-6" />
-                                                <p className="text-gray-500 italic text-base leading-relaxed"> {word.examples[currentExampleIndex].es}</p>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <p className="text-gray-600 text-lg leading-relaxed">{word.examples[currentExampleIndex]}</p>
-                                    )}
-                                </div>
-                            ) : (
-                                <p className="text-sm text-gray-500 italic">No hay ejemplos disponibles para esta palabra.</p>
-                            )}
-                        </div>
-                    </div>
-
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-4 border-t-4 border-muted">
-                    <button
-                        onClick={() => playPronunciation(word.text)}
-                        className="flex items-center gap-2 p-2 bg-muted/50 hover:bg-primary hover:text-primary-foreground border-2 border-foreground transition-colors pixel-btn"
-                        title="Escuchar pronunciación">
-                        <PixelVolume3Icon className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                        PRONUNCIACIÓN
-                    </button>
-
-                    <button
-                        onClick={onOpenOracle}
-                        className="flex-1 flex items-center justify-center gap-2 bg-accent text-accent-foreground py-3 font-mono text-xs pixel-btn border-4 border-foreground shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:brightness-110 active:translate-y-1 active:shadow-none transition-all"
-                    >
-                        <span className="font-bold text-sm">👁 ORÁCULO</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};

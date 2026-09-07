@@ -1,5 +1,6 @@
 from rest_framework import generics, status, viewsets, mixins # pyright: ignore[reportMissingImports]
-from rest_framework.decorators import api_view, permission_classes, action # pyright: ignore[reportMissingImports]
+from rest_framework.decorators import api_view, permission_classes, action, throttle_classes # pyright: ignore[reportMissingImports]
+from rest_framework.throttling import UserRateThrottle # pyright: ignore[reportMissingImports]
 from rest_framework.pagination import PageNumberPagination # pyright: ignore[reportMissingImports]
 from django_filters.rest_framework import DjangoFilterBackend # pyright: ignore[reportMissingImports]
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser # pyright: ignore[reportMissingImports]
@@ -10,6 +11,7 @@ from api.models import User, Word, Badge, UserStats, EmailVerificationToken, Ava
 from api.services import award_badge_rewards
 from api.badge_unlock_logic import check_and_unlock_badges
 from django.shortcuts import redirect  # pyright: ignore[reportMissingImports]
+from django.http import HttpResponse # pyright: ignore[reportMissingImports]
 from django.conf import settings # pyright: ignore[reportMissingImports]
 import os
 import google.generativeai as genai  # pyright: ignore[reportMissingImports]
@@ -985,3 +987,188 @@ class FarmViewSet(viewsets.ModelViewSet):
             'total_battles': total_battles,
             'recent_history': history_data
         })
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- PROXIES DE SERVICIOS EXTERNOS ---
+# * Estas vistas existen para que ninguna clave de API de terceros llegue al navegador.
+# * El frontend NUNCA debe hablar directamente con ElevenLabs, Gemini o GitHub:
+# * cualquier variable VITE_* queda inlineada en texto plano dentro del bundle publico.
+# * --------------------------------------------------------------------------------------------------
+
+ELEVENLABS_DEFAULT_VOICE_ID = "21m00Tcm4TlvDq8ikWAM"  # Rachel, voz por defecto
+ELEVENLABS_TTS_MODEL = "eleven_multilingual_v2"
+ELEVENLABS_STT_MODEL = "scribe_v1"
+
+
+class ExternalServiceThrottle(UserRateThrottle):
+    """Limita el gasto de cuota de terceros por usuario autenticado."""
+    scope = 'external_service'
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@throttle_classes([ExternalServiceThrottle])
+def text_to_speech(request):
+    """
+    Proxy de sintesis de voz (ElevenLabs). Devuelve audio/mpeg en crudo.
+    El cliente envia solo {text, voice_id?}; la clave vive unicamente aqui.
+    """
+    text = (request.data.get('text') or '').strip()
+    if not text:
+        return Response({'error': 'El campo "text" es requerido.'}, status=status.HTTP_400_BAD_REQUEST)
+    if len(text) > 500:
+        return Response(
+            {'error': 'El texto excede el limite de 500 caracteres.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    api_key = getattr(settings, 'ELEVENLABS_API_KEY', None)
+    if not api_key:
+        return Response(
+            {'error': 'El servicio de voz no esta configurado.'},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+
+    voice_id = request.data.get('voice_id') or ELEVENLABS_DEFAULT_VOICE_ID
+
+    try:
+        upstream = requests.post(
+            f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}",
+            headers={'xi-api-key': api_key, 'Content-Type': 'application/json'},
+            json={
+                'text': text,
+                'model_id': ELEVENLABS_TTS_MODEL,
+                'voice_settings': {'stability': 0.5, 'similarity_boost': 0.75},
+            },
+            timeout=30,
+        )
+    except requests.RequestException as exc:
+        print(f"[TTS] Fallo de red hacia ElevenLabs: {exc}")
+        return Response(
+            {'error': 'No pudimos generar el audio. Intentalo de nuevo.'},
+            status=status.HTTP_502_BAD_GATEWAY,
+        )
+
+    if upstream.status_code != 200:
+        print(f"[TTS] ElevenLabs respondio {upstream.status_code}: {upstream.text[:200]}")
+        return Response(
+            {'error': 'No pudimos generar el audio. Intentalo de nuevo.'},
+            status=status.HTTP_502_BAD_GATEWAY,
+        )
+
+    response = HttpResponse(upstream.content, content_type='audio/mpeg')
+    response['Cache-Control'] = 'private, max-age=86400'
+    return response
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@throttle_classes([ExternalServiceThrottle])
+def speech_to_text(request):
+    """
+    Proxy de transcripcion (ElevenLabs Scribe). Recibe multipart con el campo "audio".
+    """
+    audio = request.FILES.get('audio')
+    if not audio:
+        return Response({'error': 'El archivo "audio" es requerido.'}, status=status.HTTP_400_BAD_REQUEST)
+    if audio.size > 10 * 1024 * 1024:
+        return Response(
+            {'error': 'El audio excede el limite de 10 MB.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    api_key = getattr(settings, 'ELEVENLABS_API_KEY', None)
+    if not api_key:
+        return Response(
+            {'error': 'El servicio de transcripcion no esta configurado.'},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+
+    try:
+        upstream = requests.post(
+            "https://api.elevenlabs.io/v1/speech-to-text",
+            headers={'xi-api-key': api_key},
+            files={'file': (audio.name or 'audio.webm', audio.read(), audio.content_type or 'audio/webm')},
+            data={'model_id': ELEVENLABS_STT_MODEL},
+            timeout=60,
+        )
+    except requests.RequestException as exc:
+        print(f"[STT] Fallo de red hacia ElevenLabs: {exc}")
+        return Response(
+            {'error': 'No pudimos procesar tu grabacion. Intentalo de nuevo.'},
+            status=status.HTTP_502_BAD_GATEWAY,
+        )
+
+    if upstream.status_code != 200:
+        print(f"[STT] ElevenLabs respondio {upstream.status_code}: {upstream.text[:200]}")
+        return Response(
+            {'error': 'No pudimos entender el audio. Intenta grabar en un lugar silencioso.'},
+            status=status.HTTP_502_BAD_GATEWAY,
+        )
+
+    return Response({'text': (upstream.json().get('text') or '').strip()}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@throttle_classes([ExternalServiceThrottle])
+def suggest_word(request):
+    """
+    Proxy de sugerencia de palabra: abre un issue en GitHub con el PAT del servidor.
+    El PAT jamas debe existir en el cliente.
+    """
+    word_text = (request.data.get('wordText') or '').strip()
+    if not word_text:
+        return Response({'error': 'El campo "wordText" es requerido.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    pat = getattr(settings, 'GITHUB_ISSUES_PAT', None)
+    repo = getattr(settings, 'GITHUB_ISSUES_REPO', None)
+    if not pat or not repo:
+        return Response(
+            {'error': 'El buzon de sugerencias no esta configurado.'},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+
+    def field(name, limit=300):
+        return (request.data.get(name) or '').strip()[:limit]
+
+    body_lines = [
+        f"**Palabra sugerida:** {word_text[:100]}",
+        f"**Traduccion:** {field('translation') or '(sin especificar)'}",
+        f"**Tipo:** {field('wordType') or '(sin especificar)'}",
+        f"**Definicion:** {field('definition', 1000) or '(sin especificar)'}",
+        f"**Notas:** {field('notes', 1000) or '(sin notas)'}",
+        "",
+        f"_Sugerido por el usuario `{request.user.username}` (id {request.user.id}) desde el diccionario._",
+    ]
+
+    try:
+        upstream = requests.post(
+            f"https://api.github.com/repos/{repo}/issues",
+            headers={
+                'Authorization': f'Bearer {pat}',
+                'Accept': 'application/vnd.github+json',
+                'X-GitHub-Api-Version': '2022-11-28',
+            },
+            json={
+                'title': f'[Sugerencia] {word_text[:100]}',
+                'body': '\n'.join(body_lines),
+                'labels': ['sugerencia-palabra'],
+            },
+            timeout=20,
+        )
+    except requests.RequestException as exc:
+        print(f"[SuggestWord] Fallo de red hacia GitHub: {exc}")
+        return Response(
+            {'error': 'No pudimos enviar tu sugerencia. Intentalo en unos minutos.'},
+            status=status.HTTP_502_BAD_GATEWAY,
+        )
+
+    if upstream.status_code not in (200, 201):
+        print(f"[SuggestWord] GitHub respondio {upstream.status_code}: {upstream.text[:200]}")
+        return Response(
+            {'error': 'No pudimos enviar tu sugerencia. Intentalo en unos minutos.'},
+            status=status.HTTP_502_BAD_GATEWAY,
+        )
+
+    return Response({'number': upstream.json().get('number')}, status=status.HTTP_201_CREATED)

@@ -1,42 +1,195 @@
-@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap");
-
 @import "tailwindcss";
-/* @plugin "tailwindcss-animate"; */
+
+/* Las fuentes se cargan con <link> en index.html.
+   Un @import aqui bloquearia el render de esta hoja y duplicaria la peticion. */
+
+/* Activa el variante `dark:` sobre la clase que pone ThemeProvider en <html>.
+   Sin esta linea, en Tailwind 4 `dark:` seguiria el ajuste del sistema operativo
+   y el selector de tema de la app no tendria ningun efecto. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ============================================================================
+   CAPA 1 — PRIMITIVOS
+   Valores crudos de la paleta pixel-RPG. Sin significado de producto.
+   Nadie los consume directamente: solo los referencia la capa semantica.
+   ========================================================================= */
 @layer base {
   :root {
-    --background: 36 55% 90%;
-    --foreground: 20 36% 18%;
-    --card: 36 50% 85%;
-    --card-foreground: 20 36% 18%;
+    /* Pergamino (fondos claros) */
+    --pixel-parchment-50: 36 55% 96%;
+    --pixel-parchment-100: 36 55% 93%;
+    --pixel-parchment-300: 36 55% 90%;
+    --pixel-parchment-500: 36 50% 85%;
+    --pixel-parchment-700: 36 30% 80%;
 
-    --popover: 36 55% 90%;
-    --popover-foreground: 20 36% 18%;
+    /* Tierra y madera */
+    --pixel-clay-400: 28 45% 65%;
+    --pixel-clay-600: 28 30% 70%;
+    --pixel-bark-800: 20 36% 18%;
+    --pixel-bark-900: 20 38% 12%;
+    --pixel-bark-950: 20 40% 8%;
 
-    --primary: 100 38% 35%; /* El verde de la hoja */
-    --primary-foreground: 36 55% 95%;
+    /* Acentos de marca */
+    --pixel-green-400: 100 38% 48%;
+    --pixel-green-500: 100 38% 35%;
+    --pixel-gold-400: 38 85% 60%;
+    --pixel-gold-500: 38 79% 50%;
+    /* El dorado y el ambar brillantes solo contrastan sobre fondo oscuro: sobre el
+       pergamino claro dan 1.9:1, practicamente invisibles. Estas variantes oscuras
+       existen para usarlos como TEXTO o icono en el tema claro. Medido con el test
+       de contraste en src/test/contrast.test.js. */
+    --pixel-gold-700: 38 79% 29%;
 
-    --secondary: 28 45% 65%;
+    /* Estados */
+    --pixel-ember-500: 0 60% 50%;
+    --pixel-ember-400: 0 65% 62%;
+    --pixel-leaf-500: 110 45% 34%;
+    --pixel-leaf-400: 110 45% 50%;
+    --pixel-amber-500: 42 90% 48%;
+    --pixel-amber-400: 42 92% 58%;
+    --pixel-amber-700: 42 90% 26%;
+    --pixel-sky-500: 205 70% 41%;
+    --pixel-sky-400: 205 75% 60%;
+    --pixel-arcane-500: 280 45% 52%;
+    --pixel-arcane-400: 280 55% 66%;
+
+    /* Rejilla de 4px, coherente con el pixel-art */
+    --space-tile-1: 0.25rem;
+    --space-tile-2: 0.5rem;
+    --space-tile-4: 1rem;
+    --space-tile-6: 1.5rem;
+    --space-tile-8: 2rem;
+
+    /* Bordes y elevacion dura */
+    --border-pixel-1: 2px;
+    --border-pixel-2: 4px;
+  }
+
+  /* ==========================================================================
+     CAPA 2 — SEMANTICOS
+     La unica capa que consumen las vistas. Cambiar de tema = reasignar aqui.
+     ======================================================================= */
+  :root {
+    --background: var(--pixel-parchment-300);
+    --foreground: var(--pixel-bark-800);
+
+    --card: var(--pixel-parchment-500);
+    --card-foreground: var(--pixel-bark-800);
+
+    --popover: var(--pixel-parchment-300);
+    --popover-foreground: var(--pixel-bark-800);
+
+    --primary: var(--pixel-green-500); /* El verde de la hoja */
+    --primary-foreground: var(--pixel-parchment-50);
+
+    --secondary: var(--pixel-clay-400);
     --secondary-foreground: 20 36% 15%;
 
-    --muted: 36 30% 80%;
-    --muted-foreground: 20 20% 40%;
+    --muted: var(--pixel-parchment-700);
+    --muted-foreground: 20 20% 34%;
 
-    --accent: 38 79% 50%; /* El dorado de las estrellas*/
+    --accent: var(--pixel-gold-500); /* El dorado de las estrellas: para SUPERFICIES */
     --accent-foreground: 20 36% 15%;
+    /* Para TEXTO, iconos y bordes dorados sobre una superficie neutra. `--accent`
+       a secas no llega a 3:1 en tema claro. */
+    --accent-strong: var(--pixel-gold-700);
 
-    --destructive: 0 60% 50%;
+    --destructive: var(--pixel-ember-500);
     --destructive-foreground: 0 0% 98%;
 
-    --border: 28 30% 70%;
-    --input: 28 30% 70%;
-    --ring: 100 38% 35%;
+    /* Estados que antes se resolvian con literales bg-green-500 / bg-yellow-500 */
+    --success: var(--pixel-leaf-500);
+    --success-foreground: var(--pixel-parchment-50);
+    --warning: var(--pixel-amber-700);
+    --warning-foreground: var(--pixel-parchment-50);
+    --info: var(--pixel-sky-500);
+    --info-foreground: var(--pixel-parchment-50);
+
+    /* Dominio: dificultad y tipos de palabra */
+    --difficulty-easy: var(--pixel-leaf-500);
+    --difficulty-medium: var(--pixel-amber-700);
+    --difficulty-hard: var(--pixel-ember-500);
+    --word-noun: var(--pixel-sky-500);
+    --word-verb: var(--pixel-leaf-500);
+    --word-adjective: var(--pixel-arcane-500);
+    --word-slang: var(--pixel-gold-700);
+    --word-idiom: var(--pixel-ember-500);
+
+    /* Rareza de insignia: es un eje de dominio propio, no reutilizable desde
+       primary/accent, porque las cuatro deben distinguirse entre si. */
+    --rarity-basic: 20 20% 45%;
+    --rarity-rare: var(--pixel-sky-500);
+    --rarity-epic: var(--pixel-arcane-500);
+    --rarity-legendary: var(--pixel-gold-700);
+
+    /* Separadores y marcos decorativos: no son el limite de un control, asi que
+       no les aplica el minimo de 3:1 de WCAG 1.4.11. */
+    --border: var(--pixel-clay-600);
+    /* El borde de un input SI es el limite de un control: necesita 3:1. */
+    --input: 28 30% 47%;
+    --ring: var(--pixel-green-500);
 
     --radius: 0.25rem;
+  }
+
+  /* --- Tema oscuro ---------------------------------------------------------
+     Reasigna la capa semantica. Ninguna vista necesita cambiar. */
+  .dark {
+    --background: var(--pixel-bark-900);
+    --foreground: var(--pixel-parchment-100);
+
+    --card: 20 32% 15%;
+    --card-foreground: var(--pixel-parchment-100);
+
+    --popover: 20 32% 15%;
+    --popover-foreground: var(--pixel-parchment-100);
+
+    --primary: var(--pixel-green-400);
+    --primary-foreground: var(--pixel-bark-950);
+
+    --secondary: 28 30% 32%;
+    --secondary-foreground: var(--pixel-parchment-100);
+
+    --muted: 20 24% 22%;
+    --muted-foreground: 36 20% 68%;
+
+    --accent: var(--pixel-gold-400);
+    --accent-foreground: var(--pixel-bark-950);
+    --accent-strong: var(--pixel-gold-400);
+
+    --destructive: var(--pixel-ember-400);
+    --destructive-foreground: var(--pixel-bark-950);
+
+    --success: var(--pixel-leaf-400);
+    --success-foreground: var(--pixel-bark-950);
+    --warning: var(--pixel-amber-400);
+    --warning-foreground: var(--pixel-bark-950);
+    --info: var(--pixel-sky-400);
+    --info-foreground: var(--pixel-bark-950);
+
+    --difficulty-easy: var(--pixel-leaf-400);
+    --difficulty-medium: var(--pixel-amber-400);
+    --difficulty-hard: var(--pixel-ember-400);
+    --word-noun: var(--pixel-sky-400);
+    --word-verb: var(--pixel-leaf-400);
+    --word-adjective: var(--pixel-arcane-400);
+    --word-slang: var(--pixel-gold-400);
+    --word-idiom: var(--pixel-ember-400);
+
+    --rarity-basic: 36 12% 62%;
+    --rarity-rare: var(--pixel-sky-400);
+    --rarity-epic: var(--pixel-arcane-400);
+    --rarity-legendary: var(--pixel-gold-400);
+
+    --border: 28 20% 34%;
+    --input: 28 20% 43%;
+    --ring: var(--pixel-green-400);
   }
 
   html {
     scroll-behavior: smooth;
   }
+
   ::selection {
     background-color: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
@@ -53,6 +206,37 @@
   h5,
   h6 {
     @apply font-mono;
+  }
+
+  /* Indicador de foco por defecto, para que quitar `outline-none` en un
+     componente no deje al usuario de teclado sin referencia visual. */
+  :focus-visible {
+    outline: var(--border-pixel-1) solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Un usuario que pidio menos movimiento al sistema operativo lo pidio para
+     toda la app, no solo para los componentes que se acordaron de preguntar. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    /* Las animaciones de entrada deben acabar en su estado final visible,
+       no desaparecer: son las que revelan el contenido. */
+    .animate-slide-up,
+    .animate-float,
+    .animate-sparkle {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
   }
 }
 
@@ -77,9 +261,32 @@
 
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-strong: hsl(var(--accent-strong));
 
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+
+  --color-difficulty-easy: hsl(var(--difficulty-easy));
+  --color-difficulty-medium: hsl(var(--difficulty-medium));
+  --color-difficulty-hard: hsl(var(--difficulty-hard));
+
+  --color-word-noun: hsl(var(--word-noun));
+  --color-word-verb: hsl(var(--word-verb));
+  --color-word-adjective: hsl(var(--word-adjective));
+  --color-word-slang: hsl(var(--word-slang));
+  --color-word-idiom: hsl(var(--word-idiom));
+
+  --color-rarity-basic: hsl(var(--rarity-basic));
+  --color-rarity-rare: hsl(var(--rarity-rare));
+  --color-rarity-epic: hsl(var(--rarity-epic));
+  --color-rarity-legendary: hsl(var(--rarity-legendary));
 
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
@@ -87,8 +294,57 @@
 
   --radius: 0.25rem;
 
+  /* Breakpoint por debajo del `sm` de Tailwind: el suelo que soportamos son los
+     Android de 360px, y ahi una rejilla de dos columnas deja los controles
+     demasiado estrechos. Ya se usaba `xs:` en el codigo sin estar definido, asi
+     que esas clases no hacian nada. */
+  --breakpoint-xs: 25rem;
+
   --font-mono: "Press Start 2P", monospace;
   --font-sans: "VT323", monospace;
+
+  /* Escala tipografica. Press Start 2P necesita tamaños por debajo de text-xs,
+     que antes se resolvian con text-[10px] / text-[9px] / text-[8px] suelos. */
+  --text-3xs: 0.5rem;
+  --text-3xs--line-height: 0.875rem;
+  --text-2xs: 0.625rem;
+  --text-2xs--line-height: 1rem;
+
+  /* Altura del navbar fijo (py-3 + un objetivo tactil de 44px + el borde de
+     4px). Es un token porque el panel de administracion la necesitaba en tres
+     sitios a la vez -el relleno superior, el desplazamiento del sticky y el
+     calculo de la altura de la barra lateral- y estaba escrita a mano como 72px
+     en los tres. Si alguien cambia el relleno del navbar, con el numero suelto
+     la barra lateral se desalinea y se sale de la pantalla sin que nada avise.
+     Va en --spacing-* para que Tailwind genere pt-navbar / top-navbar / h-navbar. */
+  --spacing-navbar: 4.5rem;
+
+  /* ==========================================================================
+     CAPA 3 — DE COMPONENTE
+     Elevacion dura del pixel-art. Sustituye a las 289 variantes arbitrarias
+     tipo shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] repartidas por el codigo.
+     ======================================================================= */
+  --shadow-pixel-xs: 1px 1px 0px 0px hsl(var(--foreground));
+  --shadow-pixel-sm: 2px 2px 0px 0px hsl(var(--foreground));
+  --shadow-pixel-md: 4px 4px 0px 0px hsl(var(--foreground));
+  --shadow-pixel-lg: 6px 6px 0px 0px hsl(var(--foreground));
+  --shadow-pixel-xl: 8px 8px 0px 0px hsl(var(--foreground));
+  --shadow-pixel-2xl: 12px 12px 0px 0px hsl(var(--foreground));
+  --shadow-pixel-sm-primary: 2px 2px 0px 0px hsl(var(--primary));
+  --shadow-pixel-md-primary: 4px 4px 0px 0px hsl(var(--primary));
+  --shadow-pixel-xl-primary: 8px 8px 0px 0px hsl(var(--primary));
+  --shadow-pixel-md-accent: 4px 4px 0px 0px hsl(var(--accent));
+  --shadow-pixel-md-destructive: 4px 4px 0px 0px hsl(var(--destructive));
+  --shadow-pixel-xl-destructive: 8px 8px 0px 0px hsl(var(--destructive));
+
+  /* Elevacion hacia la izquierda: burbujas de chat del interlocutor. */
+  --shadow-pixel-sm-left: -2px 2px 0px 0px hsl(var(--foreground));
+  --shadow-pixel-md-left: -4px 4px 0px 0px hsl(var(--foreground));
+
+  /* Resplandor de rareza de insignia. Antes eran rgba() literales por color. */
+  --shadow-glow-accent: 0 0 15px hsl(var(--accent) / 0.5);
+  --shadow-glow-info: 0 0 15px hsl(var(--info) / 0.4);
+  --shadow-glow-legendary: 0 0 15px hsl(var(--word-adjective) / 0.4);
 
   --color-sidebar: hsl(var(--card));
   --color-sidebar-foreground: hsl(var(--foreground));
@@ -100,27 +356,60 @@
   --color-sidebar-ring: hsl(var(--ring));
 }
 
+/* Escala de capas. Antes: z-50 compitiendo con z-[60], z-[70] y z-[100]
+   decididos por tanteo. Ahora el orden de apilamiento es explicito. */
+@utility z-base {
+  z-index: 0;
+}
+@utility z-raised {
+  z-index: 10;
+}
+@utility z-dropdown {
+  z-index: 20;
+}
+@utility z-navbar {
+  z-index: 30;
+}
+@utility z-modal {
+  z-index: 50;
+}
+@utility z-modal-nested {
+  z-index: 60;
+}
+@utility z-toast {
+  z-index: 80;
+}
+@utility z-loading-overlay {
+  z-index: 100;
+}
+
+/* Altura maxima compartida por los overlays. `dvh` y no `vh`: en movil la barra
+   del navegador entra en el calculo y el contenido dejaba de caber. */
+@utility overlay-max-h {
+  max-height: 90dvh;
+}
+
 .pixel-rendering {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
 
 .pixel-border {
-  border: 4px solid hsl(var(--foreground));
+  border: var(--border-pixel-2) solid hsl(var(--foreground));
   box-shadow:
     4px 4px 0px 0px hsl(var(--foreground)),
     -1px -1px 0px 0px hsl(var(--foreground));
 }
 
 .pixel-border-primary {
-  border: 4px solid hsl(var(--primary));
+  border: var(--border-pixel-2) solid hsl(var(--primary));
   box-shadow:
     4px 4px 0px 0px hsl(var(--primary)),
     -1px -1px 0px 0px hsl(var(--primary));
 }
 
 .pixel-border-accent {
-  border: 4px solid hsl(var(--accent));
+  border: var(--border-pixel-2) solid hsl(var(--accent));
   box-shadow: 4px 4px 0px 0px hsl(var(--accent));
 }
 

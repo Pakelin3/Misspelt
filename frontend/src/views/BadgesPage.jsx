@@ -2,60 +2,31 @@ import React, { useState, useEffect, useCallback, useContext } from 'react';
 import useAxios from '@/utils/useAxios';
 import AuthContext from '@/context/AuthContext';
 import BadgeCard from "@/components/ui/BadgeCard";
-import { TrophyIcon, PixelStarIcon, PixelCrownIcon, PixelHeartFillIcon, PixelDiamondIcon } from '@/components/PixelIcons';
+import { TrophyIcon, PixelCrownIcon, PixelHeartFillIcon, PixelDiamondIcon, PixelStarIcon } from '@/components/PixelIcons';
+import { BADGE_CATEGORIES } from '@/lib/badges';
+import usePageTitle from '@/hooks/usePageTitle';
 
-const CATEGORY_CONFIG = [
-    {
-        key: 'LEGENDARY',
-        label: 'Legendarias',
-        icon: PixelCrownIcon,
-        borderColor: 'border-yellow-500',
-        bgColor: 'bg-yellow-500/10',
-        textColor: 'text-yellow-500',
-        accentBg: 'bg-yellow-500',
-        glowClass: 'shadow-[0_0_15px_rgba(234,179,8,0.3)]',
-    },
-    {
-        key: 'EPIC',
-        label: 'Épicas',
-        icon: PixelHeartFillIcon,
-        borderColor: 'border-purple-500',
-        bgColor: 'bg-purple-500/10',
-        textColor: 'text-purple-500',
-        accentBg: 'bg-purple-500',
-        glowClass: 'shadow-[0_0_15px_rgba(168,85,247,0.3)]',
-    },
-    {
-        key: 'RARE',
-        label: 'Raras',
-        icon: PixelDiamondIcon,
-        borderColor: 'border-blue-500',
-        bgColor: 'bg-blue-500/10',
-        textColor: 'text-blue-500',
-        accentBg: 'bg-blue-500',
-        glowClass: 'shadow-[0_0_15px_rgba(59,130,246,0.3)]',
-    },
-    {
-        key: 'BASIC',
-        label: 'Básicas',
-        icon: PixelStarIcon,
-        borderColor: 'border-stone-400',
-        bgColor: 'bg-stone-400/10',
-        textColor: 'text-stone-400',
-        accentBg: 'bg-stone-400',
-        glowClass: '',
-    },
-];
+// Los iconos por categoría son propios de esta vista (el catálogo visual);
+// el resto de la config (etiqueta, colores) viene de la fuente única en
+// src/lib/badges.js para no repetir el mapeo que antes vivía también,
+// desincronizado, en ProfilePage.jsx.
+const CATEGORY_ICONS = {
+    LEGENDARY: PixelCrownIcon,
+    EPIC: PixelHeartFillIcon,
+    RARE: PixelDiamondIcon,
+    BASIC: PixelStarIcon,
+};
+
+const CATEGORY_CONFIG = BADGE_CATEGORIES.map(cat => ({ ...cat, icon: CATEGORY_ICONS[cat.key] }));
 
 const ChevronIcon = ({ open }) => (
-
-    <svg className={`w-5 h-5 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M13 16H11V14H13V16ZM11 14H9V12H11V14ZM15 14H13V12H15V14ZM9 12H7V10H9V12ZM17 12H15V10H17V12ZM7 10H5V8H7V10ZM19 10H17V8H19V10Z" fill="black" />
+    <svg aria-hidden="true" className={`w-5 h-5 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M13 16H11V14H13V16ZM11 14H9V12H11V14ZM15 14H13V12H15V14ZM9 12H7V10H9V12ZM17 12H15V10H17V12ZM7 10H5V8H7V10ZM19 10H17V8H19V10Z" fill="currentColor" />
     </svg>
-
 );
 
 function BadgesPage() {
+    usePageTitle('Sala de trofeos');
     const api = useAxios();
     const { user } = useContext(AuthContext);
 
@@ -133,18 +104,18 @@ function BadgesPage() {
             conditionText = badge.reward_description || "¡Logro completado!";
         } else if (badge.unlock_condition_data && Array.isArray(badge.unlock_condition_data) && badge.unlock_condition_data.length > 0 && userStats) {
             const conditionTypeToSpanish = {
-                'correct_slangs': 'Slangs acertados',
+                'correct_slangs': 'Jergas acertadas',
                 'total_exp_achieved': 'XP Total',
                 'answered_total_questions': 'Preguntas totales',
                 'words_seen_total': 'Palabras descubiertas',
-                'phrasal_verbs_seen': 'Phrasal verbs vistos',
+                'phrasal_verbs_seen': 'Verbos frasales vistos',
                 'correct_answers_total': 'Aciertos totales',
-                'correct_phrasal_verbs': 'Phrasal Verbs correctos',
+                'correct_phrasal_verbs': 'Verbos frasales correctos',
                 'current_streak': 'Racha actual',
                 'longest_streak': 'Mejor racha',
-                'slangs_learned': 'Slangs dominados',
-                'idioms_learned': 'Idioms dominados',
-                'phrasal_verbs_learned': 'PV dominados',
+                'slangs_learned': 'Jergas dominadas',
+                'idioms_learned': 'Modismos dominados',
+                'phrasal_verbs_learned': 'Verbos frasales dominados',
                 'vocabulary_learned': 'Vocabulario dominado',
                 'total_letters_killed': 'Letras eliminadas',
                 'total_bosses_killed': 'Jefes derrotados',
@@ -197,13 +168,13 @@ function BadgesPage() {
     const totalUnlocked = allBadges.filter(b => getBadgeStatus(b).unlocked).length;
 
     return (
-        <div className="min-h-screen bg-background font-sans flex flex-col">
+        <main id="main-content" className="min-h-screen bg-background font-sans flex flex-col">
             <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-8 md:py-12 mt-16">
 
                 {/* HEADER */}
                 <div className="text-center mb-10">
                     <div className="inline-flex items-center justify-center p-4 bg-accent/20 rounded-full pixel-border-accent mb-4">
-                        <TrophyIcon className="w-8 h-8 text-accent" />
+                        <TrophyIcon className="w-8 h-8 text-accent-strong" aria-hidden="true" />
                     </div>
                     <h1 className="text-3xl md:text-4xl font-mono text-foreground mb-3">SALA DE TROFEOS</h1>
                     <p className="text-xl text-muted-foreground font-sans max-w-2xl mx-auto mb-4">
@@ -212,12 +183,12 @@ function BadgesPage() {
 
                     {/* Resumen global */}
                     {!loading && totalBadges > 0 && (
-                        <div className="inline-flex items-center gap-3 px-4 py-2 bg-card pixel-border font-mono text-sm">
+                        <div className="inline-flex max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2 bg-card pixel-border font-mono text-2xs sm:text-sm">
                             <span className="text-muted-foreground">Colección:</span>
-                            <span className="text-accent font-bold">{totalUnlocked}</span>
+                            <span className="text-accent-strong font-bold">{totalUnlocked}</span>
                             <span className="text-muted-foreground">/</span>
                             <span className="text-foreground">{totalBadges}</span>
-                            <div className="w-24 h-3 bg-muted border-2 border-foreground relative ml-2">
+                            <div className="w-20 sm:w-24 h-3 bg-muted border-2 border-foreground relative shrink-0">
                                 <div
                                     className="h-full bg-accent transition-all duration-700"
                                     style={{ width: `${totalBadges > 0 ? (totalUnlocked / totalBadges) * 100 : 0}%` }}
@@ -229,21 +200,21 @@ function BadgesPage() {
 
                 {/* MENSAJES DE ESTADO */}
                 {infoMessage && !loading && (
-                    <div className="mb-8 p-4 bg-primary/10 border-l-4 border-primary text-primary font-sans text-xl">
+                    <div className="mb-8 p-4 bg-primary/10 border-2 border-primary/40 text-primary font-sans text-xl">
                         {infoMessage}
                     </div>
                 )}
 
                 {error && (
-                    <div className="mb-8 p-4 bg-destructive/10 border-l-4 border-destructive text-destructive font-mono text-xs">
+                    <div role="alert" className="mb-8 p-4 bg-destructive/10 border-2 border-destructive/40 text-destructive font-mono text-xs">
                         {error}
                     </div>
                 )}
 
                 {/* LOADING */}
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center h-64 gap-4">
-                        <div className="w-16 h-16 border-4 border-accent border-t-transparent animate-spin rounded-full"></div>
+                    <div role="status" aria-live="polite" className="flex flex-col items-center justify-center h-64 gap-4">
+                        <div aria-hidden="true" className="w-16 h-16 border-4 border-accent-strong border-t-transparent motion-safe:animate-spin rounded-full"></div>
                         <p className="font-mono text-xs text-muted-foreground animate-pulse">PULIENDO TROFEOS...</p>
                     </div>
                 ) : (
@@ -253,21 +224,22 @@ function BadgesPage() {
                                 {/* Section Header */}
                                 <button
                                     onClick={() => toggleSection(group.key)}
+                                    aria-expanded={openSections[group.key]}
                                     className={`
-                                        w-full flex items-center justify-between px-5 py-3
-                                        border-4 ${group.borderColor} ${group.bgColor}
+                                        w-full flex flex-wrap items-center justify-between gap-2 px-3 sm:px-5 py-3
+                                        border-4 ${group.borderClass} ${group.bgClass}
                                         hover:brightness-110 transition-all duration-200 cursor-pointer
                                         select-none
                                     `}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <group.icon className="w-6 h-6 md:w-8 md:h-8" />
-                                        <h2 className={`font-mono text-lg md:text-xl font-bold tracking-wider ${group.textColor}`}>
+                                        <group.icon className="w-6 h-6 md:w-8 md:h-8" aria-hidden="true" />
+                                        <h2 className={`font-mono text-lg md:text-xl font-bold tracking-wider ${group.textClass}`}>
                                             {group.label}
                                         </h2>
                                         <div className={`
-                                            px-2 py-0.5 text-[11px] font-mono font-bold
-                                            ${group.accentBg} text-white border-2 border-foreground/20
+                                            px-2 py-0.5 text-2xs font-mono font-bold
+                                            ${group.accentBgClass} ${group.accentFgClass} border-2 border-foreground/20
                                         `}>
                                             {group.unlockedCount}/{group.totalCount}
                                         </div>
@@ -277,7 +249,7 @@ function BadgesPage() {
                                         {/* Mini progress bar */}
                                         <div className="hidden sm:block w-32 h-2 bg-muted/50 border border-foreground/20 relative">
                                             <div
-                                                className={`h-full ${group.accentBg} transition-all duration-700`}
+                                                className={`h-full ${group.accentBgClass} transition-all duration-700`}
                                                 style={{ width: `${group.totalCount > 0 ? (group.unlockedCount / group.totalCount) * 100 : 0}%` }}
                                             />
                                         </div>
@@ -287,21 +259,23 @@ function BadgesPage() {
 
                                 {/* Section Body (Collapsible) */}
                                 <div className={`
-                                    overflow-hidden transition-all duration-400 ease-in-out
-                                    ${openSections[group.key] ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}
+                                    grid transition-all duration-400 ease-in-out
+                                    ${openSections[group.key] ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}
                                 `}>
-                                    <div className={`
-                                        p-4 md:p-6 border-x-4 border-b-4 ${group.borderColor}
-                                        bg-card/50
-                                    `}>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                                            {group.badges.map(badge => (
-                                                <BadgeCard
-                                                    key={badge.id}
-                                                    badge={badge}
-                                                    status={getBadgeStatus(badge)}
-                                                />
-                                            ))}
+                                    <div className="overflow-hidden">
+                                        <div className={`
+                                            p-4 md:p-6 border-x-4 border-b-4 ${group.borderClass}
+                                            bg-card/50
+                                        `}>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                                {group.badges.map(badge => (
+                                                    <BadgeCard
+                                                        key={badge.id}
+                                                        badge={badge}
+                                                        status={getBadgeStatus(badge)}
+                                                    />
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -310,7 +284,7 @@ function BadgesPage() {
                     </div>
                 )}
             </div>
-        </div>
+        </main>
     );
 }
 

@@ -1,0 +1,35 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "bounce-easing",
+        "value": "animate-bounce",
+        "files": [
+          "src/components/quiz/SentenceBuilder.test.jsx"
+        ],
+        "createdAt": "2026-08-17T15:08:12.566Z",
+        "reason": "El literal aparece dentro de la asercion que verifica su ausencia; borrarlo eliminaria la guardia"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/components/admin/AdminDashboard.jsx"
+        ],
+        "createdAt": "2026-08-17T15:08:12.607Z",
+        "reason": "border-r-4 es el divisor estructural del aside a altura completa, no el acento lateral de una tarjeta"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/components/game/CharacterSelection.jsx"
+        ],
+        "createdAt": "2026-08-17T15:08:12.644Z",
+        "reason": "border-l-4 es la marca de citacion de un blockquote con el lore del personaje"
+      }
+    ]
+  }
+}

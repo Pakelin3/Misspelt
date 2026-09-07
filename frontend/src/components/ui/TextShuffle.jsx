@@ -8,6 +8,20 @@ gsap.registerPlugin(ScrollTrigger, GSAPSplitText, useGSAP);
 
 const EMPTY_STYLE = {};
 
+// Extraidas como funciones puras (y exportadas) para poder fijar el
+// comportamiento del ResizeObserver sin doblar GSAP/SplitText/ScrollTrigger en
+// el test: aqui vivia el defecto real (vigilar el ancho del propio `<span>`,
+// que `build()` congela en px al construir) y es justo lo que un test debe
+// poder probar con valores literales. No van a un modulo aparte (que evitaria
+// el aviso de abajo) porque este archivo es el unico que este cambio puede
+// tocar.
+// eslint-disable-next-line react-refresh/only-export-components
+export const elegirObjetivoObservador = (el) => el?.parentElement || el || null;
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const debeReconstruir = (tamanoAnterior, tamanoActual, umbral = 0.5) =>
+    Math.abs(tamanoActual - tamanoAnterior) >= umbral;
+
 const TextShuffle = ({
     text,
     className = '',
@@ -42,6 +56,7 @@ const TextShuffle = ({
     const tlRef = useRef(null);
     const playingRef = useRef(false);
     const hoverHandlerRef = useRef(null);
+    const roRef = useRef(null);
 
     const userHasFont = useMemo(
         () => (style && style.fontFamily) || (className && /font[-[]/i.test(className)),
@@ -58,15 +73,25 @@ const TextShuffle = ({
     }, [threshold, rootMargin]);
 
     useEffect(() => {
-        const check = () => {
-            if ('fonts' in document) {
-                if (document.fonts.status === 'loaded') return true;
-                document.fonts.ready.then(() => setFontsLoaded(true));
-                return false;
-            }
+        // `document.fonts.ready` solo espera a las cargas PENDIENTES. Si la fuente
+        // del elemento aun no se ha solicitado, resuelve de inmediato y medimos con
+        // la tipografia de respaldo: en produccion eso daba ventanas de 38.4px para
+        // glifos de 64px (el avance 0.6em del monospace generico) y el titulo salia
+        // recortado y superpuesto. Hay que pedir la familia concreta y esperarla.
+        let cancelado = false;
+        const esperarFuente = async () => {
+            if (!('fonts' in document)) return true;
+            try {
+                const el = ref.current;
+                const familia = el ? getComputedStyle(el).fontFamily : '';
+                const tamano = el ? getComputedStyle(el).fontSize : '1rem';
+                if (familia) await document.fonts.load(`${tamano} ${familia}`);
+                await document.fonts.ready;
+            } catch { /* si falla, se mide con lo que haya */ }
             return true;
         };
-        if (check()) setFontsLoaded(true);
+        esperarFuente().then(() => { if (!cancelado) setFontsLoaded(true); });
+        return () => { cancelado = true; };
     }, []);
 
     useGSAP(
@@ -88,6 +113,11 @@ const TextShuffle = ({
             }
 
             const start = scrollTriggerStart;
+
+            const disconnectRo = () => {
+                roRef.current?.disconnect();
+                roRef.current = null;
+            };
 
             const removeHover = () => {
                 if (hoverHandlerRef.current && ref.current) {
@@ -350,8 +380,49 @@ const TextShuffle = ({
 
             const st = ScrollTrigger.create({ trigger: el, start, once: triggerOnce, onEnter: create });
 
+            // Las ventanas de cada letra llevan un ancho fijo en px calculado al
+            // construir, asi que hace falta reconstruir cuando cambie el tamano de
+            // fuente (viene de un clamp() fluido en className, pero un consumidor
+            // puede pasar cualquier otra cosa). OJO: no sirve vigilar el ancho de
+            // `el` con un ResizeObserver sobre el propio `<span>` -asi estaba antes-
+            // porque `el` es inline-block y su contenido son precisamente esas
+            // ventanas de ancho fijo que build() acaba de congelar: el ResizeObserver
+            // vigilaria una consecuencia de build(), no su causa, y tras el primer
+            // render el ancho de `el` deja de moverse aunque el viewport cambie. La
+            // señal que de verdad manda es el font-size computado, y hay que medirlo
+            // en un elemento cuyo tamano si siga al viewport: el padre en bloque
+            // (normalmente el <h1>), con fallback a `el` si no hay padre.
+            const objetivoRo = elegirObjetivoObservador(el);
+            let tamanoPrevio = parseFloat(getComputedStyle(el).fontSize) || 0;
+            let rafPendiente = null;
+            const ro = new ResizeObserver(() => {
+                // El observador puede dispararse en rafaga mientras se arrastra el
+                // borde de la ventana; build() hace SplitText + crea nodos por cada
+                // caracter, asi que se amortigua a un rebuild por frame.
+                if (rafPendiente != null) cancelAnimationFrame(rafPendiente);
+                rafPendiente = requestAnimationFrame(() => {
+                    rafPendiente = null;
+                    const tamanoActual = parseFloat(getComputedStyle(el).fontSize) || 0;
+                    if (!debeReconstruir(tamanoPrevio, tamanoActual)) return;
+                    // El tamano solo se da por atendido si de verdad se reconstruye.
+                    // Si se apuntara antes de esta guardia, un redimensionado que
+                    // cayera dentro del segundo que dura la animacion se registraria
+                    // como visto sin haber reconstruido nada, y el titulo se quedaria
+                    // con las ventanas del tamano viejo hasta el siguiente cambio.
+                    if (playingRef.current) return;
+                    tamanoPrevio = tamanoActual;
+                    build();
+                    if (scrambleCharset) randomizeScrambles();
+                    play();
+                });
+            });
+            ro.observe(objetivoRo);
+            roRef.current = ro;
+
             return () => {
                 st.kill();
+                if (rafPendiente != null) cancelAnimationFrame(rafPendiente);
+                disconnectRo();
                 removeHover();
                 teardown();
                 setReady(false);
@@ -384,7 +455,10 @@ const TextShuffle = ({
         }
     );
 
-    const baseTw = 'inline-block whitespace-normal break-words will-change-transform uppercase text-[4rem] leading-none';
+    // El tamaño era `text-[4rem]` fijo: 64px por caracter en cualquier viewport, asi
+    // que un titulo de 8 letras medía 512px y se salía de pantalla en un movil de
+    // 360px. Ahora escala con el ancho disponible y `className` puede sobreescribirlo.
+    const baseTw = 'inline-block whitespace-normal break-words will-change-transform uppercase text-[clamp(1.75rem,10vw,4rem)] leading-none';
     const classes = useMemo(
         () => `${baseTw} ${ready ? 'visible' : 'invisible'} ${className}`.trim(),
         [baseTw, ready, className]
@@ -392,7 +466,19 @@ const TextShuffle = ({
     const Tag = tag || 'p';
     const commonStyle = useMemo(() => ({ textAlign, ...style }), [textAlign, style]);
 
-    return React.createElement(Tag, { ref: ref, className: classes, style: commonStyle }, text);
+    // El efecto clona cada caracter varias veces dentro del DOM, asi que el
+    // nombre accesible del elemento acababa siendo "MMMIIISSSPPP...". Se declara
+    // el texto real con aria-label y se oculta el andamiaje al arbol de a11y.
+    return React.createElement(
+        Tag,
+        {
+            ref: ref,
+            className: classes,
+            style: commonStyle,
+            'aria-label': text,
+            children: React.createElement('span', { 'aria-hidden': 'true' }, text),
+        },
+    );
 };
 
 export default TextShuffle;

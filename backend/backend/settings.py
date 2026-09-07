@@ -37,6 +37,22 @@ RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
+# Django siempre corre en plano (HTTP) detras de un proxy/terminador TLS: no hay
+# forma de que `request.is_secure()` sea True por si solo. Sin esta linea,
+# `request.build_absolute_uri()` (usado por los serializers y las vistas para
+# construir URLs de avatares e insignias) siempre devuelve `http://`, aunque el
+# sitio se sirva por HTTPS. El navegador bloquea esas URLs como contenido mixto
+# y ninguna imagen carga.
+# CONDICION DE SEGURIDAD: confiar en `X-Forwarded-Proto` solo es correcto si el
+# proxy que esta delante de Django SIEMPRE sobrescribe esa cabecera antes de
+# reenviar la peticion. Si esta app llegara a exponerse directamente a internet
+# sin un proxy intermedio, cualquier cliente podria mandar `X-Forwarded-Proto:
+# https` a mano y Django se creeria en HTTPS sin estarlo (marcando cookies como
+# seguras, generando URLs "https://" falsas, etc). En Render y detras de nginx/
+# Caddy esta condicion se cumple porque ellos son el unico punto de entrada.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+
 
 # Application definition
 
@@ -161,7 +177,13 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 6, # Límite de palabras por página (6 en este caso)
     'PAGE_SIZE_QUERY_PARAM': 'limit', # Permite que el frontend envíe ?limit=X
-    'MAX_PAGE_SIZE': 100, # Límite máximo que el frontend puede solicitar 
+    'MAX_PAGE_SIZE': 100, # Límite máximo que el frontend puede solicitar
+
+    # Techo de gasto en los proxies de terceros (TTS, STT, sugerencias).
+    # Sin esto, la cuota de ElevenLabs se agota igual, solo que autenticada.
+    'DEFAULT_THROTTLE_RATES': {
+        'external_service': '60/hour',
+    },
 }
 
 SIMPLE_JWT = {
@@ -214,6 +236,14 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Resend Settings
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
+
+# Claves de servicios externos.
+# NUNCA usar el prefijo VITE_ para estas: Vite las inlinea en texto plano en el
+# bundle publico. Solo el backend las conoce; el frontend habla con /game/tts/,
+# /game/stt/ y /dictionary/suggest-word/.
+ELEVENLABS_API_KEY = os.environ.get('ELEVENLABS_API_KEY')
+GITHUB_ISSUES_PAT = os.environ.get('GITHUB_ISSUES_PAT')
+GITHUB_ISSUES_REPO = os.environ.get('GITHUB_ISSUES_REPO', 'Pakelin3/Misspelt')
 
 
 FRONTEND_URL = 'https://localhost:5173' 

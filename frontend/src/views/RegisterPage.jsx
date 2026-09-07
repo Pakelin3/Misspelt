@@ -1,11 +1,14 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useId } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import AuthContext from '@/context/AuthContext';
 import { useGoogleLogin } from '@react-oauth/google';
 import googleIcon from '@/assets/google.svg';
 import { LeafIcon } from '@/components/PixelIcons';
+import { Button } from '@/components/ui/Button';
+import usePageTitle from '@/hooks/usePageTitle';
 
 function RegisterPage({ onScreenChange }) {
+    usePageTitle('Crear cuenta');
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -14,6 +17,21 @@ function RegisterPage({ onScreenChange }) {
 
     const { registerUser, googleAuth } = useContext(AuthContext);
     const navigate = useNavigate();
+
+    const emailId = useId();
+    const usernameId = useId();
+    const passwordId = useId();
+    const confirmPasswordId = useId();
+    const emailErrorId = useId();
+    const usernameErrorId = useId();
+    const passwordErrorId = useId();
+    const confirmPasswordErrorId = useId();
+
+    const emailError = errors.email?.[0];
+    const usernameError = errors.username?.[0];
+    const passwordError = errors.password?.[0];
+    const confirmPasswordError = errors.confirm_password?.[0];
+    const generalError = errors.non_field_errors?.[0] || errors.detail || errors.general_error;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -45,7 +63,7 @@ function RegisterPage({ onScreenChange }) {
     });
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-background p-4 font-sans">
+        <main id="main-content" className="flex justify-center items-center min-h-screen bg-background p-4 font-sans">
             <div className="bg-card pixel-border p-6 sm:p-8 w-full max-w-md relative shadow-none">
 
                 {/* Botón Cerrar */}
@@ -55,7 +73,8 @@ function RegisterPage({ onScreenChange }) {
                         e.preventDefault();
                         onScreenChange ? onScreenChange('register') : navigate('/');
                     }}
-                    className="absolute top-4 right-4 text-muted-foreground hover:text-destructive font-mono text-xl transition-colors no-underline"
+                    className="absolute top-4 right-4 text-muted-foreground hover:text-destructive font-mono text-xl transition-colors no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    aria-label="Cerrar e ir al inicio"
                 >
                     X
                 </Link>
@@ -63,7 +82,7 @@ function RegisterPage({ onScreenChange }) {
                 <div className="text-center mb-6">
                     <div className="flex justify-center mb-4">
                         <div className="h-16 w-16 bg-primary/20 rounded-sm flex items-center justify-center pixel-border-primary">
-                            <LeafIcon className="w-10 h-10 text-primary" />
+                            <LeafIcon className="w-10 h-10 text-primary" aria-hidden="true" />
                         </div>
                     </div>
                     {/* Título en Arcade */}
@@ -76,15 +95,17 @@ function RegisterPage({ onScreenChange }) {
                     </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
 
                     {/* Botón Google */}
                     <button
                         type="button"
                         onClick={() => handleGoogleLogin()}
-                        className="flex items-center justify-center gap-3 px-4 py-3 border-2 border-foreground bg-white text-foreground font-sans text-2xl hover:bg-muted transition-colors cursor-pointer"
+                        // El fondo blanco y el texto negro los exige la guia de marca de
+                        // Google para su boton de acceso: no son tokens del tema.
+                        className="flex items-center justify-center gap-3 px-4 py-3 min-h-11 border-2 border-foreground bg-white text-black font-sans text-2xl transition hover:brightness-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
-                        <img src={googleIcon} alt="Google" className="w-5 h-5 pixel-rendering" />
+                        <img src={googleIcon} alt="" aria-hidden="true" width="20" height="20" className="w-5 h-5 pixel-rendering" />
                         Registro con Google
                     </button>
 
@@ -96,88 +117,106 @@ function RegisterPage({ onScreenChange }) {
 
                     {/* Input Email */}
                     <div className="space-y-1">
+                        <label htmlFor={emailId} className="sr-only">Correo electrónico</label>
                         <input
+                            id={emailId}
                             type="email"
+                            inputMode="email"
+                            autoComplete="email"
                             placeholder="Correo electrónico..."
                             value={email}
                             onChange={(e) => {
                                 setEmail(e.target.value.toLowerCase());
                                 setErrors(prev => ({ ...prev, email: undefined }));
                             }}
-                            className={`w-full px-4 py-3 bg-background border-2 font-sans text-2xl placeholder:text-muted-foreground/70 focus:outline-none focus:ring-0
-                                ${errors.email ? 'border-destructive text-destructive' : 'border-muted focus:border-primary text-foreground'}`}
+                            className={`w-full px-4 py-3 bg-background border-2 font-sans text-2xl placeholder:text-muted-foreground/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+                                ${emailError ? 'border-destructive text-destructive' : 'border-muted focus:border-primary text-foreground'}`}
+                            aria-invalid={emailError ? 'true' : undefined}
+                            aria-describedby={emailError ? emailErrorId : undefined}
                             required
                         />
-                        {errors.email && <p className="text-destructive font-mono text-[10px] mt-1 tracking-tighter">* {errors.email[0]}</p>}
+                        {emailError && <p id={emailErrorId} role="alert" className="text-destructive font-mono text-2xs mt-1 tracking-tighter">* {emailError}</p>}
                     </div>
 
                     {/* Input Username */}
                     <div className="space-y-1">
+                        <label htmlFor={usernameId} className="sr-only">Nombre de usuario</label>
                         <input
+                            id={usernameId}
                             type="text"
+                            autoComplete="username"
                             placeholder="Nombre de usuario..."
                             value={username}
                             onChange={(e) => {
                                 setUsername(e.target.value);
                                 setErrors(prev => ({ ...prev, username: undefined }));
                             }}
-                            className={`w-full px-4 py-3 bg-background border-2 font-sans text-2xl placeholder:text-muted-foreground/70 focus:outline-none focus:ring-0
-                                ${errors.username ? 'border-destructive text-destructive' : 'border-muted focus:border-primary text-foreground'}`}
+                            className={`w-full px-4 py-3 bg-background border-2 font-sans text-2xl placeholder:text-muted-foreground/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+                                ${usernameError ? 'border-destructive text-destructive' : 'border-muted focus:border-primary text-foreground'}`}
+                            aria-invalid={usernameError ? 'true' : undefined}
+                            aria-describedby={usernameError ? usernameErrorId : undefined}
                             required
                         />
-                        {errors.username && <p className="text-destructive font-mono text-[10px] mt-1 tracking-tighter">* {errors.username[0]}</p>}
+                        {usernameError && <p id={usernameErrorId} role="alert" className="text-destructive font-mono text-2xs mt-1 tracking-tighter">* {usernameError}</p>}
                     </div>
 
                     {/* Input Password */}
                     <div className="space-y-1">
+                        <label htmlFor={passwordId} className="sr-only">Contraseña</label>
                         <input
+                            id={passwordId}
                             type="password"
+                            autoComplete="new-password"
                             placeholder="Contraseña..."
                             value={password}
                             onChange={(e) => {
                                 setPassword(e.target.value);
                                 setErrors(prev => ({ ...prev, password: undefined, non_field_errors: undefined }));
                             }}
-                            className={`w-full px-4 py-3 bg-background border-2 font-sans text-2xl placeholder:text-muted-foreground/70 focus:outline-none focus:ring-0
-                                ${errors.password ? 'border-destructive text-destructive' : 'border-muted focus:border-primary text-foreground'}`}
+                            className={`w-full px-4 py-3 bg-background border-2 font-sans text-2xl placeholder:text-muted-foreground/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+                                ${passwordError ? 'border-destructive text-destructive' : 'border-muted focus:border-primary text-foreground'}`}
+                            aria-invalid={passwordError ? 'true' : undefined}
+                            aria-describedby={passwordError ? passwordErrorId : undefined}
                             required
                         />
-                        {errors.password && <p className="text-destructive font-mono text-[10px] mt-1 tracking-tighter">* {errors.password[0]}</p>}
+                        {passwordError && <p id={passwordErrorId} role="alert" className="text-destructive font-mono text-2xs mt-1 tracking-tighter">* {passwordError}</p>}
                     </div>
 
                     {/* Input Confirm Password */}
                     <div className="space-y-1">
+                        <label htmlFor={confirmPasswordId} className="sr-only">Confirmar contraseña</label>
                         <input
+                            id={confirmPasswordId}
                             type="password"
+                            autoComplete="new-password"
                             placeholder="Confirmar contraseña..."
                             value={confirmPassword}
                             onChange={(e) => {
                                 setConfirmPassword(e.target.value);
                                 setErrors(prev => ({ ...prev, confirm_password: undefined }));
                             }}
-                            className={`w-full px-4 py-3 bg-background border-2 font-sans text-2xl placeholder:text-muted-foreground/70 focus:outline-none focus:ring-0
-                                ${errors.confirm_password ? 'border-destructive text-destructive' : 'border-muted focus:border-primary text-foreground'}`}
+                            className={`w-full px-4 py-3 bg-background border-2 font-sans text-2xl placeholder:text-muted-foreground/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+                                ${confirmPasswordError ? 'border-destructive text-destructive' : 'border-muted focus:border-primary text-foreground'}`}
+                            aria-invalid={confirmPasswordError ? 'true' : undefined}
+                            aria-describedby={confirmPasswordError ? confirmPasswordErrorId : undefined}
                             required
                         />
-                        {errors.confirm_password && <p className="text-destructive font-mono text-[10px] mt-1 tracking-tighter">* {errors.confirm_password[0]}</p>}
+                        {confirmPasswordError && <p id={confirmPasswordErrorId} role="alert" className="text-destructive font-mono text-2xs mt-1 tracking-tighter">* {confirmPasswordError}</p>}
                     </div>
 
                     {/* Errores Generales */}
-                    {(errors.non_field_errors || errors.detail || errors.general_error) && (
-                        <div className="bg-destructive/10 border-2 border-destructive p-2 text-center mt-2">
-                            <p className="text-destructive font-mono text-[10px] leading-tight">
-                                {errors.non_field_errors?.[0] || errors.detail || errors.general_error}
+                    {generalError && (
+                        <div role="alert" className="bg-destructive/10 border-2 border-destructive p-2 text-center mt-2">
+                            <p className="text-destructive font-mono text-2xs leading-tight">
+                                {generalError}
                             </p>
                         </div>
                     )}
 
                     {/* Botón Submit */}
-                    <button
-                        type="submit"
-                        className="w-full py-4 mt-4 bg-primary text-primary-foreground font-mono text-sm pixel-border-primary pixel-btn cursor-pointer uppercase tracking-wide shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]"
-                    >
+                    <Button type="submit" variant="default" size="lg" className="w-full mt-4">
                         Crear Cuenta
-                    </button>
+                    </Button>
 
                     <div className="text-center text-muted-foreground text-xl font-sans mt-4">
                         ¿Ya tienes granja?
@@ -187,14 +226,14 @@ function RegisterPage({ onScreenChange }) {
                                 e.preventDefault();
                                 onScreenChange ? onScreenChange('login') : navigate('/login');
                             }}
-                            className="ml-2 text-accent hover:text-accent-foreground hover:underline decoration-2 underline-offset-4"
+                            className="ml-2 text-accent-strong hover:text-accent-foreground hover:underline decoration-2 underline-offset-4"
                         >
-                            INICIA SESIÓN
+                            Inicia sesión
                         </Link>
                     </div>
                 </form>
             </div>
-        </div>
+        </main>
     );
 }
 

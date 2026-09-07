@@ -28,7 +28,7 @@ export function LoadingScreen({ onLoadingComplete, onClose }) {
   if (!isVisible) return null;
 
   return (
-    <div className={`fixed inset-0 z-[100] flex items-center justify-center bg-foreground transition-opacity duration-500 ease-in-out ${opacity}`}>
+    <div className={`fixed inset-0 z-loading-overlay flex items-center justify-center bg-foreground transition-opacity duration-500 ease-in-out ${opacity}`}>
       <h1 className="font-mono leading-tight">
         <TextShuffle
           text="MISSPELT"

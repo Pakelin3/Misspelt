@@ -1,5 +1,6 @@
 import React from 'react';
 import { TrophyIcon, PixelCheckIcon, PixelLockIcon } from '@/components/PixelIcons';
+import normalizarUrlDeMedia from '@/utils/mediaUrl';
 
 
 const BadgeCard = ({ badge, status }) => {
@@ -43,16 +44,19 @@ const BadgeCard = ({ badge, status }) => {
                 <div className={`absolute inset-0 border-4 border-dashed rounded-full ${unlocked ? 'border-primary animate-spin-slow' : 'border-muted'}`} />
                 {badge.image ? (
                     <img
-                        src={badge.image}
+                        src={normalizarUrlDeMedia(badge.image)}
                         alt={badge.title}
+                        loading="lazy"
+                        width={80}
+                        height={80}
                         className={`w-20 h-20 object-contain z-10 transition-transform ${unlocked ? 'scale-110' : 'scale-90'}`}
                     />
                 ) : (
-                    <TrophyIcon className="w-12 h-12 text-muted-foreground z-10" />
+                    <TrophyIcon className="w-12 h-12 text-muted-foreground z-10" aria-hidden="true" />
                 )}
 
                 <div className={`absolute -bottom-2 -right-2 p-2 pixel-border z-20 ${unlocked ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                    {unlocked ? <PixelCheckIcon className="w-4 h-4" /> : <PixelLockIcon className="w-4 h-4" />}
+                    {unlocked ? <PixelCheckIcon className="w-4 h-4" aria-hidden="true" /> : <PixelLockIcon className="w-4 h-4" aria-hidden="true" />}
                 </div>
             </div>
 
@@ -66,14 +70,14 @@ const BadgeCard = ({ badge, status }) => {
                 </p>
 
                 {finalRewardText && (
-                    <div className="text-[10px] font-mono text-accent bg-accent/10 px-2 py-1 mb-4 pixel-border-accent border-2">
-                        🎁 {finalRewardText}
+                    <div className="text-2xs font-mono text-accent-strong bg-accent/10 px-2 py-1 mb-4 pixel-border-accent border-2">
+                        <span aria-hidden="true">🎁</span> {finalRewardText}
                     </div>
                 )}
 
                 {showProgress && !unlocked && (
                     <div className="w-full mt-auto">
-                        <div className="flex justify-between text-[10px] font-mono mb-1 text-muted-foreground">
+                        <div className="flex justify-between text-2xs font-mono mb-1 text-muted-foreground">
                             <span>PROGRESO</span>
                             <span>{progress}%</span>
                         </div>
@@ -82,13 +86,13 @@ const BadgeCard = ({ badge, status }) => {
                                 className="h-full bg-accent transition-all duration-500 border-r-2 border-foreground"
                                 style={{ width: `${progress}%` }}
                             />
-                            <div className="absolute top-0 left-0 w-full h-1 bg-white/20" />
+                            <div className="absolute top-0 left-0 w-full h-1 bg-primary-foreground/25" />
                         </div>
                     </div>
                 )}
 
                 {unlocked && (
-                    <div className="w-full mt-auto py-1 bg-primary/20 border-2 border-primary text-primary font-mono text-[10px]">
+                    <div className="w-full mt-auto py-1 bg-primary/20 border-2 border-primary text-primary font-mono text-2xs">
                         ¡DESBLOQUEADO!
                     </div>
                 )}
