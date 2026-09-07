@@ -26,3 +26,9 @@ backend/*.pem
 *.njsproj
 *.sln
 *.sw?
+
+# Artefactos derivados del export del juego. Los genera `npm run comprimir-juego`
+# a partir de los archivos que Godot deja en public/game/, asi que versionarlos
+# duplicaria en el repositorio unos 36 MB que se pueden regenerar en segundos.
+public/game/*.br
+public/game/*.gz

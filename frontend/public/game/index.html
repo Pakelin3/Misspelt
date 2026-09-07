@@ -2,9 +2,15 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<!-- El zoom queda habilitado a proposito: bloquearlo incumple WCAG 1.4.4 y este documento
-		     tambien se puede abrir directamente, no solo dentro del iframe. El pinch
-		     sobre el canvas ya lo controla `touch-action: none` en el CSS de abajo. -->
+		<!-- Plantilla HTML propia del proyecto (html/custom_html_shell en export_presets.cfg).
+	     Existe por un motivo concreto: la plantilla que trae Godot pone
+	     "user-scalable=no", que incumple la WCAG 1.4.4 (el usuario debe poder ampliar
+	     hasta el 200%). Ese arreglo ya se hizo una vez editando a mano el index.html
+	     exportado, y la siguiente exportacion lo borro sin avisar a nadie. Con la
+	     plantilla aqui dentro del proyecto, sobrevive a cada export.
+	     El pinch-zoom sobre el lienzo del juego no molesta, porque el CSS de mas abajo
+	     ya aplica "touch-action: none" al canvas; lo que se recupera es poder ampliar
+	     el documento, que tambien se puede abrir suelto y no solo dentro del iframe. -->
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>Misspelt</title>
 		<style>
@@ -114,7 +120,7 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":46531664,"index.wasm":35739700},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":17384724,"index.wasm":37685705},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
