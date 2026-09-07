@@ -1,10 +1,14 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser 
-from django.db.models.signals import post_save    
+from django.contrib.auth.models import AbstractUser
+from django.db.models.signals import post_save, pre_save
+from django.dispatch import receiver
 from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
-import uuid             
+import uuid
+
+from api.image_processing import AVATAR_MAX_SIZE, BADGE_SIZE, normalizar_campo_imagen
+from api.validators import validar_tamano_imagen
 
 # * --------------------------------------------------------------------------------------------------
 #  ! --- MODELO VERIFICACION DE CORREO ---
@@ -60,7 +64,10 @@ class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=100, blank=True, null=True, help_text="Nombre completo del usuario")
     bio = models.TextField(blank=True, null=True, help_text="Biografía del usuario")
-    image = models.ImageField(default='avatars/default.jpg', upload_to='avatars/', blank=True, null=True, help_text="Imagen del perfil")
+    image = models.ImageField(
+        default='avatars/default.jpg', upload_to='avatars/', blank=True, null=True,
+        help_text="Imagen del perfil", validators=[validar_tamano_imagen],
+    )
     current_avatar = models.ForeignKey(
         'Avatar',
         on_delete=models.SET_NULL, # Si se borra un avatar, el campo se pone a NULL
@@ -278,7 +285,10 @@ def badge_image_upload_to(instance, filename):
 class Badge(models.Model):
     title = models.CharField(max_length=100, unique=True, help_text="Nombre de la insignia")
     description = models.TextField(help_text="Descripción de lo que se necesita para obtenerla")
-    image = models.ImageField(upload_to=badge_image_upload_to, blank=True, null=True, help_text="Imagen de la insignia")
+    image = models.ImageField(
+        upload_to=badge_image_upload_to, blank=True, null=True,
+        help_text="Imagen de la insignia", validators=[validar_tamano_imagen],
+    )
     
     CATEGORY_CHOICES = [
         ('BASIC', 'Básica'),
@@ -305,7 +315,10 @@ def avatar_image_upload_to(instance, filename):
 
 class Avatar(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    image = models.ImageField(upload_to=avatar_image_upload_to, help_text="Imagen del avatar")
+    image = models.ImageField(
+        upload_to=avatar_image_upload_to, help_text="Imagen del avatar",
+        validators=[validar_tamano_imagen],
+    )
     is_default = models.BooleanField(default=False, help_text="Si es un avatar disponible para todos al inicio")
     unlock_condition_description = models.TextField(blank=True, null=True, help_text="Descripción de cómo desbloquearlo si no es default")
 
@@ -324,6 +337,33 @@ class Farm(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.invite_code})"
+
+
+# * --------------------------------------------------------------------------------------------------
+# ! --- NORMALIZACIÓN DE IMÁGENES (INSIGNIAS, AVATARES, FOTO DE PERFIL) ---
+# * --------------------------------------------------------------------------------------------------
+# Va en `pre_save` y no en un `Model.save()` sobrescrito a propósito: un
+# `loaddata` de fixtures llama a `Model.save_base()` directamente y se salta
+# cualquier `save()` de subclase, pero SÍ dispara las señales `pre_save`
+# (Django las envía dentro de `_save_table`, antes de calcular los valores
+# finales de los campos). Así la normalización se aplica igual sin importar
+# si la imagen llega por la API, por el admin de Django o por un fixture.
+@receiver(pre_save, sender=Badge)
+def normalizar_imagen_insignia(sender, instance, **kwargs):
+    if instance.image:
+        normalizar_campo_imagen(instance.image, tamano_exacto=BADGE_SIZE)
+
+
+@receiver(pre_save, sender=Avatar)
+def normalizar_imagen_avatar(sender, instance, **kwargs):
+    if instance.image:
+        normalizar_campo_imagen(instance.image, tamano_maximo=AVATAR_MAX_SIZE)
+
+
+@receiver(pre_save, sender=Profile)
+def normalizar_imagen_perfil(sender, instance, **kwargs):
+    if instance.image:
+        normalizar_campo_imagen(instance.image, tamano_maximo=AVATAR_MAX_SIZE)
 
 
 # * --------------------------------------------------------------------------------------------------

@@ -37,6 +37,22 @@ RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
+# Django siempre corre en plano (HTTP) detras de un proxy/terminador TLS: no hay
+# forma de que `request.is_secure()` sea True por si solo. Sin esta linea,
+# `request.build_absolute_uri()` (usado por los serializers y las vistas para
+# construir URLs de avatares e insignias) siempre devuelve `http://`, aunque el
+# sitio se sirva por HTTPS. El navegador bloquea esas URLs como contenido mixto
+# y ninguna imagen carga.
+# CONDICION DE SEGURIDAD: confiar en `X-Forwarded-Proto` solo es correcto si el
+# proxy que esta delante de Django SIEMPRE sobrescribe esa cabecera antes de
+# reenviar la peticion. Si esta app llegara a exponerse directamente a internet
+# sin un proxy intermedio, cualquier cliente podria mandar `X-Forwarded-Proto:
+# https` a mano y Django se creeria en HTTPS sin estarlo (marcando cookies como
+# seguras, generando URLs "https://" falsas, etc). En Render y detras de nginx/
+# Caddy esta condicion se cumple porque ellos son el unico punto de entrada.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+
 
 # Application definition
 

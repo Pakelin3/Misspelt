@@ -14,6 +14,8 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
@@ -21,3 +23,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls'))
 ]
+
+# Los avatares e insignias se sirven en /media/..., que es exactamente la URL que
+# construyen los serializers con `request.build_absolute_uri(obj.image.url)`.
+# Estaba declarado dentro de api/urls.py, donde heredaba el prefijo `api/`, asi
+# que /media/avatars/... devolvia 404 y NINGUNA imagen de avatar o insignia
+# cargaba en la aplicacion. En produccion las sirve el servidor web, no Django.
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
